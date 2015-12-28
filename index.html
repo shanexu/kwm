@@ -1,94 +1,79 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html>
   <head>
-    <meta charset="UTF-8">
-    <title>Kwm by koekeishiya</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Kwm by koekeishiya</title>
   </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Kwm</h1>
-      <h2 class="project-tagline">Tiling window manager with focus follows mouse for OSX</h2>
-      <a href="https://github.com/koekeishiya/kwm" class="btn">View on GitHub</a>
-      <a href="https://github.com/koekeishiya/kwm/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/koekeishiya/kwm/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
 
-    <section class="main-content">
-      <h2>
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Kwm</h1>
+          <h2>Tiling window manager with focus follows mouse for OSX</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/koekeishiya/kwm/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/koekeishiya/kwm/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/koekeishiya/kwm" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h2>
 <a id="description-tldr" class="anchor" href="#description-tldr" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description (TL;DR)</h2>
 
-<p><em>Kwm</em> started as a simple project to get true focus-follows-mouse support on OSX through event tapping.<br>
-It is now a tiling window manager that represents windows as the leaves of a binary tree.</p>
+<p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping. It is now a tiling window manager that represents windows as the leaves of a binary tree.</p>
 
-<p><em>Kwm</em> runs a local daemon to read messages and trigger functions.<br>
-<em>Kwmc</em> can be used to write to <em>Kwm</em>'s socket, and the included hotkeys.cpp uses this program to define<br>
-a mapping between keys and these functions. For information, check the readme located within the <em>kwmc</em> folder.  </p>
+<p><em>Kwm</em> runs a local daemon to read messages and trigger functions. <em>Kwmc</em> can be used to write to <em>Kwm</em>'s socket, and the included hotkeys.cpp uses this program to define a mapping between keys and these functions. For information, check the readme located within the <em>kwmc</em> folder.</p>
 
-<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior<br>
-to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse,<br>
-remapping keys, and most importantly global hotkeys.  </p>
+<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, remapping keys, and most importantly global hotkeys.</p>
 
-<p><em>Kwm</em> requires access to osx accessibility.  Creating a certificate and codesigning the binary works as well.<br>
+<p><em>Kwm</em> requires access to osx accessibility. Creating a certificate and codesigning the binary works as well.<br>
 Tested on Osx El Capitan (10.11.1 / 10.11.2).</p>
 
-<table>
-<thead>
-<tr>
-<th align="center">Screencast</th>
-<th align="center">Screenshot</th>
-<th align="center">Screenshot</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><img src="https://cloud.githubusercontent.com/assets/6175959/11498553/6ccedee6-9820-11e5-8830-96e0bf19b4f2.gif" alt="mov"></td>
-<td align="center"><img src="https://cloud.githubusercontent.com/assets/6175959/12011903/1eeb3d6a-ace2-11e5-9c49-0df721e6e83d.png" alt="img"></td>
-<td align="center"><img src="https://cloud.githubusercontent.com/assets/6175959/12011916/c8ef1b9c-ace2-11e5-9a5b-0aee3d41347a.jpg" alt="img"></td>
-</tr>
-</tbody>
-</table>
+<pre><code>   Screencast          
+</code></pre>
+
+<p>:-------------------------:
+<img src="https://cloud.githubusercontent.com/assets/6175959/11498553/6ccedee6-9820-11e5-8830-96e0bf19b4f2.gif" alt="mov"></p>
 
 <h2>
 <a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended Information:</h2>
 
-<p>The different features; binary space partitioning, focus-follows-mouse and hotkey-system can all be enabled<br>
-independently. This allows the user to choose what functionality fits their specific workflow.  </p>
+<p>The different features; binary space partitioning, focus-follows-mouse and hotkey-system can all be enabled independently. This allows the user to choose what functionality fits their specific workflow.</p>
 
 <p><em>Binary Space Partitioning:</em><br>
 Kwm tiles windows using a binary-tree structure. For information, check the usage section.  </p>
 
 <p><em>Focus-Follows-Mouse:</em><br>
-Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor,<br>
-the menubar is not accessible. Autoraise gives a window focus and raises it to the front.  By default <em>Kwm</em> is set to<br>
-use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless<br>
-a window is specifically made floating.  </p>
+Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor, the menubar is not accessible. Autoraise gives a window focus and raises it to the front. By default <em>Kwm</em> is set to use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless a window is specifically made floating.</p>
 
 <p><em>System-Wide Hotkeys:</em><br>
-Kwm provides an instantaneous live-coding hotkey system for interacting with <em>Kwm</em>, and this can be customized<br>
-by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead.<br>
-Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.  </p>
+Kwm provides an instantaneous live-coding hotkey system for interacting with <em>Kwm</em>, and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.</p>
 
 <p><em>Multiple monitor support (in progress):</em><br>
 There are different ways to move a window between monitors.<br>
 The first one is by using <code>kwmc screen -m prev|next|id</code>.<br>
-The other option is to make the window floating and manually move it with the mouse, then un-float it.<br>
-When moving a window directly with the mouse, <em>Kwm</em> will detect on mouse-release that the window<br>
-position has changed, and automatically make it floating (Due to technical limitations this event<br>
-must occur on the monitor which currently holds the window).</p>
+The other option is to make the window floating and manually move it with the mouse, then un-float it. When moving a window directly with the mouse, <em>Kwm</em> will detect on mouse-release that the window position has changed, and automatically make it floating (Due to technical limitations this event must occur on the monitor which currently holds the window).</p>
 
-<p>The first time a monitor is connected, the user may have to click several times on the screen for it to register.<br>
-After this step, moving the mouse to a different monitor should activate the monitor automatically.  </p>
+<p>The first time a monitor is connected, the user may have to click several times on the screen for it to register. After this step, moving the mouse to a different monitor should activate the monitor automatically.</p>
 
 <h2>
 <a id="build" class="anchor" href="#build" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build:</h2>
 
-<p>Because there is no app bundle, <em>Kwm</em> has to be started from a terminal.
-To compile and run <em>Kwm</em>, simply run</p>
+<p>Because there is no app bundle, <em>Kwm</em> has to be started from a terminal. To compile and run <em>Kwm</em>, simply run</p>
 
 <pre><code>  make
   ./bin/kwm
@@ -99,41 +84,29 @@ To compile and run <em>Kwm</em>, simply run</p>
 <pre><code>  make install
 </code></pre>
 
-<p>The hotkeys.cpp file can be edited live and recompiled separately using <code>make</code> again.<br>
-By doing this, the user may change hotkeys without having to restart <em>Kwm</em>.  </p>
+<p>The hotkeys.cpp file can be edited live and recompiled separately using <code>make</code> again. By doing this, the user may change hotkeys without having to restart <em>Kwm</em>. </p>
 
-<p>To make <em>Kwm</em> start automatically on login, update line 9 of kwm.plist to be the full path of the executable<br>
-on your machine. With that change, link the plist file <code>ln -sf full/path/to/kwm.plist ~/Library/LaunchAgents</code>.<br>
-Then logout/login to have Kwm start automatically.  </p>
+<p>To make <em>Kwm</em> start automatically on login, update line 9 of kwm.plist to be the full path of the executable on your machine. With that change, link the plist file <code>ln -sf full/path/to/kwm.plist ~/Library/LaunchAgents</code>. Then logout/login to have Kwm start automatically.</p>
 
-<p>This will also cause <em>Kwm</em> to restart itself when terminated, and no longer requires anything<br>
-but the <em>Kwm</em> binary to have accessibility access.  </p>
-
-<p>Removing the KeepAlive option on line 13-14 prevents <em>Kwm</em> from restarting once it is killed manually.  </p>
+<p>This will also cause <em>Kwm</em> to restart itself when terminated, and no longer requires anything but the <em>Kwm</em> binary to have accessibility access. Removing the KeepAlive option on line 13-14 prevents <em>Kwm</em> from restarting once it is killed manually.</p>
 
 <h2>
 <a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration:</h2>
 
-<p>The default configuration file is <code>$HOME/.kwmrc</code> and is a script that contains <em>Kwmc</em> commands<br>
-to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify<br>
-a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.  </p>
+<p>The default configuration file is <code>$HOME/.kwmrc</code> and is a script that contains <em>Kwmc</em> commands to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.</p>
 
-<p>A sample config can be found within the <a href="examples">examples</a> directory.</p>
+<p>A sample config can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h2>
 
-<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space, using binary space partitioning.<br>
-This will also happen once for any other space the user might switch to.</p>
+<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space, using binary space partitioning. This will also happen once for any other space the user might switch to.</p>
 
-<p>When <em>Kwm</em> detects a new window, it inserts it into a window tree at the specified point using the split-mode specified.<br>
-When a window is closed, it will be removed from the window tree and the tree will be rebalanced.</p>
+<p>When <em>Kwm</em> detects a new window, it inserts it into a window tree at the specified point using the split-mode specified. When a window is closed, it will be removed from the window tree and the tree will be rebalanced.</p>
 
-<p>By default, the insertion point is the focused window, but the user can mark a temporary insertion point to be
-used instead for the next insertion.</p>
+<p>By default, the insertion point is the focused window, but the user can mark a temporary insertion point to be used instead for the next insertion.</p>
 
-<p>There are 3 types of split-modes available, these are optimal (width/height ratio), vertical and horizontal.<br>
-The default split-mode is set to optimal (width/height ratio).</p>
+<p>There are 3 types of split-modes available, these are optimal (width/height ratio), vertical and horizontal. The default split-mode is set to optimal (width/height ratio).</p>
 
 <p>Example:</p>
 
@@ -157,12 +130,9 @@ The default split-mode is set to optimal (width/height ratio).</p>
 
 </code></pre>
 
-<p><em>Kwm</em> mainly consists of three panes so to speak. The main pane being the entire screen.<br>
-After at least 1 window insertion has occurred, the screen will consist of either a left and right pane,<br>
-or an upper and lower pane.</p>
+<p><em>Kwm</em> mainly consists of three panes so to speak. The main pane being the entire screen. After at least 1 window insertion has occurred, the screen will consist of either a left and right pane, or an upper and lower pane.</p>
 
-<p>The width of the left/right pane can be changed, as well as the height of the upper/lower pane.<br>
-Currently these cannot occur simultaneously, and the type of panes created is decided by the main pane split-mode.</p>
+<p>The width of the left/right pane can be changed, as well as the height of the upper/lower pane. Currently these cannot occur simultaneously, and the type of panes created is decided by the main pane split-mode.</p>
 
 <p>If the main pane is split using vertical mode, a left and right pane is created.<br>
 If the main pane is split using horizontal mode, an upper and lower pane is created.  </p>
@@ -227,15 +197,15 @@ If the main pane is split using horizontal mode, an upper and lower pane is crea
     - uarrow: decrease screen padding-top 
     - darrow: decrease screen padding-bottom 
 </code></pre>
+        </section>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/koekeishiya/kwm">Kwm</a> is maintained by <a href="https://github.com/koekeishiya">koekeishiya</a>.</span>
+        <footer>
+          Kwm is maintained by <a href="https://github.com/koekeishiya">koekeishiya</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
-
-    </section>
-
-  
+        
+      </div>
+    </div>
   </body>
 </html>
