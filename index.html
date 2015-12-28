@@ -82,9 +82,10 @@ The other option is to make the window floating and manually move it with the mo
 
 <p>The hotkeys.cpp file can be edited live and recompiled separately using <code>make</code> again. By doing this, the user may change hotkeys without having to restart <em>Kwm</em>. </p>
 
-<p>To make <em>Kwm</em> start automatically on login, update line 9 of kwm.plist to be the full path of the executable on your machine. With that change, link the plist file <code>ln -sf full/path/to/kwm.plist ~/Library/LaunchAgents</code>. Then logout/login to have Kwm start automatically.</p>
+<p>To make Kwm start automatically on login, run the following command the first time Kwm starts</p>
 
-<p>This will also cause <em>Kwm</em> to restart itself when terminated, and no longer requires anything but the <em>Kwm</em> binary to have accessibility access. Removing the KeepAlive option on line 13-14 prevents <em>Kwm</em> from restarting once it is killed manually.</p>
+<pre><code>  kwmc config launchd enable
+</code></pre>
 
 <h2>
 <a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration:</h2>
