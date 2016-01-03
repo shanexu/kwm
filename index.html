@@ -56,8 +56,9 @@ Kwm tiles windows using a binary-tree structure. For information, check the usag
 <p><em>Focus-Follows-Mouse:</em><br>
 Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor, the menubar is not accessible. Autoraise gives a window focus and raises it to the front. By default <em>Kwm</em> is set to use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless a window is specifically made floating.</p>
 
-<p><em>System-Wide Hotkeys:</em><br>
-Kwm provides an instantaneous live-coding hotkey system for interacting with <em>Kwm</em>, and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.</p>
+<p><em>System-Wide Hotkeys:</em> 
+Kwm allows the user to bind and unbind hotkeys to commands through the Kwmc tool, using a bind and unbind option. 
+For more advanced use, there is also an instantaneous live-coding hotkey system and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled. </p>
 
 <p><em>Multiple monitor support (in progress):</em><br>
 There are different ways to move a window between monitors.<br>
@@ -134,9 +135,9 @@ The other option is to make the window floating and manually move it with the mo
 <p>If the main pane is split using vertical mode, a left and right pane is created.<br>
 If the main pane is split using horizontal mode, an upper and lower pane is created.  </p>
 
-<p>In addition to bsp, <em>Kwm</em> supports both stacking and floating spaces.<br>
+<p>In addition to bsp, <em>Kwm</em> supports both monocle and floating spaces.<br>
 If a space is set to floating mode, nothing will be tiled for this space.<br>
-If a space is in stacking mode, every window will run fullscreen, and the user can switch between open windows using the kwmc command <code>window -f prev|next</code></p>
+If a space is in monocle mode, every window will run fullscreen, and the user can switch between open windows using the kwmc command <code>window -f prev|next</code></p>
 
 <h2>
 <a id="default-hotkeys" class="anchor" href="#default-hotkeys" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default Hotkeys:</h2>
@@ -147,10 +148,6 @@ If a space is in stacking mode, every window will run fullscreen, and the user c
     - q: Quit Kwm
 
     - m: mark the container to use for next window split
-
-    - o: use width/height ratio to determine optimal split (default)
-    - 7: use vertical split-mode
-    - -: use horizontal split-mode
     - s: toggle split-type of existing container
 
     - h: move vertical-splitter left (increase width of right-pane containers)
@@ -180,8 +177,10 @@ If a space is in stacking mode, every window will run fullscreen, and the user c
     - darrow: increase screen padding-bottom 
 
 - alt+cmd
-    - t: toggle tiling mode of current space (float|tile)
-    - r: rotate window-tree by 180 degrees
+    - s: set mode of current space to bsp
+    - f: set mode of current space to monocle
+    - d: set mode of current space to float
+    - r: rotate window-tree by 90 degrees
 
     - h: focus previous window
     - l: focus next window
