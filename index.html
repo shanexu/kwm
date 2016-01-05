@@ -34,56 +34,59 @@
           <h2>
 <a id="description-tldr" class="anchor" href="#description-tldr" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description (TL;DR)</h2>
 
-<p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping. It is now a tiling window manager that represents windows as the leaves of a binary tree.</p>
+<p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping. It is now a tiling window manager that represents windows as the leaves of a binary tree. <em>Kwm</em> supports binary space partitioned, monocle and floating spaces.  </p>
 
-<p><em>Kwm</em> runs a local daemon to read messages and trigger functions. <em>Kwmc</em> can be used to write to <em>Kwm</em>'s socket, and the included hotkeys.cpp uses this program to define a mapping between keys and these functions. For information, check the readme located within the <em>kwmc</em> folder.</p>
+<p><em>Kwm</em> runs a local daemon to read messages and trigger functions.<br>
+<em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting and configuring how <em>Kwm</em> works. For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder.  </p>
 
-<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, remapping keys, and most importantly global hotkeys.</p>
+<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, remapping keys, and most importantly global hotkeys.  </p>
 
-<p><em>Kwm</em> requires access to osx accessibility. Creating a certificate and codesigning the binary works as well.<br>
+<p><em>Kwm</em> requires access to osx accessibility.<br>
 Tested on Osx El Capitan (10.11.1 / 10.11.2).</p>
 
-<p><img src="https://cloud.githubusercontent.com/assets/6175959/11498553/6ccedee6-9820-11e5-8830-96e0bf19b4f2.gif" alt="mov"></p>
+<p><img src="https://cloud.githubusercontent.com/assets/6175959/12092967/8d8853d8-b300-11e5-8a44-ec1245efdc74.png" alt="img">
+For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here</a>  </p>
 
 <h2>
 <a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended Information:</h2>
 
-<p>The different features; binary space partitioning, focus-follows-mouse and hotkey-system can all be enabled independently. This allows the user to choose what functionality fits their specific workflow.</p>
+<p>The different features; binary space partitioning, focus-follows-mouse and hotkey-system can all be enabled independently. This allows the user to choose what functionality fits their specific workflow.  </p>
 
 <p><em>Binary Space Partitioning:</em><br>
 Kwm tiles windows using a binary-tree structure. For information, check the usage section.  </p>
 
 <p><em>Focus-Follows-Mouse:</em><br>
-Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor, the menubar is not accessible. Autoraise gives a window focus and raises it to the front. By default <em>Kwm</em> is set to use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless a window is specifically made floating.</p>
+Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor, the menubar is not accessible. Autoraise gives a window focus and raises it to the front.  By default <em>Kwm</em> is set to use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless a window is specifically made floating.  </p>
 
 <p><em>System-Wide Hotkeys:</em><br>
-Kwm allows the user to bind and unbind hotkeys to commands through the Kwmc tool, using a bind and unbind option. 
-For more advanced use, there is also an instantaneous live-coding hotkey system and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled. </p>
+Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option. For more advanced use, there is also an instantaneous live-coding hotkey system and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.  </p>
 
 <p><em>Multiple monitor support (in progress):</em><br>
 There are different ways to move a window between monitors.<br>
 The first one is by using <code>kwmc screen -m prev|next|id</code>.<br>
 The other option is to make the window floating and manually move it with the mouse, then un-float it. When moving a window directly with the mouse, <em>Kwm</em> will detect on mouse-release that the window position has changed, and automatically make it floating (Due to technical limitations this event must occur on the monitor which currently holds the window).</p>
 
-<p>The first time a monitor is connected, the user may have to click several times on the screen for it to register. After this step, moving the mouse to a different monitor should activate the monitor automatically.</p>
+<p>The first time a monitor is connected, the user may have to click several times on the screen for it to register. After this step, moving the mouse to a different monitor should activate the monitor automatically.  </p>
 
 <h2>
 <a id="build" class="anchor" href="#build" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build:</h2>
 
-<p>Because there is no app bundle, <em>Kwm</em> has to be started from a terminal. To compile and run <em>Kwm</em>, simply run</p>
+<p>Because there is no app bundle, <em>Kwm</em> has to be started from a terminal.
+To compile and run <em>Kwm</em>, simply run</p>
 
 <pre><code>  make
   ./bin/kwm
 </code></pre>
 
-<p>By default, debug prints are enabled, and these can be turned off by runnning</p>
+<p>By default, debug prints are enabled, and these can be turned off by running</p>
 
 <pre><code>  make install
 </code></pre>
 
-<p>The hotkeys.cpp file can be edited live and recompiled separately using <code>make</code> again. By doing this, the user may change hotkeys without having to restart <em>Kwm</em>. </p>
+<p>The hotkeys.cpp file can be edited live and recompiled separately using <code>make</code> again.<br>
+By doing this, the user may change hotkeys without having to restart <em>Kwm</em>.  </p>
 
-<p>To make Kwm start automatically on login, run the following command the first time Kwm starts</p>
+<p>To make <em>Kwm</em> start automatically on login, run the following command the first time <em>Kwm</em> starts </p>
 
 <pre><code>  kwmc config launchd enable
 </code></pre>
@@ -91,69 +94,75 @@ The other option is to make the window floating and manually move it with the mo
 <h2>
 <a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration:</h2>
 
-<p>The default configuration file is <code>$HOME/.kwmrc</code> and is a script that contains <em>Kwmc</em> commands to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.</p>
+<p>The default configuration file is <code>$HOME/.kwmrc</code> and is a script that contains <em>Kwmc</em> commands<br>
+to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify<br>
+a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.  </p>
 
-<p>A sample config can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
+<p><em>Kwm</em> can set all of these settings while it is running, and so live testing of options is<br>
+possible before writing them into the config file.</p>
+
+<p>A sample config can be found within the <a href="examples">examples</a> directory.</p>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h2>
 
-<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space, using binary space partitioning. This will also happen once for any other space the user might switch to.</p>
+<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space using the tiling mode set in the config file. By default, it will use binary space partitioning. This will also happen once for any other space the user might switch to.</p>
 
-<p>When <em>Kwm</em> detects a new window, it inserts it into a window tree at the specified point using the split-mode specified. When a window is closed, it will be removed from the window tree and the tree will be rebalanced.</p>
+<p>When <em>Kwm</em> detects a new window, it is inserted into a window tree using an insertion point, with the given split-mode. When a window is closed, it will be removed from the window tree and the tree will be rebalanced. By default, the insertion point is the focused container, but a temporary insertion point can be set.  </p>
 
-<p>By default, the insertion point is the focused window, but the user can mark a temporary insertion point to be used instead for the next insertion.</p>
+<p>There are 3 types of split-modes available:</p>
 
-<p>There are 3 types of split-modes available, these are optimal (width/height ratio), vertical and horizontal. The default split-mode is set to optimal (width/height ratio).</p>
+<ul>
+<li>Optimal - uses width/height ratio (Default)</li>
+<li>Vertical</li>
+<li>Horizontal.<br>
+</li>
+</ul>
 
 <p>Example:</p>
 
-<pre><code>            a                       a                       a
-           / \         --&gt;         / \         --&gt;         / \    
-          1   2                   1   b                   1   b
-                                     / \                     / \
-                                    2   3                   c   3
-                                                           / \
-                                                          2   4
+<pre><code>          a                       a                       a
+         / \         --&gt;         / \         --&gt;         / \    
+        1   2                   1   b                   1   b
+                                   / \                     / \
+                                  2   3                   c   3
+                                                         / \
+                                                        2   4
 
----------------------     ---------------------     --------------------- 
-|         |         |     |         |         |     |         |    |    |
-|         |         |     |         |    2    |     |         | 2  |  4 |
-|         |         |     |         |    *    |     |         |    |    |
-|    1    |    2    |     |    1    |---------|     |    1    |---------|
-|         |    *    |     |         |         |     |         |         |
-|         |         |     |         |    3    |     |         |    3    |
-|         |         |     |         |         |     |         |         |
----------------------     ---------------------     ---------------------
+---------------------   ---------------------   --------------------- 
+|         |         |   |         |         |   |         |    |    |
+|         |         |   |         |    2    |   |         | 2  |  4 |
+|         |         |   |         |    *    |   |         |    |    |
+|    1    |    2    |   |    1    |---------|   |    1    |---------|
+|         |    *    |   |         |         |   |         |         |
+|         |         |   |         |    3    |   |         |    3    |
+|         |         |   |         |         |   |         |         |
+---------------------   ---------------------   ---------------------
 
 </code></pre>
 
-<p><em>Kwm</em> mainly consists of three panes so to speak. The main pane being the entire screen. After at least 1 window insertion has occurred, the screen will consist of either a left and right pane, or an upper and lower pane.</p>
-
-<p>The width of the left/right pane can be changed, as well as the height of the upper/lower pane. Currently these cannot occur simultaneously, and the type of panes created is decided by the main pane split-mode.</p>
-
-<p>If the main pane is split using vertical mode, a left and right pane is created.<br>
-If the main pane is split using horizontal mode, an upper and lower pane is created.  </p>
-
 <p>In addition to bsp, <em>Kwm</em> supports both monocle and floating spaces.<br>
 If a space is set to floating mode, nothing will be tiled for this space.<br>
-If a space is in monocle mode, every window will run fullscreen, and the user can switch between open windows using the kwmc command <code>window -f prev|next</code></p>
+If a space is in monocle mode, every window will run fullscreen, and the<br>
+user can switch between open windows using the kwmc command <code>window -f prev|next</code>.  </p>
+
+<p>If a window is not detected by Kwm, it is most likely due to a 'window role' mismatch.<br>
+Use the command <code>kwmc config add-role role application</code> to fix this.<br>
+See <a href="https://github.com/koekeishiya/kwm/issues/40">https://github.com/koekeishiya/kwm/issues/40</a> for information.  </p>
 
 <h2>
 <a id="default-hotkeys" class="anchor" href="#default-hotkeys" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default Hotkeys:</h2>
 
 <pre><code>- ctrl+alt+cmd:
     - t: toggle focus-mode (autofocus -&gt; autoraise -&gt; disabled)
-    - r: manually resize window to its containersize
-    - q: Quit Kwm
+    - r: manually resize window to its container
+    - q: quit kwm
 
-    - m: mark the container to use for next window split
+    - m: mark the focused container (new split will now happen here)
     - s: toggle split-type of existing container
 
-    - h: move vertical-splitter left (increase width of right-pane containers)
-    - l: move vertical-splitter right (increase width of left-pane containers)
-    - j: move horizontal-splitter down (increase height of upper-pane containers)
-    - k: move horizontal-splitter up (increase height of lower-pane containers)
+    - h: decrease split-ratio of focused container
+    - l: increase split-ratio of focused container
 
     - f: toggle window fullscreen
     - p: toggle window parent container
