@@ -36,10 +36,10 @@
 
 <p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping. It is now a tiling window manager that represents windows as the leaves of a binary tree. <em>Kwm</em> supports binary space partitioned, monocle and floating spaces.  </p>
 
-<p><em>Kwm</em> runs a local daemon to read messages and trigger functions.<br>
-<em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting and configuring how <em>Kwm</em> works. For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder.  </p>
-
 <p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, remapping keys, and most importantly global hotkeys.  </p>
+
+<p><em>Kwm</em> runs a local daemon to read messages and trigger functions.<br>
+<em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting and configuring how <em>Kwm</em> works. For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder. The Kwmc tool also has a built-in help system that can be accessed from the terminal using <code>kwmc help</code>.  </p>
 
 <p><em>Kwm</em> requires access to osx accessibility.<br>
 Tested on Osx El Capitan (10.11.1 / 10.11.2).</p>
@@ -66,7 +66,8 @@ There are different ways to move a window between monitors.<br>
 The first one is by using <code>kwmc screen -m prev|next|id</code>.<br>
 The other option is to make the window floating and manually move it with the mouse, then un-float it. When moving a window directly with the mouse, <em>Kwm</em> will detect on mouse-release that the window position has changed, and automatically make it floating (Due to technical limitations this event must occur on the monitor which currently holds the window).</p>
 
-<p>The first time a monitor is connected, the user may have to click several times on the screen for it to register. After this step, moving the mouse to a different monitor should activate the monitor automatically.  </p>
+<p>Moving the mouse to a different monitor should activate the monitor automatically.
+<code>kwmc screen -f prev|next|id</code> can also be used to give focus to a different monitor. </p>
 
 <h2>
 <a id="build" class="anchor" href="#build" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build:</h2>
@@ -98,8 +99,8 @@ By doing this, the user may change hotkeys without having to restart <em>Kwm</em
 to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify<br>
 a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.  </p>
 
-<p><em>Kwm</em> can set all of these settings while it is running, and so live testing of options is<br>
-possible before writing them into the config file.</p>
+<p>Kwm can apply all of these settings during runtime, and so live testing of options is possible<br>
+before writing them into the config file.  </p>
 
 <p>A sample config can be found within the <a href="examples">examples</a> directory.</p>
 
@@ -113,7 +114,7 @@ possible before writing them into the config file.</p>
 <p>There are 3 types of split-modes available:</p>
 
 <ul>
-<li>Optimal - uses width/height ratio (Default)</li>
+<li>Optimal - uses width/height ratio (default)</li>
 <li>Vertical</li>
 <li>Horizontal.<br>
 </li>
