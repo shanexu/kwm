@@ -47,6 +47,10 @@ Tested on El Capitan (10.11.1 / 10.11.2).</p>
 <p><img src="https://cloud.githubusercontent.com/assets/6175959/12092967/8d8853d8-b300-11e5-8a44-ec1245efdc74.png" alt="img">
 For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here</a>  </p>
 
+<p><a href="https://github.com/herrbischoff">herrbischoff</a> has re-created my bar from the screenshots as a widget<br>
+for <a href="http://tracesof.net/uebersicht/">Übersicht</a> for those that would like to have a decent bar with their setup.<br>
+This widget can be found here: <a href="https://github.com/herrbischoff/nerdbar.widget">https://github.com/herrbischoff/nerdbar.widget</a></p>
+
 <h2>
 <a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended Information:</h2>
 
@@ -61,13 +65,8 @@ Both autofocus and autoraise is available, however autofocus only redirects key 
 <p><em>System-Wide Hotkeys:</em><br>
 Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option. For more advanced use, there is also an instantaneous live-coding hotkey system and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.  </p>
 
-<p><em>Multiple monitor support (in progress):</em><br>
-<code>kwmc screen -f prev|next|id</code> can be used to give focus to a different monitor.<br>
-To move a window between monitors, <code>kwmc screen -m prev|next|id</code> can be used.<br>
-Making a window floating and manually moving it with the mouse also works.<br>
-If a tiled window is moved with the mouse, <em>Kwm</em> will detect on mouse-release<br>
-that the window position has changed, and automatically make it floating.<br>
-(Technical limitations: This event must occur on the monitor that tiled the window).</p>
+<p><em>Multiple monitor support:</em><br>
+Kwm does support external monitors and have commands that allow for focusing screens, moving windows, and capturing applications. For more information, see kwmc help screen and kwmc config capture.</p>
 
 <h2>
 <a id="build" class="anchor" href="#build" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build:</h2>
