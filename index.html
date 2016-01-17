@@ -36,7 +36,7 @@
 
 <p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping. It is now a tiling window manager that represents windows as the leaves of a binary tree. <em>Kwm</em> supports binary space partitioned, monocle and floating spaces.  </p>
 
-<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, remapping keys, and most importantly global hotkeys.  </p>
+<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, and different types of hotkeys.  </p>
 
 <p><em>Kwm</em> runs a local daemon to read messages and trigger functions.<br>
 <em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting with and configuring how <em>Kwm</em> works. For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder. The <em>Kwmc</em> tool also has a built-in help system that can be accessed from the terminal using <code>kwmc help</code>.  </p>
@@ -63,10 +63,10 @@ Kwm tiles windows using a binary-tree structure. For information, check the usag
 Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor, the menubar is not accessible. Autoraise gives a window focus and raises it to the front. By default <em>Kwm</em> is set to use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless a window is specifically made floating.  </p>
 
 <p><em>System-Wide Hotkeys:</em><br>
-Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option. For more advanced use, there is also an instantaneous live-coding hotkey system and this can be customized by editing hotkeys.cpp. The user may use an external program for running a specific command on keypress instead. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.  </p>
+Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option. These binds support the use of a single prefix, which may be bind-specific or global (apply to all binds). There are 3 types of hotkeys: global, global + blacklist applications, specified applications. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.  </p>
 
 <p><em>Multiple monitor support:</em><br>
-Kwm does support external monitors and have commands that allow for focusing screens, moving windows, and capturing applications. For more information, see kwmc help screen and kwmc config capture.</p>
+Kwm supports external monitors and have commands that allow for focusing screens, moving windows, and capturing applications. For more information, see kwmc help screen and kwmc config capture.</p>
 
 <h2>
 <a id="build" class="anchor" href="#build" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build:</h2>
@@ -82,9 +82,6 @@ To compile and start <em>Kwm</em>, simply run</p>
 
 <pre><code>  make install
 </code></pre>
-
-<p>The hotkeys.cpp file can be edited live and recompiled separately using <code>make</code> again.<br>
-By doing this, the user may change hotkeys without having to restart <em>Kwm</em>.  </p>
 
 <p>To make <em>Kwm</em> start automatically on login, run the following command the first time <em>Kwm</em> starts </p>
 
