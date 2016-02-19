@@ -3,128 +3,171 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="stylesheets/core.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+
+    <script type="text/javascript" src="javascripts/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
     <title>Kwm by koekeishiya</title>
   </head>
 
   <body>
-    <div id="container">
-      <div class="inner">
+    <a id="forkme_banner" href="https://github.com/koekeishiya/kwm">View on GitHub</a>
+    <div class="shell">
 
-        <header>
-          <h1>Kwm</h1>
-          <h2>Tiling window manager with focus follows mouse for OSX</h2>
-        </header>
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>Kwm</h1>
+            <h2>Tiling window manager with focus follows mouse for OSX</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/koekeishiya/kwm/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/koekeishiya/kwm/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/koekeishiya/kwm" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
+      <section id="downloads">
+        <span class="inner">
+          <a href="https://github.com/koekeishiya/kwm/zipball/master" class="zip"><em>download</em> .ZIP</a><a href="https://github.com/koekeishiya/kwm/tarball/master" class="tgz"><em>download</em> .TGZ</a>
+        </span>
+      </section>
 
-        <hr>
 
-        <section id="main_content">
-          <h2>
-<a id="brief-description" class="anchor" href="#brief-description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brief Description</h2>
+      <span class="banner-fix"></span>
 
-<p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping. It is now a tiling window manager that represents windows as the leaves of a binary tree. <em>Kwm</em> supports binary space partitioned, monocle and floating spaces.  </p>
 
-<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse, and different types of hotkeys.  </p>
+      <section id="main_content">
+        <h2>
+<a id="brief-description" class="anchor" href="#brief-description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Brief Description</h2>
 
-<p><em>Kwm</em> runs a local daemon to read messages and trigger functions.<br>
-<em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting with and configuring how <em>Kwm</em> works. For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder. The <em>Kwmc</em> tool also has a built-in help system that can be accessed from the terminal using <code>kwmc help</code>.  </p>
+<p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping.
+It is now a tiling window manager that represents windows as the leaves of a binary tree.
+<em>Kwm</em> supports binary space partitioned, monocle and floating spaces.</p>
 
-<p><em>Kwm</em> requires access to the OSX accessibility API.<br>
-Tested on El Capitan (10.11.1 / 10.11.2).</p>
+<p><em>Kwm</em> uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior
+to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse,
+and different types of hotkeys.</p>
 
-<p><img src="https://cloud.githubusercontent.com/assets/6175959/12092967/8d8853d8-b300-11e5-8a44-ec1245efdc74.png" alt="img">
-For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here</a>  </p>
+<p><em>Kwm</em> runs a local daemon to read messages and trigger functions.
+<em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting with and configuring how <em>Kwm</em> works.
+For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder.
+The <em>Kwmc</em> tool also has a built-in help system that can be accessed from the terminal using <code>kwmc help</code>.</p>
 
-<p><a href="https://github.com/herrbischoff">herrbischoff</a> has re-created my bar from the screenshots as a widget<br>
-for <a href="http://tracesof.net/uebersicht/">Übersicht</a> for those that would like to have a decent bar with their setup.<br>
+<p><em>Kwm</em> requires access to the OSX accessibility API.
+Tested on El Capitan (10.11.1 - 10.11.3).</p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/6175959/12651784/55c7debe-c5e8-11e5-836f-97f99f2b4529.png" alt="img">
+For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here.</a></p>
+
+<p><a href="https://github.com/herrbischoff">herrbischoff</a> has re-created my bar from the screenshots as a widget
+for <a href="http://tracesof.net/uebersicht/">Übersicht</a> for those that would like to have a decent bar with their setup.
 This widget can be found here: <a href="https://github.com/herrbischoff/nerdbar.widget">https://github.com/herrbischoff/nerdbar.widget</a></p>
 
 <h2>
-<a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended Information:</h2>
+<a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extended Information:</h2>
 
-<p>The different features; binary space partitioning, focus-follows-mouse and the hotkey-system can all be enabled independently. This allows the user to choose which functionality to enable depending on their workflow.  </p>
+<p>The different features; binary space partitioning, focus-follows-mouse and the hotkey-system can all be enabled
+independently. This allows the user to choose which functionality to enable depending on their workflow.</p>
 
-<p><em>Binary Space Partitioning:</em><br>
-Kwm tiles windows using a binary-tree structure. For information, check the usage section.  </p>
+<p><em>Binary Space Partitioning:</em>
+Kwm tiles windows using a binary-tree structure. For information, check the usage section.</p>
 
-<p><em>Focus-Follows-Mouse:</em><br>
-Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor, the menubar is not accessible. Autoraise gives a window focus and raises it to the front. By default <em>Kwm</em> is set to use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless a window is specifically made floating.  </p>
+<p><em>Focus-Follows-Mouse:</em>
+Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor,
+the menubar is not accessible. Autoraise gives a window focus and raises it to the front.  By default <em>Kwm</em> is set to
+use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless
+a window is specifically made floating.</p>
 
-<p><em>System-Wide Hotkeys:</em><br>
-Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option. These binds support the use of a single prefix, which may be bind-specific or global (apply to all binds). There are 3 types of hotkeys: global, global + blacklist applications, specified applications. Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.  </p>
+<p><em>System-Wide Hotkeys:</em>
+Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option.
+These binds support the use of a single prefix, which may be bind-specific or global (apply to all binds).
+There are 3 types of hotkeys: global, global + blacklist applications, specified applications.
+Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.</p>
 
-<p><em>Multiple monitor support:</em><br>
-Kwm supports external monitors and have commands that allow for focusing screens, moving windows, and capturing applications. For more information, see kwmc help screen and kwmc config capture.</p>
+<p><em>Multiple monitor support:</em>
+Kwm supports external monitors and have commands that allow for focusing screens,  moving windows, and capturing applications.
+For more information, see <code>kwmc help screen</code> and <code>kwmc config capture</code>.</p>
 
 <h2>
-<a id="build" class="anchor" href="#build" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build:</h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install:</h2>
 
-<p>Because there is no app bundle, <em>Kwm</em> has to be started from a terminal.<br>
-To compile and start <em>Kwm</em>, simply run</p>
+<p>A codesigned binary release is available through Homebrew</p>
 
-<pre><code>  make
-  ./bin/kwm
+<pre><code>  brew install homebrew/binary/kwm
 </code></pre>
 
-<p>By default, debug prints are enabled, and these can be turned off by running</p>
+<p>To compile from source</p>
 
 <pre><code>  make install
 </code></pre>
 
-<p>To make <em>Kwm</em> start automatically on login, run the following command the first time <em>Kwm</em> starts </p>
+<p>Build with debug information</p>
 
-<pre><code>  kwmc config launchd enable
+<pre><code>  make
 </code></pre>
 
+<p>To make <em>Kwm</em> start automatically on login through launchd, if compiled from source</p>
+
+<pre><code>  edit /path/to/kwm on line 9 of examples/com.koekeishiya.kwm.plist
+  cp examples/com.koekeishiya.kwm.plist ~/Library/LaunchAgents/
+</code></pre>
+
+<p>I would recommend for <em>Kwm</em> to be managed by launchd, as it otherwise requires
+the terminal application to have Accessibility Permissions (Not Recommended).</p>
+
 <h2>
-<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration:</h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration:</h2>
 
-<p>The default configuration file is <code>$HOME/.kwm/kwmrc</code> and is a script that contains <em>Kwmc</em> commands to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.  </p>
+<p>The default configuration file is <code>$HOME/.kwm/kwmrc</code> and is a script that contains <em>Kwmc</em> commands
+to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify
+a variety of settings, as well as run any command not restricted to <em>Kwmc</em>.</p>
 
-<p><em>Kwm</em> can apply all of these settings during runtime, and so live testing of options is possible<br>
+<p><em>Kwm</em> can apply all of these settings during runtime, and so live testing of options is possible
 before writing them into the config file.</p>
 
-<p>A sample config can be found within the <a href="examples">examples</a> directory.</p>
+<p>In addition to the above, the file <code>$HOME/.kwm/init</code> is a shell script that will be ran after
+<em>Kwm</em> has finished setting up the internal configuration.</p>
+
+<p>A sample config and init file can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
 
 <h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage:</h2>
 
-<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space using the tiling mode set in the config file. By default, it will use binary space partitioning. This will also happen once for any other space the user might switch to.</p>
+<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space using the tiling mode set in the config file.
+By default, it will use binary space partitioning. This will also happen once for any other space the user might switch to.</p>
 
-<p>When <em>Kwm</em> detects a new window, it is inserted into a window tree using an insertion point, with the given split-mode. When a window is closed, it will be removed from the window tree and the tree will be rebalanced. By default, the insertion point is the focused container, but a temporary insertion point can be set.  </p>
+<p>When <em>Kwm</em> detects a new window, it is inserted into a window tree using an insertion point, with the given split-mode.
+When a window is closed, it will be removed from the window tree and the tree will be rebalanced.
+By default, the insertion point is the focused container, but a temporary insertion point can be set.</p>
 
 <p>There are 3 types of split-modes available:</p>
 
 <ul>
 <li>Optimal - uses width/height ratio (default)</li>
 <li>Vertical</li>
-<li>Horizontal<br>
-</li>
+<li>Horizontal</li>
 </ul>
 
 <p>Example:</p>
 
 <pre><code>          a                       a                       a
-         / \         --&gt;         / \         --&gt;         / \    
+         / \         --&gt;         / \         --&gt;         / \
         1   2                   1   b                   1   b
                                    / \                     / \
                                   3   2                   c   2
                                                          / \
                                                         4   3
 
----------------------   ---------------------   --------------------- 
+---------------------   ---------------------   ---------------------
 |         |         |   |         |         |   |         |    |    |
 |         |         |   |         |    3    |   |         | 4  |  3 |
 |         |         |   |         |    *    |   |         | *  |    |
@@ -136,29 +179,44 @@ before writing them into the config file.</p>
 
 </code></pre>
 
-<p>By taking advantage of the fact that bsp-trees can be saved and restored<br>
-from file, it is trivial to create layouts that can be loaded on the press<br>
-of a hotkey. This allows the user to quickly get a given space to tile<br>
-according to their needs as they change through the day.<br>
-To save/restore a bsp-layout, see <code>kwmc help tree</code>.  </p>
+<p>By taking advantage of the fact that bsp-trees can be saved and restored
+from file, it is trivial to create layouts that can be loaded on the press
+of a hotkey. This allows the user to quickly get a given space to tile
+according to their needs as they change through the day.
+To save/restore a bsp-layout, see <code>kwmc help tree</code>.</p>
 
-<p>In addition to bsp, <em>Kwm</em> supports both monocle and floating spaces.<br>
-If a space is set to floating mode, nothing will be tiled for this space.<br>
-If a space is in monocle mode, every window will run fullscreen, and the<br>
-user can switch between open windows using the kwmc command <code>window -f prev|next</code>.  </p>
+<p>In addition to bsp, <em>Kwm</em> supports both monocle and floating spaces.
+If a space is set to floating mode, nothing will be tiled for this space.
+If a space is in monocle mode, every window will run fullscreen, and the
+user can switch between open windows using the kwmc command <code>window -f prev|next</code>.</p>
 
-<p>If a window is not detected by Kwm, it is most likely due to a 'window role' mismatch.<br>
-Use the command <code>kwmc config add-role role application</code> to fix this.<br>
-See <a href="https://github.com/koekeishiya/kwm/issues/40">https://github.com/koekeishiya/kwm/issues/40</a> for information.  </p>
-        </section>
+<p>If a window is not detected by Kwm, it is most likely due to a 'window role' mismatch.
+Use the command <code>kwmc config add-role role application</code> to fix this.
+See <a href="https://github.com/koekeishiya/kwm/issues/40">https://github.com/koekeishiya/kwm/issues/40</a> for information.</p>
 
-        <footer>
-          Kwm is maintained by <a href="https://github.com/koekeishiya">koekeishiya</a><br>
-          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
+<h3>
+<a id="donate" class="anchor" href="#donate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Donate</h3>
 
-        
-      </div>
+<p>First of all, Kwm will always be free and open source, however some users have
+expressed interest in some way to show their support.</p>
+
+<p>If you wish to do so, I have set up a patreon <a href="https://www.patreon.com/aasvi">here</a>.</p>
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <p>this project by <a href="https://github.com/koekeishiya">koekeishiya</a> can be found on <a href="https://github.com/koekeishiya/kwm">GitHub</a></p>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
     </div>
+
+    
   </body>
 </html>
