@@ -49,6 +49,8 @@
         <h2>
 <a id="brief-description" class="anchor" href="#brief-description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Brief Description</h2>
 
+<p><strong>WARNING:</strong> The master branch is considered bleeding edge and changes may break configurations at any time! Check the latest release for a stable version.</p>
+
 <p><a href="https://koekeishiya.github.io/kwm"><em>Kwm</em></a> started as a simple project to get true focus-follows-mouse support on OSX through event tapping.
 It is now a tiling window manager that represents windows as the leaves of a binary tree.
 <em>Kwm</em> supports binary space partitioned, monocle and floating spaces.</p>
@@ -59,14 +61,13 @@ and different types of hotkeys.</p>
 
 <p><em>Kwm</em> runs a local daemon to read messages and trigger functions.
 <em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting with and configuring how <em>Kwm</em> works.
-For a list of various commands that can be issued, check the readme located within the <em>kwmc</em> folder.
-The <em>Kwmc</em> tool also has a built-in help system that can be accessed from the terminal using <code>kwmc help</code>.</p>
+For a list of various commands that can be issued, check the readme located within the <em>Kwmc</em> folder.</p>
 
 <p>For in depth information, sample configurations, and useful scripts to implement new features by combining
-kwmc commands, check out the <a href="https://github.com/koekeishiya/kwm/wiki">wiki</a></p>
+<em>Kwmc</em> commands, check out the <a href="https://github.com/koekeishiya/kwm/wiki">wiki</a></p>
 
 <p><em>Kwm</em> requires access to the OSX accessibility API.
-Tested on El Capitan (10.11.1 - 10.11.3).</p>
+Tested on El Capitan (10.11.1 - 10.11.4).</p>
 
 <p><img src="https://cloud.githubusercontent.com/assets/6175959/12651784/55c7debe-c5e8-11e5-836f-97f99f2b4529.png" alt="img">
 For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here.</a></p>
@@ -82,7 +83,7 @@ This widget can be found here: <a href="https://github.com/herrbischoff/nerdbar.
 independently. This allows the user to choose which functionality to enable depending on their workflow.</p>
 
 <p><em>Binary Space Partitioning:</em>
-Kwm tiles windows using a binary-tree structure. For information, check the usage section.</p>
+<em>Kwm</em> tiles windows using a binary-tree structure. For information, check the usage section.</p>
 
 <p><em>Focus-Follows-Mouse:</em>
 Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor,
@@ -91,14 +92,13 @@ use autoraise as it is meant to be used alongside the tiling functionality, and 
 a window is specifically made floating.</p>
 
 <p><em>System-Wide Hotkeys:</em>
-Kwm allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option.
+<em>Kwm</em> allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option.
 These binds support the use of a single prefix, which may be bind-specific or global (apply to all binds).
 There are 3 types of hotkeys: global, global + blacklist applications, specified applications.
 Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.</p>
 
 <p><em>Multiple monitor support:</em>
-Kwm supports external monitors and have commands that allow for focusing screens,  moving windows, and capturing applications.
-For more information, see <code>kwmc help screen</code> and <code>kwmc config capture</code>.</p>
+<em>Kwm</em> supports external monitors and have commands that allow for focusing screens, and moving windows.</p>
 
 <h2>
 <a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install:</h2>
@@ -140,10 +140,10 @@ before writing them into the config file.</p>
 <p>In addition to the above, the file <code>$HOME/.kwm/init</code> is a shell script that will be ran after
 <em>Kwm</em> has finished setting up the internal configuration.</p>
 
-<p>A sample config and init file can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
+<p>A sample config file can be found within the <a href="examples">examples</a> directory.</p>
 
-<p>Note: The sample configuration and information is updated to follow Kwm @ master. If you are running a release
-version of Kwm, be aware that the documentation in this github repository may not always apply.</p>
+<p><strong>Note:</strong> The sample configuration and information is updated to follow <em>Kwm</em> @ master. If you are running a release
+version, check the documentation provided at that particular tag.</p>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage:</h2>
@@ -215,17 +215,17 @@ By default, the insertion point is the focused container, but a temporary insert
 </code></pre>
 
 <p>In addition to bsp, <em>Kwm</em> supports both monocle and floating spaces.
-If a space is set to floating mode, Kwm will ignore this space.
+If a space is set to floating mode, <em>Kwm</em> will ignore this space.
 If a space is in monocle mode, every window will run fullscreen.</p>
 
-<p>If a window is not detected by Kwm, it is most likely due to a 'window role' mismatch.
+<p>If a window is not detected by <em>Kwm</em>, it is most likely due to a 'window role' mismatch.
 Use the command <code>kwmc config add-role role application</code> to fix this.
 See <a href="https://github.com/koekeishiya/kwm/issues/40">https://github.com/koekeishiya/kwm/issues/40</a> for information.</p>
 
 <h3>
 <a id="donate" class="anchor" href="#donate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Donate</h3>
 
-<p>First of all, Kwm will always be free and open source, however some users have
+<p>First of all, <em>Kwm</em> will always be free and open source, however some users have
 expressed interest in some way to show their support.</p>
 
 <p>If you wish to do so, I have set up a patreon <a href="https://www.patreon.com/aasvi">here</a>.</p>
