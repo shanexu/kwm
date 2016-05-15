@@ -114,7 +114,7 @@ header, footer, section {
 
 div.shell {
   display: block;
-  width: 670px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -263,7 +263,7 @@ span.banner-fix {
   display: block;
   height: 19px;
   position: absolute;
-  width: 670px;
+  width: 800px;
   top: 19px;
 }
 
@@ -566,4 +566,17 @@ dd p:first-child {
   margin: .8em 0;
   font-size: .85em;
   font-style: italic;
+}
+
+.code-examples-compact pre {
+  margin: 0 0 1em 0;
+  border-bottom: 0;
+  padding: 0.2em 0.7em;
+}
+
+.code-examples-compact p {
+  margin: 0;
+  background-color: #DAD3C9;
+  padding: 0.3em 0.7em;
+  font-size: 13px;
 }
