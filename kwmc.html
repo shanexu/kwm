@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="stylesheets/core.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+
+    <script type="text/javascript" src="javascripts/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>Kwm by koekeishiya</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="https://github.com/koekeishiya/kwm">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>Kwm</h1>
+            <h2>Tiling window manager with focus follows mouse for OSX</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      <section id="downloads">
+        <span class="inner">
+          <a href="https://github.com/koekeishiya/kwm/zipball/master" class="zip"><em>download</em> .ZIP</a><a href="https://github.com/koekeishiya/kwm/tarball/master" class="tgz"><em>download</em> .TGZ</a>
+        </span>
+      </section>
+
+      <span class="banner-fix"></span>
+
+      <section id="main_content">
+        <h2>
+<a id="brief-description" class="anchor" href="#kwmc-reference" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Kwmc Reference</h2>
+
+<p><em>Kwmc</em> is a program used to write to <em>Kwm</em>'s socket. The following are instructions for enabling the man file</p>
+
+<pre><code>gzip kwmc.1
+cp kwmc.1.gz /usr/local/share/man/man1
+man kwmc
+</code></pre>
+
+<p>A command with <code>{foo}</code> means that an argument of that type is required.<br>
+A command with <code>{foo?}</code> means that an argument is optional.</p>
+
+<h3><a id="glossary" class="anchor" href="#glossary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of Contents:</h3>
+
+<ul>
+<li><a href="#create-keybindings">Create Keybindings</a>
+  <ul><li><a href="#binding-modes">Binding Modes</a></li></ul>
+</li>
+<li><a href="#configure-kwm">Configure Kwm</a>
+  <ul>
+    <li><a href="#window-borders">Window Borders</a></li>
+    <li><a href="#global-defaults">Global Defaults</a></li>
+    <li><a href="#display-defaults">Display Defaults</a></li>
+    <li><a href="#space-defaults">Space Defaults</a></li>
+  </ul>
+</li>
+<li><a href="#configure-kwm">Interact with Kwm</a>
+  <ul>
+    <li><a href="#windows">Windows</a></li>
+    <li><a href="#displays">Displays</a></li>
+    <li><a href="#spaces">Spaces</a></li>
+    <li><a href="#tree">Tree</a></li>
+    <li><a href="#scratchpad">Scratchpad</a></li>
+  </ul>
+</li>
+<li><a href="#configure-kwm">Query current state</a>
+  <ul>
+    <li><a href="#window-query">Windows</a></li>
+    <li><a href="#tiling-query">Tiling</a></li>
+    <li><a href="#spaces-query">Spaces</a></li>
+  </ul>
+</li>
+</ul>
+
+<h2><a id="create-keybindings" class="anchor" href="#create-keybindings" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Keybindings</h2>
+
+<p>(My keybinds can be found <a href="https://gist.githubusercontent.com/koekeishiya/8760be63d6171e150278/raw/9ad1816abd2daf14a90068a8f0d45dcca373611b/Kwm:%2520binds">here</a> as an example)</p>
+
+<p>Kwm supports two different ways to create a keybind, either through the key-symbol or the key-code.</p>
+
+<ul>
+<li><code>bindsym</code>: accepts a symbol / letter</li>
+<li><code>bindcode</code>: accepts a hexadecimal keycode</li>
+</ul>
+
+<pre><code>kwmc bindsym mode+mod+mod+mod-key command {opt?}
+kwmc bindcode mode+mod+mod+mod-hex command {opt?}</code></pre>
+
+<p>To run an external command, the prefix 'exec' must be used.</p>
+
+<p>The ';' is interpreted as a separator and allows for Kwm to perform
+multiple commands in a single bind. For more advanced use, make shellscripts.</p>
+
+<pre><code>kwmc bindsym mode+mod+mod+mod-key cmd_1 ; cmd_2 ; cmd_n {opt}
+        {opt}: {app,app,app} -e | {app,app,app} -i
+                -e: not enabled for listed applications
+                -i: only enabled for listed applications</code></pre>
+
+<p>Any keybinds created with the above commands, will be consumed by Kwm.
+If you wish to have a keybind that performs some action and still passes
+through to the target application, the below command can be used.</p>
+
+<pre><code>kwmc bindsym_passthrough ..
+kwmc bindcode_passthrough ..</code></pre>
+
+<p>To remove a keybind, the unbind command can be used.</p>
+
+<pre><code>kwmc unbindsym mode+mod+mod+mod-key
+kwmc unbindcode mode+mod+mod+mod-hex</code></pre>
+
+<h4 id="binding-modes">Binding Modes</h4>
+
+<p>Kwm supports multiple binding-modes. A binding-mode is a set of keybinds
+that will only be active when Kwm enters that state. The mode can be specified
+through the `mode` symbol as seen in the above commands. If no mode is set,
+it will be added to a `default` mode.</p>
+
+<p>A binding-mode can be configured to activate a specific mode when a timeout is reached.
+For this to work, the mode must enable the prefix flag, as well as specify a timeout
+duration. The restore option will default to the `default` mode.
+The color of the focused-border will be changed to the color associated with the active
+mode, if one has been set.</p>
+
+<pre><code>
+kwmc mode my_mode prefix on
+kwmc mode my_mode timeout 0.75
+kwmc mode my_mode restore mode_to_activate
+kwmc mode my_mode color 0xaarrggbb</code></pre>
+
+<p>To activate a certain binding-mode, the following command must be used.</p>
+
+<pre><code>kwmc mode activate my_mode</code></pre>
+
+<h2><a id="configure-kwm" class="anchor" href="#configure-kwm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configure Kwm</h2>
+
+<section class="code-examples-compact">
+<p>Reload config ($HOME/.kwm/kwmrc)</p>
+<pre><code>kwmc config reload</code></pre>
+
+<p>Set modifier used by OSX space-hotkeys (Used by `kwmc space -f ..`)</p>
+<pre><code>kwmc config spaces-key {modifiers}
+    {modifiers}: mod+mod+mod</code></pre>
+
+<p>Override the optimal split-mode (golden ratio -&gt; 1.618)</p>
+<pre><code>kwmc config optimal-ratio {ratio}
+    {ratio}: floating point number</code></pre>
+
+<p>The container position to be occupied by new windows</p>
+<pre><code>kwmc config spawn {side}
+    {side}: left | right</code></pre>
+
+<p>Automatically float non-resizable windows</p>
+<pre><code>kwmc config float-non-resizable {enabled}
+    {enabled}: on | off</code></pre>
+
+<p>Automatically reapply container if window changes size</p>
+<pre><code>kwmc config lock-to-container {enabled}
+    {enabled}: on | off</code></pre>
+
+<p>Set status of focus-follows-mouse</p>
+<pre><code>kwmc config focus-follows-mouse {mode}
+    {mode}: toggle | autofocus | autoraise | off</code></pre>
+
+<p>Disable focus-follows-mouse when a floating window gains focus</p>
+<pre><code>kwmc config standby-on-float {enabled}
+    {enabled}: on | off</code></pre>
+
+<p>Allow focus commands to wrap</p>
+<pre><code>kwmc config cycle-focus {mode}
+    {mode}: screen | off</code></pre>
+
+<p>Set state of mouse-follows-focus</p>
+<pre><code>kwmc config mouse-follows-focus {enabled}
+    {enabled}: on | off</code></pre>
+
+<p>Enable hotkeys registered using `bindsym` and `bindcode`</p>
+<pre><code>kwmc config hotkeys {enabled}
+    {enabled}: on | off</code></pre>
+
+<p>Set split-ratio for containers</p>
+<pre><code>kwmc config split-ratio {ratio}
+    {ratio}: 0 &lt; floating point number &gt; 1</code></pre>
+
+<p>Create rules that applies to specific applications or windows</p>
+See (https://github.com/koekeishiya/kwm/issues/268) for details</p>
+<pre><code>kwmc rule owner="" name="" properties={float=""; display=""; space=""; scratchpad=""; role=""} except=""</code></pre>
+
+<p>The following allows Kwm to tile borderless iTerm2 windows</p>
+<pre><code>kwmc rule owner="iTerm2" properties={role="AXDialog"}</code></pre>
+</section>
+
+<h4 id="window-borders">Window Borders</h4>
+
+<section class="code-examples-compact">
+<p>Enable window border</p>
+<pre><code>kwmc config border {type} {enabled}
+    {type}: focused | marked
+    {enabled}: on | off</code></pre>
+
+<p>Set window border thickness</p>
+<pre><code>kwmc config border {type} size {thickness}
+    {type}: focused | marked
+    {thickness}: number</code></pre>
+
+<p>Set window border color</p>
+<pre><code>kwmc config border {type} color {color}
+    {type}: focused | marked
+    {color}: 0xaarrggbb</code></pre>
+
+<p>Set window border radius</p>
+<pre><code>kwmc config border {type} radius {radius}
+    {type}: focused | marked
+    {radius}: number</code></pre>
+</section>
+
+<h4 id="global-defaults">Global defaults</h4>
+
+<section class="code-examples-compact">
+<p>Set default tiling mode for Kwm</p>
+<pre><code>kwmc config tiling {mode}
+    {mode}: bsp | monocle | float | off</code></pre>
+<p>Set default padding</p>
+<pre><code>kwmc config padding {padding}
+    {padding}: top bottom left right</code></pre>
+<p>Set default container gaps</p>
+<pre><code>kwmc config gap {gap}
+    {gap}: vertical horizontal</code></pre>
+</section>
+
+<h4 id="display-defaults">Display Defaults</h4>
+
+<section class="code-examples-compact">
+<p>Override default tiling mode for display</p>
+<pre><code>kwmc config display display_id mode {mode}
+    {mode}: bsp | monocle | float</code></pre>
+<p>Override default padding for display</p>
+<pre><code>kwmc config display display_id padding {padding}
+    {padding}: top bottom left right</code></pre>
+<p>Override default gap for display</p>
+<pre><code>kwmc config display display_id gap {gap}
+    {gap}: vertical horizontal</code></pre>
+</section>
+
+<h4 id="space-defaults">Space Defaults</h4>
+
+<section class="code-examples-compact">
+<p>Set default bsp-layout for space</p>
+<pre><code>kwmc config space display_id space_id tree {layout_name}</code></pre>
+<p>Set default name for space</p>
+<pre><code>kwmc config space display_id space_id name {name}</code></pre>
+<p>Override default tiling mode for space</p>
+<pre><code>kwmc config space display_id space_id mode {mode}
+    {mode}: bsp | monocle | float</code></pre>
+<p>Override default padding for space</p>
+<pre><code>kwmc config space display_id space_id padding {padding}
+    {padding}: top bottom left right</code></pre>
+<p>Override default gaps for space</p>
+<pre><code>kwmc config space display_id space_id gap {gap}
+    {gap}: vertical horizontal</code></pre>
+
+</section>
+
+<h2><a id="interact-with-kwm" class="anchor" href="#interact-with-kwm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Interact with Kwm</h2>
+
+<section class="code-examples-compact">
+<p>Quit Kwm</p>
+<pre><code>kwmc quit</code></pre>
+
+<p>Automatically emit keystrokes</p>
+<pre><code>kwmc write {some text}</code></pre>
+
+<p>Send a key press</p>
+<pre><code>kwmc press {key}
+    {key}: mod+mod+mod-key</code></pre>
+</section>
+
+<h4 id="windows">Windows</h4>
+
+<section class="code-examples-compact">
+<p>Change focus between windows</p>
+<pre><code>kwmc window -f {selector}
+    {selector}: north | east | south | west | prev | next | curr | window_id</code></pre>
+
+<p>Change focus between monocle-subtree windows</p>
+<pre><code>kwmc window -fm {selector}
+    {selector}: prev | next</code></pre>
+
+<p>Swap window position</p>
+<pre><code>kwmc window -s {selector}
+    {selector}: north | east | south | west | prev | next | mark</code></pre>
+
+<p>Adjust container zoom</p>
+<pre><code>kwmc window -z {mode}
+    {mode}: fullscreen | parent</code></pre>
+
+<p>Toggle window floating</p>
+<pre><code>kwmc window -t {selector}
+    {selector}: focused</code></pre>
+
+<p>Resize window to container size</p>
+<pre><code>kwmc window -r {selector}
+    {selector}: focused</code></pre>
+
+<p>Modify container split-mode of window</p>
+<pre><code>kwmc window -c split-mode {mode}
+    {mode}: toggle</code></pre>
+
+<p>Modify container type of window</p>
+<pre><code>kwmc window -c type {type}
+    {type}: monocle | bsp | toggle</code></pre>
+
+<p>Modify container split-ratio of window</p>
+<pre><code>kwmc window -c reduce {amount}
+kwmc window -c expand {amount}
+    {amount}: 0 &lt; floating point number &gt; 1</code></pre>
+
+<p>Modify container split-ratio of window in direction</p>
+<pre><code>kwmc window -c reduce {amount} {direction}
+kwmc window -c expand {amount} {arg}
+    {amount}: 0 &lt; floating point number &gt; 1
+    {direction}: north | east | south | west</code></pre>
+
+<p>Move window on the current space</p>
+<pre><code>kwmc window -m {direction}
+    {direction}: north | east | south | west | mark | xoff yoff</code></pre>
+
+<p>Move window to a different space</p>
+<pre><code>kwmc window -m space {space}
+    {space}: workspace_id | previous | left | right</code></pre>
+
+<p>Move window to an external display</p>
+<pre><code>kwmc window -m display {display}
+    {display}: display_id | prev | next</code></pre>
+
+<p>Mark the focused window</p>
+<pre><code>kwmc window -mk focused</code></pre>
+
+<p>Mark window in direction of focused window</p>
+<pre><code>kwmc window -mk {direction} {wrap}
+    {direction}: north | east | south | west
+    {wrap}: wrap | nowrap</code></pre>
+</section>
+
+<h4 id="displays">Displays</h4>
+
+<section class="code-examples-compact">
+<p>Change focus between displays</p>
+<pre><code>kwmc display -f {display}
+    {display}: prev | next | display_id</code></pre>
+
+<p>Set active split-mode of display</p>
+<pre><code>kwmc display -c {mode}
+    {mode}: optimal | vertical | horizontal</code></pre>
+</section>
+
+
+<h4 id="spaces">Spaces</h4>
+
+<section class="code-examples-compact">
+<p>Set name of active space</p>
+<pre><code>kwmc space -n name</code></pre>
+
+<p>Change focus between spaces</p>
+<pre><code>kwmc space -f {space}
+    {space}: workspace_id | previous | left | right</code></pre>
+
+<p>Change focus between spaces, skipping transitions animation<br>
+(mission control does not update, requires `killall Dock`)</p>
+<pre><code>kwmc space -fExperimental {space}
+    {space}: workspace_id | name | previous | left | right</code></pre>
+
+<p>Set tiling mode of active space</p>
+<pre><code>kwmc space -t {mode}
+    {mode}: bsp | monocle | float</code></pre>
+
+<p>Resize all windows to their container size</p>
+<pre><code>kwmc space -r {opt}
+    {opt}: focused</code></pre>
+
+<p>Adjust padding of active space</p>
+<pre><code>kwmc space -p {mode} {side}
+    {mode}: increase | decrease
+    {side}: all | left | right | top | bottom</code></pre>
+
+<p>Adjust gaps of active space</p>
+<pre><code>kwmc space -g {mode} {direction}
+    {mode}: increase | decrease
+    {direction}: all | vertical | horizontal</code></pre>
+</section>
+
+<h4 id="tree">Tree</h4>
+
+<section class="code-examples-compact">
+<p>Manage pseudo containers</p>
+<pre><code>kwmc tree -pseudo {action}
+    {action}: create | destroy</code></pre>
+
+<p>Rotate window-tree of current space</p>
+<pre><code>kwmc tree rotate {degrees}
+    {degrees}: 90 | 180 | 270</code></pre>
+
+<p>Save bsp-layout of window-tree of current space</p>
+<pre><code>kwmc tree save {file}
+    {file}: filename</code></pre>
+
+<p>Restore bsp-layout of window-tree of current space</p>
+<pre><code>kwmc tree restore {file}
+    {file}: filename</code></pre>
+</section>
+
+<h4 id="scratchpad">Scratchpad</h4>
+
+<section class="code-examples-compact">
+<p>Add the focused window to the first available scratchpad slot</p>
+<pre><code>kwmc scratchpad add</code></pre>
+
+<p>Remove the focused window from the scratchpad</p>
+<pre><code>kwmc scratchpad remove</code></pre>
+
+<p>List all occupied scratchpad slots and their associated window</p>
+<pre><code>kwmc scratchpad list</code></pre>
+
+<p>Toggle visibility of the window associated with the provided slot</p>
+<pre><code>kwmc scratchpad toggle {visibility}
+    {visibility}: number</code></pre>
+</section>
+
+<h2><a id="query-current-state" class="anchor" href="#query-current-state" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Query current state</h2>
+
+<section class="code-examples-compact">
+<p>Get the state of borders</p>
+<pre><code>kwmc query border {type}
+    {type}: focused | marked</code></pre>
+
+<p>Get active cycle-focus mode</p>
+<pre><code>kwmc query cycle-focus</code></pre>
+
+<p>Get state of float-non-resizable</p>
+<pre><code>kwmc query float-non-resizable</code></pre>
+
+<p>Get state of lock-to-container</p>
+<pre><code>kwmc query lock-to-container</code></pre>
+
+<p>Get state of standby-on-float</p>
+<pre><code>kwmc query standby-on-float</code></pre>
+
+<p>Get state of focus-follows-mouse</p>
+<pre><code>kwmc query focus-follows-mouse</code></pre>
+
+<p>Get state of mouse-follows-focus</p>
+<pre><code>kwmc query mouse-follows-focus</code></pre>
+</section>
+
+<h4 id="window-query">Windows</h4>
+
+<section class="code-examples-compact">
+<p>Get property of focused window</p>
+<pre><code>kwmc query window focused {property}
+    {property}: id | name | split | float</code></pre>
+
+<p>Get id of window in direction of focused window</p>
+<pre><code>kwmc query window focused {direction}
+    {direction}: north | east | south | west</code></pre>
+
+<p>Get property of marked window</p>
+<pre><code>kwmc query window marked {property}
+    {property}: id | name | split | float</code></pre>
+
+<p>Check if two windows have the same parent</p>
+<pre><code>kwmc query window parent windiw_id1 window_id2</code></pre>
+
+<p>Get child position of window (left or right)</p>
+<pre><code>kwmc query window child window_id</code></pre>
+
+<p>Get list of visible windows on active space</p>
+<pre><code>kwmc query window list</code></pre>
+</section>
+
+<h4 id="tiling-query">Tiling</h4>
+
+<section class="code-examples-compact">
+<p>Get tilling mode to be used for new spaces</p>
+<pre><code>kwmc query tiling mode</code></pre>
+
+<p>Get child position used by new windows</p>
+<pre><code>kwmc query tiling spawn</code></pre>
+
+<p>Get the mode used for binary splits</p>
+<pre><code>kwmc query tiling split-mode</code></pre>
+
+<p>Get the ratio used for binary splits</p>
+<pre><code>kwmc query tiling split-ratio</code></pre>
+</section>
+
+<h4 id="spaces-query">Spaces</h4>
+
+<section class="code-examples-compact">
+<p>Get tag of the active space</p>
+<pre><code>kwmc query space active tag</code></pre>
+
+<p>Get name of the active space</p>
+<pre><code>kwmc query space active name</code></pre>
+
+<p>Get id of the active space</p>
+<pre><code>kwmc query space active id</code></pre>
+
+<p>Get name of the previously active space</p>
+<pre><code>kwmc query space previous name</code></pre>
+
+<p>Get id of the previously active space</p>
+<pre><code>kwmc query space previous id</code></pre>
+
+<p>Get list of all spaces on focused display</p>
+<pre><code>kwmc query space list</code></pre>
+</section>
+
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <p>this project by <a href="https://github.com/koekeishiya">koekeishiya</a> can be found on <a href="https://github.com/koekeishiya/kwm">GitHub</a></p>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+
+  </body>
+</html>
