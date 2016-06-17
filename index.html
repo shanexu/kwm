@@ -67,14 +67,12 @@ For a list of various commands that can be issued, check the readme located with
 <em>Kwmc</em> commands, check out the <a href="https://github.com/koekeishiya/kwm/wiki">wiki</a></p>
 
 <p><em>Kwm</em> requires access to the OSX accessibility API.
-Tested on El Capitan (10.11.1 - 10.11.4).</p>
+Tested on El Capitan (10.11.1 - 10.11.5).</p>
 
-<p><img src="https://cloud.githubusercontent.com/assets/6175959/12651784/55c7debe-c5e8-11e5-836f-97f99f2b4529.png" alt="img"><br>
+<p><img src="https://cloud.githubusercontent.com/assets/6175959/16150759/6822282e-3499-11e6-9a2e-5c61af2caba7.png" alt="img"><br>
 For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here.</a></p>
 
-<p><a href="https://github.com/herrbischoff">herrbischoff</a> has re-created my bar from the screenshots as a widget
-for <a href="http://tracesof.net/uebersicht/">Übersicht</a> for those that would like to have a decent bar with their setup.
-This widget can be found here: <a href="https://github.com/herrbischoff/nerdbar.widget">https://github.com/herrbischoff/nerdbar.widget</a></p>
+The bar seen in the above screenshot can be found <a href="https://github.com/koekeishiya/nerdbar.widget">here.</a></p>
 
 <h2>
 <a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extended Information:</h2>
@@ -84,12 +82,6 @@ independently. This allows the user to choose which functionality to enable depe
 
 <p><em>Binary Space Partitioning:</em>
 <em>Kwm</em> tiles windows using a binary-tree structure. For information, check the usage section.</p>
-
-<p><em>Focus-Follows-Mouse:</em>
-Both autofocus and autoraise is available, however autofocus only redirects key input to the window below the cursor,
-the menubar is not accessible. Autoraise gives a window focus and raises it to the front.  By default <em>Kwm</em> is set to
-use autoraise as it is meant to be used alongside the tiling functionality, and so windows should not overlap unless
-a window is specifically made floating.</p>
 
 <p><em>System-Wide Hotkeys:</em>
 <em>Kwm</em> allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option.
@@ -142,10 +134,7 @@ before writing them into the config file.</p>
 <p>In addition to the above, the file <code>$HOME/.kwm/init</code> is a shell script that will be ran after
 <em>Kwm</em> has finished setting up the internal configuration.</p>
 
-<p>A sample config file can be found within the <a href="examples">examples</a> directory.</p>
-
-<p><strong>Note:</strong> The sample configuration and information is updated to follow <em>Kwm</em> @ master. If you are running a release
-version, check the documentation provided at that particular tag.</p>
+<p>A sample config file can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage:</h2>
@@ -221,8 +210,8 @@ If a space is set to floating mode, <em>Kwm</em> will ignore this space.
 If a space is in monocle mode, every window will run fullscreen.</p>
 
 <p>If a window is not detected by <em>Kwm</em>, it is most likely due to a 'window role' mismatch.
-Use the command <code>kwmc config add-role role application</code> to fix this.
-See <a href="https://github.com/koekeishiya/kwm/issues/40">https://github.com/koekeishiya/kwm/issues/40</a> for information.</p>
+Use the window rule system to fix this.
+See <a href="https://github.com/koekeishiya/kwm/issues/40">#issue 40</a> for information.</p>
 
 <h3>
 <a id="donate" class="anchor" href="#donate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Donate</h3>
