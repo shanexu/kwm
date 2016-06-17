@@ -47,12 +47,7 @@
         <h2>
 <a id="brief-description" class="anchor" href="#kwmc-reference" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Kwmc Reference</h2>
 
-<p><em>Kwmc</em> is a program used to write to <em>Kwm</em>'s socket. The following are instructions for enabling the man file</p>
-
-<pre><code>gzip kwmc.1
-cp kwmc.1.gz /usr/local/share/man/man1
-man kwmc
-</code></pre>
+<p><em>Kwmc</em> is a program used to write to <em>Kwm</em>'s socket.</p>
 
 <p>A command with <code>{foo}</code> means that an argument of that type is required.<br>
 A command with <code>{foo?}</code> means that an argument is optional.</p>
@@ -154,10 +149,6 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 <p>Reload config ($HOME/.kwm/kwmrc)</p>
 <pre><code>kwmc config reload</code></pre>
 
-<p>Set modifier used by OSX space-hotkeys (Used by `kwmc space -f ..`)</p>
-<pre><code>kwmc config spaces-key {modifiers}
-    {modifiers}: mod+mod+mod</code></pre>
-
 <p>Override the optimal split-mode (golden ratio -&gt; 1.618)</p>
 <pre><code>kwmc config optimal-ratio {ratio}
     {ratio}: floating point number</code></pre>
@@ -175,16 +166,16 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
     {enabled}: on | off</code></pre>
 
 <p>Set status of focus-follows-mouse</p>
-<pre><code>kwmc config focus-follows-mouse {mode}
-    {mode}: toggle | autofocus | autoraise | off</code></pre>
+<pre><code>kwmc config focus-follows-mouse {enabled}
+    {enabled}: toggle | on | off</code></pre>
 
 <p>Disable focus-follows-mouse when a floating window gains focus</p>
 <pre><code>kwmc config standby-on-float {enabled}
     {enabled}: on | off</code></pre>
 
 <p>Allow focus commands to wrap</p>
-<pre><code>kwmc config cycle-focus {mode}
-    {mode}: screen | off</code></pre>
+<pre><code>kwmc config cycle-focus {enabled}
+    {enabled}: on | off</code></pre>
 
 <p>Set state of mouse-follows-focus</p>
 <pre><code>kwmc config mouse-follows-focus {enabled}
@@ -198,8 +189,7 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 <pre><code>kwmc config split-ratio {ratio}
     {ratio}: 0 &lt; floating point number &gt; 1</code></pre>
 
-<p>Create rules that applies to specific applications or windows</p>
-See (https://github.com/koekeishiya/kwm/issues/268) for details</p>
+<p>Create rules that applies to specific applications or windows. <a href="https://github.com/koekeishiya/kwm/issues/268">[Help]</a></p>
 <pre><code>kwmc rule owner="" name="" properties={float=""; display=""; space=""; scratchpad=""; role=""} except=""</code></pre>
 
 <p>The following allows Kwm to tile borderless iTerm2 windows</p>
@@ -235,7 +225,7 @@ See (https://github.com/koekeishiya/kwm/issues/268) for details</p>
 <section class="code-examples-compact">
 <p>Set default tiling mode for Kwm</p>
 <pre><code>kwmc config tiling {mode}
-    {mode}: bsp | monocle | float | off</code></pre>
+    {mode}: bsp | monocle | float</code></pre>
 <p>Set default padding</p>
 <pre><code>kwmc config padding {padding}
     {padding}: top bottom left right</code></pre>
@@ -377,10 +367,6 @@ kwmc window -c expand {amount} {arg}
 <p>Set name of active space</p>
 <pre><code>kwmc space -n name</code></pre>
 
-<p>Change focus between spaces</p>
-<pre><code>kwmc space -f {space}
-    {space}: workspace_id | previous | left | right</code></pre>
-
 <p>Change focus between spaces, skipping transitions animation<br>
 (mission control does not update, requires `killall Dock`)</p>
 <pre><code>kwmc space -fExperimental {space}
@@ -484,7 +470,7 @@ kwmc window -c expand {amount} {arg}
     {property}: id | name | split | float</code></pre>
 
 <p>Check if two windows have the same parent</p>
-<pre><code>kwmc query window parent windiw_id1 window_id2</code></pre>
+<pre><code>kwmc query window parent window_id1 window_id2</code></pre>
 
 <p>Get child position of window (left or right)</p>
 <pre><code>kwmc query window child window_id</code></pre>
