@@ -103,7 +103,7 @@ kwmc bindcode mode+mod+mod+mod-hex command {opt?}</code></pre>
 <p>The ';' is interpreted as a separator and allows for Kwm to perform
 multiple commands in a single bind. For more advanced use, make shellscripts.</p>
 
-<pre><code>kwmc bindsym mode+mod+mod+mod-key cmd_1 ; cmd_2 ; cmd_n {opt}
+<pre><code>kwmc bindsym mode+mod+mod+mod-key cmd_1 ; cmd_2 ; cmd_n {opt?}
         {opt}: {app,app,app} -e | {app,app,app} -i
                 -e: not enabled for listed applications
                 -i: only enabled for listed applications</code></pre>
@@ -187,7 +187,7 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 
 <p>Set split-ratio for containers</p>
 <pre><code>kwmc config split-ratio {ratio}
-    {ratio}: 0 &lt; floating point number &gt; 1</code></pre>
+    {ratio}: 0 &lt; floating point number &lt; 1</code></pre>
 
 <p>Create rules that applies to specific applications or windows. <a href="https://github.com/koekeishiya/kwm/issues/268">[Help]</a></p>
 <pre><code>kwmc rule owner="" name="" properties={float=""; display=""; space=""; scratchpad=""; role=""} except=""</code></pre>
@@ -319,12 +319,12 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 <p>Modify container split-ratio of window</p>
 <pre><code>kwmc window -c reduce {amount}
 kwmc window -c expand {amount}
-    {amount}: 0 &lt; floating point number &gt; 1</code></pre>
+    {amount}: 0 &lt; floating point number &lt; 1</code></pre>
 
 <p>Modify container split-ratio of window in direction</p>
 <pre><code>kwmc window -c reduce {amount} {direction}
 kwmc window -c expand {amount} {arg}
-    {amount}: 0 &lt; floating point number &gt; 1
+    {amount}: 0 &lt; floating point number &lt; 1
     {direction}: north | east | south | west</code></pre>
 
 <p>Move window on the current space</p>
