@@ -36,8 +36,8 @@ void AXLibStopObserver(ax_observer *Observer)
 
 void AXLibDestroyObserver(ax_observer *Observer)
 {
-    CFRelease(Observer->Ref);
+    if(Observer->Ref)
+        CFRelease(Observer->Ref);
+
     Observer->Valid = false;
-    Observer->Ref = NULL;
-    Observer->Application = NULL;
 }
