@@ -376,7 +376,9 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
         if(MarkedWindow == Window)
             ClearMarkedWindow();
 
-        AXLibRemoveApplicationWindow(Window->Application, Window->ID);
+        if(Window->Application)
+            AXLibRemoveApplicationWindow(Window->Application, Window->ID);
+
         AXLibDestroyWindow(Window);
     }
 }
