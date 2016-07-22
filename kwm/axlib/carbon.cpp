@@ -27,7 +27,7 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
      * CFDictionaryRef ProcessInformationCopyDictionary(const ProcessSerialNumber *PSN, UInt32 infoToReturn) */
     GetProcessInformation(&PSN, &ProcessInfo);
 
-    /* TODO(koekeishiya): Check if we should care about this process. */
+    /* NOTE(koekeishiya): Check if we should care about this process. */
     if((ProcessInfo.processMode & modeOnlyBackground) != 0)
         return;
 
@@ -90,13 +90,10 @@ CarbonApplicationTerminated(ProcessSerialNumber PSN)
         if(Application->PSN.lowLongOfPSN == PSN.lowLongOfPSN &&
            Application->PSN.highLongOfPSN == PSN.highLongOfPSN)
         {
-            // printf("Carbon: Application terminated %s\n", Application->Name.c_str());
-            pid_t PID = Application->PID;
-            AXLibDestroyApplication(Application);
-            Applications->erase(PID);
-
-            /* TODO(koekeishiya): We probably want to pass an identifier for this application. */
-            AXLibConstructEvent(AXEvent_ApplicationTerminated, NULL, false);
+            pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+            *ApplicationPID = Application->PID;
+            AXLibConstructEvent(AXEvent_ApplicationTerminated, ApplicationPID, false);
+            break;
         }
     }
 }

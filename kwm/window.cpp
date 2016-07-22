@@ -273,13 +273,23 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
 /* NOTE(koekeishiya): Event context is NULL */
 EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
 {
-    DEBUG("AXEvent_ApplicationTerminated");
+    pid_t *ApplicationPID = (pid_t *) Event->Context;
+    ax_application *Application = AXLibGetApplicationByPID(*ApplicationPID);
+    free(ApplicationPID);
 
-    /* TODO(koekeishiya): We probably want to flag every display for an update, as the application
-                          in question could have had windows on several displays and spaces. */
-    ax_display *Display = AXLibMainDisplay();
-    Assert(Display != NULL);
-    RebalanceNodeTree(Display);
+    if(Application)
+    {
+        DEBUG("AXEvent_ApplicationTerminated");
+
+        /* TODO(koekeishiya): We probably want to flag every display for an update, as the application
+           in question could have had windows on several displays and spaces. */
+        ax_display *Display = AXLibMainDisplay();
+        Assert(Display != NULL);
+        RebalanceNodeTree(Display);
+
+        AXLibDestroyApplication(Application);
+        AXState.Applications.erase(Application->PID);
+    }
 }
 
 /* NOTE(koekeishiya): Event context is a pointer to the PID of the activated application. */
@@ -376,6 +386,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
         if(MarkedWindow == Window)
             ClearMarkedWindow();
 
+        /* TODO(koekeishiya): Can this guard be removed (?) */
         if(Window->Application)
             AXLibRemoveApplicationWindow(Window->Application, Window->ID);
 
