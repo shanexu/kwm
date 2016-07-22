@@ -175,7 +175,10 @@ OBSERVER_CALLBACK(AXApplicationCallback)
                 for(int Index = 0; Index < Window->Application->NullWindows.size(); ++Index)
                 {
                     if(Window->Application->NullWindows[Index] == Window)
+                    {
                         Window->Application->NullWindows.erase(Window->Application->NullWindows.begin() + Index);
+                        break;
+                    }
                 }
 
                 Window->ID = AXLibGetWindowID(Window->Ref);
@@ -356,8 +359,11 @@ void AXLibAddApplicationWindows(ax_application *Application)
 
 void AXLibRemoveApplicationWindows(ax_application *Application)
 {
+    std::map<uint32_t, ax_window*> Windows = Application->Windows;
+    Application->Windows.clear();
+
     std::map<uint32_t, ax_window*>::iterator It;
-    for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+    for(It = Windows.begin(); It != Windows.end(); ++It)
     {
         ax_window *Window = It->second;
         AXLibRemoveObserverNotification(&Window->Application->Observer, Window->Ref, kAXUIElementDestroyedNotification);
@@ -365,8 +371,6 @@ void AXLibRemoveApplicationWindows(ax_application *Application)
         AXLibRemoveObserverNotification(&Window->Application->Observer, Window->Ref, kAXWindowDeminiaturizedNotification);
         AXLibDestroyWindow(Window);
     }
-
-    Application->Windows.clear();
 }
 
 ax_window *AXLibFindApplicationWindow(ax_application *Application, uint32_t WID)
