@@ -99,7 +99,9 @@ SharedWorkspaceDidActivateApplication(pid_t PID)
         }
         else
         {
-            AXLibConstructEvent(AXEvent_ApplicationActivated, Application, false);
+            pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+            *ApplicationPID = Application->PID;
+            AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
         }
     }
 }

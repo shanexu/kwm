@@ -17,11 +17,6 @@
 #define internal static
 #define local_persist static
 
-/* TODO(koekeishiya): Every event should pass a valid identifier that can be used to lookup the appropriate
-                      context, rather than passing a pointer to the context itself. This is necessary to be
-                      able to guarantee that we do not access an invalid context, as it may have been invalidated
-                      between event creation and event processing. */
-
 extern std::map<const char *, space_info> WindowTree;
 extern ax_state AXState;
 extern ax_display *FocusedDisplay;
@@ -247,25 +242,31 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceCreated)
 }
 */
 
-/* NOTE(koekeishiya): Event context is a pointer to the launched application. */
+/* NOTE(koekeishiya): Event context is a pointer to the PID of the launched application. */
 EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
 {
-    ax_application *Application = (ax_application *) Event->Context;
-    DEBUG("AXEvent_ApplicationLaunched: " << Application->Name);
+    pid_t *ApplicationPID = (pid_t *) Event->Context;
+    ax_application *Application = AXLibGetApplicationByPID(*ApplicationPID);
+    free(ApplicationPID);
 
-    std::map<uint32_t, ax_window *>::iterator It;
-    for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+    if(Application)
     {
-        ax_window *Window = It->second;
-        if(ApplyWindowRules(Window))
-            continue;
+        DEBUG("AXEvent_ApplicationLaunched: " << Application->Name);
 
-        ax_display *Display = AXLibCursorDisplay();
-        if(!Display)
-            Display = AXLibWindowDisplay(Window);
+        std::map<uint32_t, ax_window *>::iterator It;
+        for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+        {
+            ax_window *Window = It->second;
+            if(ApplyWindowRules(Window))
+                continue;
 
-        FloatNonResizable(Window);
-        TileWindow(Display, Window);
+            ax_display *Display = AXLibCursorDisplay();
+            if(!Display)
+                Display = AXLibWindowDisplay(Window);
+
+            FloatNonResizable(Window);
+            TileWindow(Display, Window);
+        }
     }
 }
 
@@ -281,157 +282,249 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
     RebalanceNodeTree(Display);
 }
 
-/* NOTE(koekeishiya): Event context is a pointer to the activated application. */
+/* NOTE(koekeishiya): Event context is a pointer to the PID of the activated application. */
 EVENT_CALLBACK(Callback_AXEvent_ApplicationActivated)
 {
-    ax_application *Application = (ax_application *) Event->Context;
-    DEBUG("AXEvent_ApplicationActivated: " << Application->Name);
+    pid_t *ApplicationPID = (pid_t *) Event->Context;
+    ax_application *Application = AXLibGetApplicationByPID(*ApplicationPID);
+    free(ApplicationPID);
 
-    FocusedApplication = Application;
-    if(Application->Focus)
+    if(Application)
     {
-        ax_display *Display = AXLibWindowDisplay(Application->Focus);
-        if(AXLibSpaceHasWindow(Application->Focus, Display->Space->ID))
+        DEBUG("AXEvent_ApplicationActivated: " << Application->Name);
+
+        FocusedApplication = Application;
+        if(Application->Focus)
         {
-            StandbyOnFloat(Application->Focus);
-            Display->Space->FocusedWindow = Application->Focus->ID;
-            DrawFocusedBorder(Display);
+            ax_display *Display = AXLibWindowDisplay(Application->Focus);
+            if(!Display)
+                Display = AXLibMainDisplay();
+
+            if(Display)
+            {
+                if(AXLibSpaceHasWindow(Application->Focus, Display->Space->ID))
+                {
+                    StandbyOnFloat(Application->Focus);
+                    Display->Space->FocusedWindow = Application->Focus->ID;
+                    DrawFocusedBorder(Display);
+                }
+            }
         }
     }
 }
 
-/* NOTE(koekeishiya): Event context is a pointer to the new window. */
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the new window. */
 EVENT_CALLBACK(Callback_AXEvent_WindowCreated)
 {
-    ax_window *Window = (ax_window *) Event->Context;
-    DEBUG("AXEvent_WindowCreated: " << Window->Application->Name << " - " << Window->Name);
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
 
-    if(ApplyWindowRules(Window))
-        return;
-
-    ax_display *Display = AXLibWindowDisplay(Window);
-    if(Display)
+    if(Window)
     {
-        FloatNonResizable(Window);
-        TileWindow(Display, Window);
+        if(Window->Name)
+            DEBUG("AXEvent_WindowCreated: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowCreated: " << Window->Application->Name << " - [Unknown]");
+
+        if(ApplyWindowRules(Window))
+            return;
+
+        ax_display *Display = AXLibWindowDisplay(Window);
+        if(!Display)
+            Display = AXLibMainDisplay();
+
+        if(Display)
+        {
+            FloatNonResizable(Window);
+            TileWindow(Display, Window);
+        }
     }
 }
 
-/* NOTE(koekeishiya): Event context is a pointer to the closed window. Must call AXLibDestroyWindow() */
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the closed window.
+                      Must call AXLibRemoveApplicationWindow() and AXLibDestroyWindow() */
 EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
 {
-    ax_window *Window = (ax_window *) Event->Context;
-    DEBUG("AXEvent_WindowDestroyed: " << Window->Application->Name << " - " << Window->Name);
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
 
-    ax_display *Display = AXLibWindowDisplay(Window);
-    if(Display)
+    if(Window)
     {
-        RemoveWindowFromScratchpad(Window);
-        RemoveWindowFromNodeTree(Display, Window->ID);
-    }
+        if(Window->Name)
+            DEBUG("AXEvent_WindowDestroyed: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowDestroyed: " << Window->Application->Name << " - [Unknown]");
 
-    if(FocusedApplication == Window->Application)
-    {
-        if(FocusedApplication->Focus == Window)
-            Display->Space->FocusedWindow = 0;
+        ax_display *Display = AXLibWindowDisplay(Window);
+        if(Display)
+        {
+            RemoveWindowFromScratchpad(Window);
+            RemoveWindowFromNodeTree(Display, Window->ID);
+        }
 
-        StandbyOnFloat(FocusedApplication->Focus);
-        DrawFocusedBorder(Display);
-    }
-
-    if(MarkedWindow == Window)
-        ClearMarkedWindow();
-
-    AXLibDestroyWindow(Window);
-}
-
-/* NOTE(koekeishiya): Event context is a pointer to the minimized window. */
-EVENT_CALLBACK(Callback_AXEvent_WindowMinimized)
-{
-    ax_window *Window = (ax_window *) Event->Context;
-    DEBUG("AXEvent_WindowMinimized: " << Window->Application->Name << " - " << Window->Name);
-
-    ax_display *Display = AXLibWindowDisplay(Window);
-    Assert(Display != NULL);
-    RemoveWindowFromNodeTree(Display, Window->ID);
-
-    ClearBorder(&FocusedBorder);
-    if(MarkedWindow == Window)
-        ClearMarkedWindow();
-}
-
-/* NOTE(koekeishiya): Event context is a pointer to the deminimized window. */
-EVENT_CALLBACK(Callback_AXEvent_WindowDeminimized)
-{
-    ax_window *Window = (ax_window *) Event->Context;
-    DEBUG("AXEvent_WindowDeminimized: " << Window->Application->Name << " - " << Window->Name);
-
-    ax_display *Display = AXLibWindowDisplay(Window);
-    Assert(Display != NULL);
-
-    if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
-       (!AXLibHasFlags(Window, AXWindow_Floating)))
-    {
-        AddWindowToNodeTree(Display, Window->ID);
-    }
-
-    Window->Application->Focus = Window;
-    AXLibClearFlags(Window, AXWindow_Minimized);
-    AXLibConstructEvent(AXEvent_ApplicationActivated, Window->Application, false);
-}
-
-/* NOTE(koekeishiya): Event context is a pointer to the focused window. */
-EVENT_CALLBACK(Callback_AXEvent_WindowFocused)
-{
-    ax_window *Window = (ax_window *) Event->Context;
-    DEBUG("AXEvent_WindowFocused: " << Window->Application->Name << " - " << Window->Name);
-
-    if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)))
-    {
-        Window->Application->Focus = Window;
         if(FocusedApplication == Window->Application)
         {
-            ax_display *Display = AXLibWindowDisplay(Window);
-            StandbyOnFloat(Window);
+            if(FocusedApplication->Focus == Window)
+                Display->Space->FocusedWindow = 0;
+
+            StandbyOnFloat(FocusedApplication->Focus);
             DrawFocusedBorder(Display);
-            Display->Space->FocusedWindow = Window->ID;
+        }
+
+        if(MarkedWindow == Window)
+            ClearMarkedWindow();
+
+        AXLibRemoveApplicationWindow(Window->Application, Window->ID);
+        AXLibDestroyWindow(Window);
+    }
+}
+
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the minimized window. */
+EVENT_CALLBACK(Callback_AXEvent_WindowMinimized)
+{
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
+
+    if(Window)
+    {
+        if(Window->Name)
+            DEBUG("AXEvent_WindowMinimized: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowMinimized: " << Window->Application->Name << " - [Unknown]");
+
+        ax_display *Display = AXLibWindowDisplay(Window);
+        Assert(Display != NULL);
+        RemoveWindowFromNodeTree(Display, Window->ID);
+
+        ClearBorder(&FocusedBorder);
+        if(MarkedWindow == Window)
+            ClearMarkedWindow();
+    }
+}
+
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the deminimized window. */
+EVENT_CALLBACK(Callback_AXEvent_WindowDeminimized)
+{
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
+
+    if(Window)
+    {
+        if(Window->Name)
+            DEBUG("AXEvent_WindowDeminimized: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowDeminimized: " << Window->Application->Name << " - [Unknown]");
+
+        ax_display *Display = AXLibWindowDisplay(Window);
+        Assert(Display != NULL);
+
+        if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
+                (!AXLibHasFlags(Window, AXWindow_Floating)))
+        {
+            AddWindowToNodeTree(Display, Window->ID);
+        }
+
+        Window->Application->Focus = Window;
+        AXLibClearFlags(Window, AXWindow_Minimized);
+        AXLibConstructEvent(AXEvent_ApplicationActivated, Window->Application, false);
+    }
+}
+
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the focused window. */
+EVENT_CALLBACK(Callback_AXEvent_WindowFocused)
+{
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
+
+    if(Window)
+    {
+        if(Window->Name)
+            DEBUG("AXEvent_WindowFocused: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowFocused: " << Window->Application->Name << " - [Unknown]");
+
+        if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)))
+        {
+            Window->Application->Focus = Window;
+            if(FocusedApplication == Window->Application)
+            {
+                ax_display *Display = AXLibWindowDisplay(Window);
+                if(!Display)
+                    Display = AXLibMainDisplay();
+
+                if(Display)
+                {
+                    StandbyOnFloat(Window);
+                    DrawFocusedBorder(Display);
+                    Display->Space->FocusedWindow = Window->ID;
+                }
+            }
         }
     }
 }
 
 
-/* NOTE(koekeishiya): Event context is a pointer to the moved window. */
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the moved window. */
 EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
 {
-    ax_window *Window = (ax_window *) Event->Context;
-    ax_display *Display = AXLibWindowDisplay(Window);
-    DEBUG("AXEvent_WindowMoved: " << Window->Application->Name << " - " << Window->Name);
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
 
-    if(!Event->Intrinsic && KWMSettings.LockToContainer)
-        LockWindowToContainerSize(Window);
+    if(Window)
+    {
+        if(Window->Name)
+            DEBUG("AXEvent_WindowMoved: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowMoved: " << Window->Application->Name << " - [Unknown]");
 
-    if(FocusedApplication == Window->Application)
-        DrawFocusedBorder(Display);
+        if(!Event->Intrinsic && KWMSettings.LockToContainer)
+            LockWindowToContainerSize(Window);
 
-    if(MarkedWindow == Window)
-        UpdateBorder("marked");
+        ax_display *Display = AXLibWindowDisplay(Window);
+        if(!Display)
+            Display = AXLibMainDisplay();
+
+        if(FocusedApplication == Window->Application)
+            DrawFocusedBorder(Display);
+
+        if(MarkedWindow == Window)
+            UpdateBorder("marked");
+    }
 }
 
-/* NOTE(koekeishiya): Event context is a pointer to the resized window. */
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the resized window. */
 EVENT_CALLBACK(Callback_AXEvent_WindowResized)
 {
-    ax_window *Window = (ax_window *) Event->Context;
-    ax_display *Display = AXLibWindowDisplay(Window);
-    DEBUG("AXEvent_WindowResized: " << Window->Application->Name << " - " << Window->Name);
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
 
-    if(!Event->Intrinsic && KWMSettings.LockToContainer)
-        LockWindowToContainerSize(Window);
+    if(Window)
+    {
+        if(Window->Name)
+            DEBUG("AXEvent_WindowResized: " << Window->Application->Name << " - " << Window->Name);
+        else
+            DEBUG("AXEvent_WindowResized: " << Window->Application->Name << " - [Unknown]");
 
-    if(FocusedApplication == Window->Application)
-        DrawFocusedBorder(Display);
+        if(!Event->Intrinsic && KWMSettings.LockToContainer)
+            LockWindowToContainerSize(Window);
 
-    if(MarkedWindow == Window)
-        UpdateBorder("marked");
+        ax_display *Display = AXLibWindowDisplay(Window);
+        if(!Display)
+            Display = AXLibMainDisplay();
+
+        if(FocusedApplication == Window->Application)
+            DrawFocusedBorder(Display);
+
+        if(MarkedWindow == Window)
+            UpdateBorder("marked");
+    }
 }
 
 internal std::vector<uint32_t>

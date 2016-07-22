@@ -91,7 +91,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
             AXLibAddApplicationWindow(Application, Window);
 
             /* NOTE(koekeishiya): Triggers an AXEvent_WindowCreated and passes a pointer to the new ax_window */
-            AXLibConstructEvent(AXEvent_WindowCreated, Window, false);
+            uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+            *WindowID = Window->ID;
+            AXLibConstructEvent(AXEvent_WindowCreated, WindowID, false);
 
             /* NOTE(koekeishiya): When a new window is created, we incorrectly receive the kAXFocusedWindowChangedNotification
                                   first, for some reason. We discard that notification and restore it when we have the window to work with. */
@@ -109,11 +111,12 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         ax_window *Window = (ax_window *) Reference;
         if(Window)
         {
-            AXLibRemoveApplicationWindow(Window->Application, Window->ID);
             Window->Application->Focus = AXLibGetFocusedWindow(Window->Application);
 
             /* NOTE(koekeishiya): The callback is responsible for calling AXLibDestroyWindow(Window); */
-            AXLibConstructEvent(AXEvent_WindowDestroyed, Window, false);
+            uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+            *WindowID = Window->ID;
+            AXLibConstructEvent(AXEvent_WindowDestroyed, WindowID, false);
         }
     }
     else if(CFEqual(Notification, kAXFocusedWindowChangedNotification))
@@ -127,7 +130,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
                window is visible. Only notify our callback when we know that we can interact with the window in question. */
             if(!AXLibHasFlags(Window, AXWindow_Minimized))
             {
-                AXLibConstructEvent(AXEvent_WindowFocused, Window, false);
+                uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+                *WindowID = Window->ID;
+                AXLibConstructEvent(AXEvent_WindowFocused, WindowID, false);
             }
 
             /* NOTE(koekeishiya): If the application corresponding to this window is flagged for activation and
@@ -136,7 +141,11 @@ OBSERVER_CALLBACK(AXApplicationCallback)
             {
                 AXLibClearFlags(Window->Application, AXApplication_Activate);
                 if(!AXLibHasFlags(Window, AXWindow_Minimized))
-                    AXLibConstructEvent(AXEvent_ApplicationActivated, Window->Application, false);
+                {
+                    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+                    *ApplicationPID = Window->Application->PID;
+                    AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+                }
             }
         }
     }
@@ -147,7 +156,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         if(Window)
         {
             AXLibAddFlags(Window, AXWindow_Minimized);
-            AXLibConstructEvent(AXEvent_WindowMinimized, Window, false);
+            uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+            *WindowID = Window->ID;
+            AXLibConstructEvent(AXEvent_WindowMinimized, WindowID, false);
         }
     }
     else if(CFEqual(Notification, kAXWindowDeminiaturizedNotification))
@@ -179,7 +190,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
             ax_display *Display = AXLibWindowDisplay(Window);
             if(AXLibSpaceHasWindow(Window, Display->Space->ID))
             {
-                AXLibConstructEvent(AXEvent_WindowDeminimized, Window, false);
+                uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+                *WindowID = Window->ID;
+                AXLibConstructEvent(AXEvent_WindowDeminimized, WindowID, false);
             }
             else
             {
@@ -195,7 +208,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         {
             Window->Position = AXLibGetWindowPosition(Window->Ref);
 
-            AXLibConstructEvent(AXEvent_WindowMoved, Window, AXLibHasFlags(Window, AXWindow_MoveIntrinsic));
+            uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+            *WindowID = Window->ID;
+            AXLibConstructEvent(AXEvent_WindowMoved, WindowID, AXLibHasFlags(Window, AXWindow_MoveIntrinsic));
             AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
         }
     }
@@ -208,7 +223,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
             Window->Position = AXLibGetWindowPosition(Window->Ref);
             Window->Size = AXLibGetWindowSize(Window->Ref);
 
-            AXLibConstructEvent(AXEvent_WindowResized, Window, AXLibHasFlags(Window, AXWindow_SizeIntrinsic));
+            uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+            *WindowID = Window->ID;
+            AXLibConstructEvent(AXEvent_WindowResized, WindowID, AXLibHasFlags(Window, AXWindow_SizeIntrinsic));
             AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
         }
     }
@@ -244,7 +261,10 @@ void AXLibAddApplicationObserverNotificationFallback(ax_application *Application
     AXLibRemoveApplicationObserver(Application);
     Application->Focus = NULL;
     AXLibInitializeApplication(Application);
-    AXLibConstructEvent(AXEvent_ApplicationLaunched, Application, false);
+
+    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+    *ApplicationPID = Application->PID;
+    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
 }
 
 bool AXLibHasApplicationObserverNotification(ax_application *Application)

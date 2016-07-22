@@ -66,7 +66,9 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
                           Retry after a specific amount of time has passed. */
     if(AXLibHasApplicationObserverNotification(&(*Applications)[PID]))
     {
-        AXLibConstructEvent(AXEvent_ApplicationLaunched, &(*Applications)[PID], false);
+        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+        *ApplicationPID = PID;
+        AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
     }
     else
     {
