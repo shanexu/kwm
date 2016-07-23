@@ -386,10 +386,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
         if(MarkedWindow == Window)
             ClearMarkedWindow();
 
-        /* TODO(koekeishiya): Can this guard be removed (?) */
-        if(Window->Application)
-            AXLibRemoveApplicationWindow(Window->Application, Window->ID);
-
+        AXLibRemoveApplicationWindow(Window->Application, Window->ID);
         AXLibDestroyWindow(Window);
     }
 }
@@ -443,7 +440,10 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDeminimized)
 
         Window->Application->Focus = Window;
         AXLibClearFlags(Window, AXWindow_Minimized);
-        AXLibConstructEvent(AXEvent_ApplicationActivated, Window->Application, false);
+
+        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+        *ApplicationPID = Window->Application->PID;
+        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
     }
 }
 
