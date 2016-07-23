@@ -727,6 +727,9 @@ internal void
 RemoveWindowFromBSPTree(ax_display *Display, uint32_t WindowID)
 {
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+    if(!SpaceInfo->RootNode)
+        return;
+
     if(SpaceInfo->RootNode->WindowID == WindowID)
         SpaceInfo->RootNode->WindowID = 0;
 
