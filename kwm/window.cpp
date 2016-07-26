@@ -235,13 +235,6 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
         ClearBorder(&FocusedBorder);
 }
 
-/* TODO(koekeishiya): Is this interesting (?)
-EVENT_CALLBACK(Callback_AXEvent_SpaceCreated)
-{
-    ax_space *Space = (ax_space *) Event->Context;
-}
-*/
-
 /* NOTE(koekeishiya): Event context is a pointer to the PID of the launched application. */
 EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
 {
