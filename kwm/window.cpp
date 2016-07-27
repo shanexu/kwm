@@ -93,12 +93,9 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayRemoved)
     DEBUG("AXEvent_DisplayRemoved");
 }
 
-/* NOTE(koekeishiya): Event context is a pointer to the resized display. */
-EVENT_CALLBACK(Callback_AXEvent_DisplayResized)
+internal inline void
+ResizeDisplay(ax_display *Display)
 {
-    ax_display *Display = (ax_display *) Event->Context;
-    DEBUG("AXEvent_DisplayResized");
-
     std::map<CGSSpaceID, ax_space>::iterator It;
     for(It = Display->Spaces.begin(); It != Display->Spaces.end(); ++It)
     {
@@ -111,22 +108,20 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayResized)
     }
 }
 
+/* NOTE(koekeishiya): Event context is a pointer to the resized display. */
+EVENT_CALLBACK(Callback_AXEvent_DisplayResized)
+{
+    ax_display *Display = (ax_display *) Event->Context;
+    DEBUG("AXEvent_DisplayResized");
+    ResizeDisplay(Display);
+}
+
 /* NOTE(koekeishiya): Event context is a pointer to the moved display. */
 EVENT_CALLBACK(Callback_AXEvent_DisplayMoved)
 {
     ax_display *Display = (ax_display *) Event->Context;
     DEBUG("AXEvent_DisplayMoved");
-
-    std::map<CGSSpaceID, ax_space>::iterator It;
-    for(It = Display->Spaces.begin(); It != Display->Spaces.end(); ++It)
-    {
-        ax_space *Space = &It->second;
-        space_info *SpaceInfo = &WindowTree[Space->Identifier];
-        if(Space == Display->Space)
-            UpdateSpaceOfDisplay(Display, SpaceInfo);
-        else
-            SpaceInfo->NeedsUpdate = true;
-    }
+    ResizeDisplay(Display);
 }
 
 /* NOTE(koekeishiya): Event context is NULL. */
