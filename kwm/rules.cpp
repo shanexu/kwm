@@ -183,6 +183,10 @@ KwmParseRule(std::string RuleSym, window_rule *Rule)
                     Result = Result && ParseIdentifier(&Tokenizer, &Rule->Owner);
                 else if(TokenEquals(Token, "name"))
                     Result = Result && ParseIdentifier(&Tokenizer, &Rule->Name);
+                else if(TokenEquals(Token, "role"))
+                    Result = Result && ParseIdentifier(&Tokenizer, &Rule->Role);
+                else if(TokenEquals(Token, "crole"))
+                    Result = Result && ParseIdentifier(&Tokenizer, &Rule->CustomRole);
                 else if(TokenEquals(Token, "properties"))
                     Result = Result && ParseProperties(&Tokenizer, &Rule->Properties);
                 else if(TokenEquals(Token, "except"))
@@ -212,6 +216,20 @@ MatchWindowRule(window_rule *Rule, ax_window *Window)
     {
         std::regex Exp(Rule->Name);
         Match = Match && std::regex_match(Window->Name, Exp);
+    }
+
+    if(!Rule->Role.empty())
+    {
+        CFTypeRef AXRole = CFStringCreateWithCString(NULL, Rule->Role.c_str(), kCFStringEncodingMacRoman);
+        Match = Match && AXLibWindowHasRole(Window, AXRole);
+        CFRelease(AXRole);
+    }
+
+    if(!Rule->CustomRole.empty())
+    {
+        CFTypeRef AXRole = CFStringCreateWithCString(NULL, Rule->CustomRole.c_str(), kCFStringEncodingMacRoman);
+        Match = Match && AXLibWindowHasCustomRole(Window, AXRole);
+        CFRelease(AXRole);
     }
 
     if(!Rule->Except.empty() && Window->Name)

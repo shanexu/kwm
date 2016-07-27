@@ -254,6 +254,8 @@ struct window_rule
     std::string Except;
     std::string Owner;
     std::string Name;
+    std::string Role;
+    std::string CustomRole;
 };
 
 struct ax_window;

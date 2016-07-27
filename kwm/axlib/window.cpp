@@ -47,6 +47,20 @@ bool AXLibIsWindowCustom(ax_window *Window)
     return Result;
 }
 
+bool AXLibWindowHasRole(ax_window *Window, CFTypeRef Role)
+{
+    bool Result = ((CFEqual(Window->Type.Role, Role)) ||
+                   (CFEqual(Window->Type.Subrole, Role)));
+    return Result;
+}
+
+bool AXLibWindowHasCustomRole(ax_window *Window, CFTypeRef Role)
+{
+    bool Result = ((Window->Type.CustomRole) &&
+                   (CFEqual(Role, Window->Type.CustomRole)));
+    return Result;
+}
+
 void AXLibDestroyWindow(ax_window *Window)
 {
     if(Window->Ref)
