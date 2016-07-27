@@ -14,6 +14,7 @@ internal ax_state *AXState;
 internal carbon_event_handler *Carbon;
 internal std::map<pid_t, ax_application> *AXApplications;
 internal std::map<CGDirectDisplayID, ax_display> *AXDisplays;
+internal CGPoint Cursor;
 
 internal inline AXUIElementRef
 AXLibSystemWideElement()
@@ -26,6 +27,28 @@ AXLibSystemWideElement()
     });
 
     return AXLibSystemWideElement;
+}
+
+internal CGPoint
+GetCursorPos()
+{
+    CGEventRef Event = CGEventCreate(NULL);
+    CGPoint Cursor = CGEventGetLocation(Event);
+    CFRelease(Event);
+
+    return Cursor;
+}
+
+internal bool
+IsElementBelowCursor(CGRect *WindowRect)
+{
+    if(Cursor.x >= WindowRect->origin.x &&
+       Cursor.x <= WindowRect->origin.x + WindowRect->size.width &&
+       Cursor.y >= WindowRect->origin.y &&
+       Cursor.y <= WindowRect->origin.y + WindowRect->size.height)
+        return true;
+
+    return false;
 }
 
 /* NOTE(koekeishiya): Does AXLib already have an ax_application struct for the given process id (?) .*/
@@ -163,18 +186,14 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
     return Windows;
 }
 
-/* NOTE(koekeishiya): Returns a list of pointer to ax_window structs containing all windows currently visible,
-                      filtering by their associated kAXWindowRole and kAXWindowSubrole. The windows are
-                      return in topmost order. The window at index zero is the window at the top.
-                      If the topmost window is launchpad, or a context menu, this function will
-                      return an empty list! */
+/* NOTE(koekeishiya): Returns the window id of the window below the cursor. */
 #define CONTEXT_MENU_LAYER 101
-std::vector<ax_window *> AXLibGetAllVisibleWindowsOrdered()
+uint32_t AXLibGetWindowBelowCursor()
 {
-    std::vector<ax_window *> Windows;
-
+    uint32_t Result = 0;
     CGWindowListOption WindowListOption = kCGWindowListOptionOnScreenOnly |
                                           kCGWindowListExcludeDesktopElements;
+    Cursor = GetCursorPos();
 
     CFArrayRef WindowList = CGWindowListCopyWindowInfo(WindowListOption, kCGNullWindowID);
     if(WindowList)
@@ -184,15 +203,22 @@ std::vector<ax_window *> AXLibGetAllVisibleWindowsOrdered()
         {
             uint32_t WindowID;
             uint32_t WindowLayer;
+            CGRect WindowRect = {};
             CFNumberRef CFWindowNumber;
             CFNumberRef CFWindowLayer;
+            CFDictionaryRef CFWindowBounds;
             CFDictionaryRef Elem = (CFDictionaryRef)CFArrayGetValueAtIndex(WindowList, Index);
             CFWindowNumber = (CFNumberRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowNumber"));
             CFWindowLayer = (CFNumberRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowLayer"));
+            CFWindowBounds = (CFDictionaryRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowBounds"));
             CFNumberGetValue(CFWindowNumber, kCFNumberSInt32Type, &WindowID);
             CFNumberGetValue(CFWindowLayer, kCFNumberSInt32Type, &WindowLayer);
             CFRelease(CFWindowNumber);
             CFRelease(CFWindowLayer);
+            if(CFWindowBounds)
+            {
+                CGRectMakeWithDictionaryRepresentation(CFWindowBounds, &WindowRect);
+            }
 
             CFStringRef CFOwner = (CFStringRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowOwnerName"));
             CFStringRef CFName = (CFStringRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowName"));
@@ -202,35 +228,20 @@ std::vector<ax_window *> AXLibGetAllVisibleWindowsOrdered()
                 (WindowLayer == CONTEXT_MENU_LAYER))
             {
                 CFRelease(WindowList);
-                Windows.clear();
-                return Windows;
+                return 0;
             }
 
-            std::map<pid_t, ax_application>::iterator It;
-            for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
+            if(IsElementBelowCursor(&WindowRect))
             {
-                /* NOTE(koekeishiya): This function call is incredibly expensive (roughly 70% of the cost of the entire function)
-                                      and doesn't really give us any benefeits, ignore it.
-                if(!AXLibIsApplicationHidden(Application)) */
-
-                ax_application *Application = &It->second;
-                ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
-                if(Window)
-                {
-                    if((AXLibIsWindowStandard(Window)) ||
-                       (AXLibIsWindowCustom(Window)))
-                    {
-                        Windows.push_back(Window);
-                    }
-                    break;
-                }
+                Result = WindowID;
+                break;
             }
         }
 
         CFRelease(WindowList);
     }
 
-    return Windows;
+    return Result;
 }
 
 /* NOTE(koekeishiya): Update state of known applications and their windows, stored inside the ax_state passed to AXLibInit(..). */
