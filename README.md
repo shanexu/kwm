@@ -30,7 +30,7 @@ The bar seen in the above screenshot can be found [here](https://github.com/koek
 
 A codesigned binary release is available through Homebrew
 
-      brew install homebrew/binary/kwm
+      brew install koekeishiya/kwm/kwm
 
 To compile from source
 
