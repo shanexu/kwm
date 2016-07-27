@@ -27,7 +27,10 @@ int GetScratchpadSlotOfWindow(ax_window *Window)
         }
     }
 
-    DEBUG("GetScratchpadSlotOfWindow() " << Window->Name << " " << Slot);
+    if(Window->Name)
+        DEBUG("GetScratchpadSlotOfWindow() " << Window->Name  << " " << Slot);
+    else
+        DEBUG("GetScratchpadSlotOfWindow() " << "[Unknown]" << " " << Slot);
     return Slot;
 }
 
