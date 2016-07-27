@@ -5,6 +5,7 @@
 #define internal static
 #define local_persist static
 
+extern ax_state AXState;
 extern ax_application *FocusedApplication;
 extern kwm_settings KWMSettings;
 
@@ -60,20 +61,29 @@ void FocusWindowBelowCursor()
             return;
     }
 
-    std::vector<ax_window *> Windows = AXLibGetAllVisibleWindowsOrdered();
-    for(std::size_t Index = 0; Index < Windows.size(); ++Index)
+    uint32_t WindowID = AXLibGetWindowBelowCursor();
+    if(WindowID == 0)
+        return;
+
+   std::map<pid_t, ax_application>::iterator It;
+    for(It = AXState.Applications.begin(); It != AXState.Applications.end(); ++It)
     {
-        ax_window *Window = Windows[Index];
-        if(IsWindowBelowCursor(Window))
+        ax_application *Application = &It->second;
+        ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
+        if(Window)
         {
-            if(Application == Window->Application)
+            if((AXLibIsWindowStandard(Window)) ||
+               (AXLibIsWindowCustom(Window)))
             {
-                if(FocusedWindow != Window)
+                if(Application == Window->Application)
+                {
+                    if(FocusedWindow != Window)
+                        AXLibSetFocusedWindow(Window);
+                }
+                else
+                {
                     AXLibSetFocusedWindow(Window);
-            }
-            else
-            {
-                AXLibSetFocusedWindow(Window);
+                }
             }
             return;
         }
