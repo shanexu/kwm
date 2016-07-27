@@ -274,6 +274,7 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
         ax_display *Display = AXLibMainDisplay();
         Assert(Display != NULL);
         RebalanceNodeTree(Display);
+        ClearBorder(&FocusedBorder);
 
         AXLibDestroyApplication(Application);
         AXState.Applications.erase(Application->PID);
