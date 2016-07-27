@@ -138,8 +138,7 @@ duration. The restore option will default to the `default` mode.
 The color of the focused-border will be changed to the color associated with the active
 mode, if one has been set.</p>
 
-<pre><code>
-kwmc mode my_mode prefix on
+<pre><code>kwmc mode my_mode prefix on
 kwmc mode my_mode timeout 0.75
 kwmc mode my_mode restore mode_to_activate
 kwmc mode my_mode color 0xaarrggbb</code></pre>
@@ -157,6 +156,9 @@ Because of this, the order in which the rules are specified when combined, could
 
 <p>The pattern matching performed by the window filters uses std::regex and std::regex_match.
 For regular expression syntax, refer to ECMAscript specification or POSIX for detailed information.</p>
+
+<p>A rule follows the general form:</p>
+<pre><code>kwmc rule owner="" name="" role="" properties={float=""; display=""; space=""; role=""} except=""</code></pre>
 
 <h4 id="rule-filter">Window Filter</h4>
 
@@ -222,17 +224,16 @@ owner, title, accessibility role, and the potential custom role of a window.
 <p>The following two rules allow Kwm to recognize all Finder windows of type AXDialog.  If a finder window
 has an accessibility role or subrole equal to the type AXDialog, they will be marked as floating.</p>
 
-    <pre><code>
-        kwmc rule owner="Finder" properties={role="AXDialog"}
-        kwmc rule owner="Finder" role="AXDialog" properties={float="true"}
-    </code></pre>
+<pre><code>kwmc rule owner="Finder" properties={role="AXDialog"}
+kwmc rule owner="Finder" role="AXDialog" properties={float="true"}
+</code></pre>
 
 <p>The following rule allows Kwm to tile borderless iTerm2 windows.</p>
 
-    <pre><code>
-        kwmc rule owner="iTerm2" properties={role="AXDialog"}
-    </code></pre>
+<pre><code>kwmc rule owner="iTerm2" properties={role="AXDialog"}</code></pre>
 
+<p>The following rule floats iTerm2 windows where title contains 'border', but not 'less'.</p>
+<pre><code>kwmc rule owner="iTerm2" name="border" properties={float="true"} except="less"</code></pre>
 
 <h2><a id="configure-kwm" class="anchor" href="#configure-kwm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configure Kwm</h2>
 
