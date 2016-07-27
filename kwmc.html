@@ -58,6 +58,11 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
 <li><a href="#create-keybindings">Create Keybindings</a>
   <ul><li><a href="#binding-modes">Binding Modes</a></li></ul>
 </li>
+<li><a href="#create-rules">Create Window Rules</a>
+  <ul><li><a href="#rule-filter">Window Filter</a></li></ul>
+  <ul><li><a href="#rule-properties">Window Properties</a></li></ul>
+  <ul><li><a href="#rule-example">Example Rules</a></li></ul>
+</li>
 <li><a href="#configure-kwm">Configure Kwm</a>
   <ul>
     <li><a href="#window-borders">Window Borders</a></li>
@@ -143,6 +148,92 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 
 <pre><code>kwmc mode activate my_mode</code></pre>
 
+<h2><a id="create-rules" class="anchor" href="#create-rules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Window Rules</h2>
+
+<p>The window rule system is used to apply various properties to a range of applications or windows.</p>
+
+<p>Window rules are not applied lazily, and a window will try to match multiple rules.
+Because of this, the order in which the rules are specified when combined, could impact the end result.</p>
+
+<p>The pattern matching performed by the window filters uses std::regex and std::regex_match.
+For regular expression syntax, refer to ECMAscript specification or POSIX for detailed information.</p>
+
+<h4 id="rule-filter">Window Filter</h4>
+
+<p>The window rule system allows you to filter windows based on the
+owner, title, accessibility role, and the potential custom role of a window.
+</br></br> The filter is specified using the below tags:</p>
+<table style="text-align: center;">
+    <tr>
+        <th>Filter</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>owner=""</td>
+        <td>Matches the bundlename of an application.</td>
+    </tr>
+        <td>name=""</td>
+        <td>Matches the title of a window.</td>
+    <tr>
+        <td>except=""</td>
+        <td>Matches the title of a window that should be ignored.</td>
+    <tr>
+        <td>role=""</td>
+        <td>Matches the AXWindowRole and AXWindowSubrole of a window.</td>
+    <tr>
+        <td>crole=""</td>
+        <td>Matches the custom role that can be supplied through rules.</td>
+    </tr>
+</table>
+
+<h4 id="rule-properties">Window Properties</h4>
+
+<p>The following are the properties which may be applied to any window, through a rule.
+</br>The properties must be listed in a <i>properties</i> block, using ';' as a seperator:
+</br><code>properties={property=""; property=""; ..}</code>
+
+</br></br> The properties are specified using the below tags:</p>
+
+<table style="text-align: center;">
+    <tr>
+        <th>Property</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>float="true|false"</td>
+        <td>Makes the window floating.</td>
+    </tr>
+        <td>display="id"</td>
+        <td>Moves the window to the given display, if it exists.</td>
+    <tr>
+        <td>space="id"</td>
+        <td>Moves the window to the given space, if it exists.</td>
+    <tr>
+        <td>role="AXRole"</td>
+        <td>Treat the window as if it was of type 'AXRole'.</td>
+    <tr>
+        <td>scratchpad="visible|hidden"</td>
+        <td>Matches the custom role that can be supplied through rules.</td>
+    </tr>
+</table>
+
+<h4 id="rule-example">Example Rules</h4>
+
+<p>The following two rules allow Kwm to recognize all Finder windows of type AXDialog.  If a finder window
+has an accessibility role or subrole equal to the type AXDialog, they will be marked as floating.</p>
+
+    <pre><code>
+        kwmc rule owner="Finder" properties={role="AXDialog"}
+        kwmc rule owner="Finder" role="AXDialog" properties={float="true"}
+    </code></pre>
+
+<p>The following rule allows Kwm to tile borderless iTerm2 windows.</p>
+
+    <pre><code>
+        kwmc rule owner="iTerm2" properties={role="AXDialog"}
+    </code></pre>
+
+
 <h2><a id="configure-kwm" class="anchor" href="#configure-kwm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configure Kwm</h2>
 
 <section class="code-examples-compact">
@@ -188,12 +279,6 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 <p>Set split-ratio for containers</p>
 <pre><code>kwmc config split-ratio {ratio}
     {ratio}: 0 &lt; floating point number &lt; 1</code></pre>
-
-<p>Create rules that applies to specific applications or windows. <a href="https://github.com/koekeishiya/kwm/issues/268">[Help]</a></p>
-<pre><code>kwmc rule owner="" name="" properties={float=""; display=""; space=""; scratchpad=""; role=""} except=""</code></pre>
-
-<p>The following allows Kwm to tile borderless iTerm2 windows</p>
-<pre><code>kwmc rule owner="iTerm2" properties={role="AXDialog"}</code></pre>
 </section>
 
 <h4 id="window-borders">Window Borders</h4>
