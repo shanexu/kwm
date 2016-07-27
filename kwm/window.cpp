@@ -529,6 +529,25 @@ EVENT_CALLBACK(Callback_AXEvent_WindowResized)
     }
 }
 
+/* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the window. */
+EVENT_CALLBACK(Callback_AXEvent_WindowTitleChanged)
+{
+    uint32_t *WindowID = (uint32_t *) Event->Context;
+    ax_window *Window = GetWindowByID(*WindowID);
+    free(WindowID);
+
+    if(Window)
+    {
+        if(Window->Name)
+        {
+            free(Window->Name);
+            Window->Name = NULL;
+        }
+
+        Window->Name = AXLibGetWindowTitle(Window->Ref);
+    }
+}
+
 internal std::vector<uint32_t>
 GetAllWindowIDsInTree(space_info *Space)
 {

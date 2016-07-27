@@ -56,22 +56,6 @@ AXLibGetWindowByRef(ax_application *Application, AXUIElementRef WindowRef)
 }
 
 internal inline void
-AXLibUpdateApplicationWindowTitle(ax_application *Application, AXUIElementRef WindowRef)
-{
-    ax_window *Window = AXLibGetWindowByRef(Application, WindowRef);
-    if(Window)
-    {
-        if(Window->Name)
-        {
-            free(Window->Name);
-            Window->Name = NULL;
-        }
-
-        Window->Name = AXLibGetWindowTitle(WindowRef);
-    }
-}
-
-internal inline void
 AXLibDestroyInvalidWindow(ax_window *Window)
 {
     AXLibRemoveObserverNotification(&Window->Application->Observer, Window->Ref, kAXUIElementDestroyedNotification);
@@ -234,7 +218,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
     }
     else if(CFEqual(Notification, kAXTitleChangedNotification))
     {
-        AXLibUpdateApplicationWindowTitle(Application, Element);
+        uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+        *WindowID = AXLibGetWindowID(Element);
+        AXLibConstructEvent(AXEvent_WindowTitleChanged, WindowID, false);
     }
 }
 
