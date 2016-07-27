@@ -198,14 +198,12 @@ KwmInit()
     else
         Fatal("Error: Could not start daemon!");
 
-    /*
     signal(SIGSEGV, SignalHandler);
     signal(SIGABRT, SignalHandler);
     signal(SIGTRAP, SignalHandler);
     signal(SIGTERM, SignalHandler);
     signal(SIGKILL, SignalHandler);
     signal(SIGINT, SignalHandler);
-    */
 
     KWMSettings.SplitRatio = 0.5;
     KWMSettings.SplitMode = SPLIT_OPTIMAL;
