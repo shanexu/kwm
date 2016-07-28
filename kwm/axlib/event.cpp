@@ -1,6 +1,7 @@
 #include "event.h"
 #include <unistd.h>
 #include <stdlib.h>
+#include "display.h"
 
 #define internal static
 
@@ -25,15 +26,19 @@ AXLibProcessEventQueue(void *)
 {
     while(EventLoop.Running)
     {
+
         pthread_mutex_lock(&EventLoop.StateLock);
         while(!EventLoop.Queue.empty())
         {
-            pthread_mutex_lock(&EventLoop.WorkerLock);
-            ax_event Event = EventLoop.Queue.front();
-            EventLoop.Queue.pop();
-            pthread_mutex_unlock(&EventLoop.WorkerLock);
+            if(!AXLibIsSpaceTransitionInProgress())
+            {
+                pthread_mutex_lock(&EventLoop.WorkerLock);
+                ax_event Event = EventLoop.Queue.front();
+                EventLoop.Queue.pop();
+                pthread_mutex_unlock(&EventLoop.WorkerLock);
 
-            (*Event.Handle)(&Event);
+                (*Event.Handle)(&Event);
+            }
         }
 
         while(EventLoop.Queue.empty() && EventLoop.Running)
