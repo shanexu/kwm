@@ -198,12 +198,16 @@ KwmInit()
     else
         Fatal("Error: Could not start daemon!");
 
+#ifndef DEBUG_BUILD
     signal(SIGSEGV, SignalHandler);
     signal(SIGABRT, SignalHandler);
     signal(SIGTRAP, SignalHandler);
     signal(SIGTERM, SignalHandler);
     signal(SIGKILL, SignalHandler);
     signal(SIGINT, SignalHandler);
+#else
+    printf("Kwm: Signal handlers are disabled!\n");
+#endif
 
     KWMSettings.SplitRatio = 0.5;
     KWMSettings.SplitMode = SPLIT_OPTIMAL;
