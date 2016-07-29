@@ -810,8 +810,8 @@ KwmParseKwmc(tokenizer *Tokenizer)
 internal void
 KwmParseInclude(tokenizer *Tokenizer)
 {
-    token Token = GetToken(Tokenizer);
-    KwmParseConfig(std::string(Token.Text, Token.TextLength));
+    std::string File = GetTextTilEndOfLine(Tokenizer);
+    KwmParseConfig(File);
 }
 
 internal void
