@@ -231,6 +231,9 @@ uint32_t AXLibGetWindowBelowCursor()
                 return 0;
             }
 
+            if(CFOwner && CFStringCompare(CFOwner, CFSTR("kwm-overlay"), 0) == kCFCompareEqualTo)
+                continue;
+
             if(IsElementBelowCursor(&WindowRect))
             {
                 Result = WindowID;
