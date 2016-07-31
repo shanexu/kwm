@@ -394,16 +394,32 @@ void ModifyContainerSplitRatio(double Offset, int Degrees)
         {
             tree_node *Target = GetTreeNodeFromWindowIDOrLinkNode(Root, ClosestWindow->ID);
             tree_node *Ancestor = FindLowestCommonAncestor(Node, Target);
-            if(Ancestor &&
-               Ancestor->SplitRatio + Offset > 0.0 &&
-               Ancestor->SplitRatio + Offset < 1.0)
+
+            if(Ancestor)
             {
-                Ancestor->SplitRatio += Offset;
-                ResizeNodeContainer(Display, Ancestor);
-                ApplyTreeNodeContainer(Ancestor);
+                if(!(Node == Ancestor->LeftChild || IsLeftChildInSubTree(Ancestor->LeftChild, Node)))
+                    Offset = -Offset;
+
+                if(Ancestor->SplitRatio + Offset > 0.0 &&
+                   Ancestor->SplitRatio + Offset < 1.0)
+                {
+                    Ancestor->SplitRatio += Offset;
+                    ResizeNodeContainer(Display, Ancestor);
+                    ApplyTreeNodeContainer(Ancestor);
+                }
             }
         }
     }
+}
+
+bool IsLeftChildInSubTree(tree_node *Root, tree_node *Target)
+{
+    bool Result = ((Root->LeftChild == Target) ||
+                   (Root->RightChild == Target)) ||
+                   (Root->LeftChild && IsLeftChildInSubTree(Root->LeftChild, Target)) ||
+                   (Root->RightChild && IsLeftChildInSubTree(Root->RightChild, Target));
+
+    return Result;
 }
 
 tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B)

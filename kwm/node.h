@@ -26,6 +26,7 @@ void ResizeWindowToContainerSize(ax_window *Window);
 void ResizeWindowToContainerSize();
 void ModifyContainerSplitRatio(double Offset);
 void ModifyContainerSplitRatio(double Offset, int Degrees);
+bool IsLeftChildInSubTree(tree_node *Root, tree_node *Target);
 tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B);
 
 /* NOTE(koekeishiya): The following functions still need to be investigated. */
