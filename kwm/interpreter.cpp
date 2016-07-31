@@ -234,6 +234,13 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
         else if(Tokens[2] == "on")
             KWMSettings.StandbyOnFloat = true;
     }
+    else if(Tokens[1] == "center-on-float")
+    {
+        if(Tokens[2] == "off")
+            KWMSettings.CenterOnFloat = false;
+        else if(Tokens[2] == "on")
+            KWMSettings.CenterOnFloat = true;
+    }
     else if(Tokens[1] == "cycle-focus")
     {
         if(Tokens[2] == "on")

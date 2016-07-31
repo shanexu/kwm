@@ -214,6 +214,42 @@ KwmParseConfigOptionStandbyOnFloat(tokenizer *Tokenizer)
 }
 
 internal void
+KwmParseConfigOptionCenterOnFloat(tokenizer *Tokenizer)
+{
+    if(RequireToken(Tokenizer, Token_Dash))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "on"))
+        {
+            if(RequireToken(Tokenizer, Token_Dash))
+            {
+                token Token = GetToken(Tokenizer);
+                if(TokenEquals(Token, "float"))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "on"))
+                        KwmInterpretCommand("config center-on-float on", 0);
+                    else if(TokenEquals(Token, "off"))
+                        KwmInterpretCommand("config center-on-float off", 0);
+                    else
+                        ReportInvalidCommand("Unknown command 'config center-on-float " + std::string(Token.Text, Token.TextLength) + "'");
+                }
+                else
+                    ReportInvalidCommand("Unknown command 'config center-on-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'config center-" + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else
+    {
+        ReportInvalidCommand("Expected token '-' after 'config center'");
+    }
+}
+
+internal void
 KwmParseConfigOptionFloatNonResizable(tokenizer *Tokenizer)
 {
     if(RequireToken(Tokenizer, Token_Dash))
@@ -719,6 +755,8 @@ KwmParseConfigOption(tokenizer *Tokenizer)
                 KwmParseConfigOptionMouseFollowsFocus(Tokenizer);
             else if(TokenEquals(Token, "standby"))
                 KwmParseConfigOptionStandbyOnFloat(Tokenizer);
+            else if(TokenEquals(Token, "center"))
+                KwmParseConfigOptionCenterOnFloat(Tokenizer);
             else if(TokenEquals(Token, "float"))
                 KwmParseConfigOptionFloatNonResizable(Tokenizer);
             else if(TokenEquals(Token, "lock"))

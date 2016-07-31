@@ -1129,6 +1129,10 @@ void ToggleWindowFloating(uint32_t WindowID, bool Center)
     {
         AXLibAddFlags(Window, AXWindow_Floating);
         RemoveWindowFromNodeTree(Display, Window->ID);
+
+        if(Center && KWMSettings.CenterOnFloat)
+            CenterWindow(Display, Window);
+
         if((KWMSettings.StandbyOnFloat) &&
            (KWMSettings.Focus != FocusModeDisabled))
             KWMSettings.Focus = FocusModeStandby;

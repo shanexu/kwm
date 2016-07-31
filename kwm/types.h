@@ -324,6 +324,7 @@ struct kwm_settings
     bool UseMouseFollowsFocus;
     bool UseBuiltinHotkeys;
     bool StandbyOnFloat;
+    bool CenterOnFloat;
 
     double OptimalRatio;
     bool SpawnAsLeftChild;
