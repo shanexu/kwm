@@ -55,7 +55,7 @@ CGEventRef CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef E
                 if(Hotkey)
                 {
                     CreateHotkeyFromCGEvent(Event, &Eventkey);
-                    if(HotkeyExists(Eventkey.Mod, Eventkey.Key, Hotkey, KWMHotkeys.ActiveMode->Name))
+                    if(HotkeyExists(Eventkey.Flags, Eventkey.Key, Hotkey, KWMHotkeys.ActiveMode->Name))
                     {
                         AXLibConstructEvent(AXEvent_HotkeyPressed, Hotkey, false);
                         if(!Hotkey->Passthrough)

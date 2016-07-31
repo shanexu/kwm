@@ -13,6 +13,19 @@ extern ax_application *FocusedApplication;
 extern kwm_hotkeys KWMHotkeys;
 extern kwm_thread KWMThread;
 
+internal inline bool
+HasFlags(hotkey *Hotkey, uint32_t Flag)
+{
+    bool Result = Hotkey->Flags & Flag;
+    return Result;
+}
+
+internal inline void
+AddFlags(hotkey *Hotkey, uint32_t Flag)
+{
+    Hotkey->Flags |= Flag;
+}
+
 internal CFStringRef
 KeycodeToString(CGKeyCode Keycode)
 {
@@ -167,18 +180,73 @@ DoesBindingModeExist(std::string Mode)
     return !Mode.empty() && It != KWMHotkeys.Modes.end();
 }
 
+internal inline bool
+CompareCmdKey(hotkey *A, hotkey *B)
+{
+    if(HasFlags(A, Hotkey_Modifier_Flag_Cmd))
+    {
+        return (HasFlags(B, Hotkey_Modifier_Flag_LCmd) ||
+                HasFlags(B, Hotkey_Modifier_Flag_RCmd) ||
+                HasFlags(B, Hotkey_Modifier_Flag_Cmd));
+    }
+    else
+    {
+        return ((HasFlags(A, Hotkey_Modifier_Flag_LCmd) == HasFlags(B, Hotkey_Modifier_Flag_LCmd)) &&
+                (HasFlags(A, Hotkey_Modifier_Flag_RCmd) == HasFlags(B, Hotkey_Modifier_Flag_RCmd)) &&
+                (HasFlags(A, Hotkey_Modifier_Flag_Cmd) == HasFlags(B, Hotkey_Modifier_Flag_Cmd)));
+    }
+}
+
+internal inline bool
+CompareShiftKey(hotkey *A, hotkey *B)
+{
+    if(HasFlags(A, Hotkey_Modifier_Flag_Shift))
+    {
+        return (HasFlags(B, Hotkey_Modifier_Flag_LShift) ||
+                HasFlags(B, Hotkey_Modifier_Flag_RShift) ||
+                HasFlags(B, Hotkey_Modifier_Flag_Shift));
+    }
+    else
+    {
+        return ((HasFlags(A, Hotkey_Modifier_Flag_LShift) == HasFlags(B, Hotkey_Modifier_Flag_LShift)) &&
+                (HasFlags(A, Hotkey_Modifier_Flag_RShift) == HasFlags(B, Hotkey_Modifier_Flag_RShift)) &&
+                (HasFlags(A, Hotkey_Modifier_Flag_Shift) == HasFlags(B, Hotkey_Modifier_Flag_Shift)));
+    }
+}
+
+internal inline bool
+CompareAltKey(hotkey *A, hotkey *B)
+{
+    if(HasFlags(A, Hotkey_Modifier_Flag_Alt))
+    {
+        return (HasFlags(B, Hotkey_Modifier_Flag_LAlt) ||
+                HasFlags(B, Hotkey_Modifier_Flag_RAlt) ||
+                HasFlags(B, Hotkey_Modifier_Flag_Alt));
+    }
+    else
+    {
+        return ((HasFlags(A, Hotkey_Modifier_Flag_LAlt) == HasFlags(B, Hotkey_Modifier_Flag_LAlt)) &&
+                (HasFlags(A, Hotkey_Modifier_Flag_RAlt) == HasFlags(B, Hotkey_Modifier_Flag_RAlt)) &&
+                (HasFlags(A, Hotkey_Modifier_Flag_Alt) == HasFlags(B, Hotkey_Modifier_Flag_Alt)));
+    }
+}
+
+internal inline bool
+CompareControlKey(hotkey *A, hotkey *B)
+{
+    return (HasFlags(A, Hotkey_Modifier_Flag_Control) == HasFlags(B, Hotkey_Modifier_Flag_Control));
+}
 
 internal bool
 HotkeysAreEqual(hotkey *A, hotkey *B)
 {
     if(A && B)
     {
-        if(A->Mod.CmdKey == B->Mod.CmdKey &&
-           A->Mod.CtrlKey == B->Mod.CtrlKey &&
-           A->Mod.AltKey == B->Mod.AltKey &&
-           A->Mod.ShiftKey == B->Mod.ShiftKey &&
-           A->Key == B->Key)
-            return true;
+        return CompareCmdKey(A, B) &&
+               CompareShiftKey(A, B) &&
+               CompareAltKey(A, B) &&
+               CompareControlKey(A, B) &&
+               A->Key == B->Key;
     }
 
     return false;
@@ -284,13 +352,25 @@ KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Pas
     for(std::size_t ModIndex = 0; ModIndex < Modifiers.size(); ++ModIndex)
     {
         if(Modifiers[ModIndex] == "cmd")
-            Hotkey->Mod.CmdKey = true;
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Cmd);
+        else if(Modifiers[ModIndex] == "lcmd")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_LCmd);
+        else if(Modifiers[ModIndex] == "rcmd")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_RCmd);
         else if(Modifiers[ModIndex] == "alt")
-            Hotkey->Mod.AltKey = true;
-        else if(Modifiers[ModIndex] == "ctrl")
-            Hotkey->Mod.CtrlKey = true;
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Alt);
+        else if(Modifiers[ModIndex] == "lalt")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_LAlt);
+        else if(Modifiers[ModIndex] == "ralt")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_RAlt);
         else if(Modifiers[ModIndex] == "shift")
-            Hotkey->Mod.ShiftKey = true;
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Shift);
+        else if(Modifiers[ModIndex] == "lshift")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_LShift);
+        else if(Modifiers[ModIndex] == "rshift")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_RShift);
+        else if(Modifiers[ModIndex] == "ctrl")
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Control);
         else
             Hotkey->Mode = Modifiers[ModIndex];
     }
@@ -322,7 +402,7 @@ void KwmAddHotkey(std::string KeySym, std::string Command, bool Passthrough, boo
 {
     hotkey Hotkey = {};
     if(KwmParseHotkey(KeySym, Command, &Hotkey, Passthrough, KeycodeInHex) &&
-       !HotkeyExists(Hotkey.Mod, Hotkey.Key, NULL, Hotkey.Mode))
+       !HotkeyExists(Hotkey.Flags, Hotkey.Key, NULL, Hotkey.Mode))
         KWMHotkeys.Modes[Hotkey.Mode].Hotkeys.push_back(Hotkey);
 }
 
@@ -392,17 +472,32 @@ void CheckPrefixTimeout()
 void CreateHotkeyFromCGEvent(CGEventRef Event, hotkey *Hotkey)
 {
     CGEventFlags Flags = CGEventGetFlags(Event);
-    Hotkey->Mod.CmdKey = (Flags & kCGEventFlagMaskCommand) == kCGEventFlagMaskCommand;
-    Hotkey->Mod.AltKey = (Flags & kCGEventFlagMaskAlternate) == kCGEventFlagMaskAlternate;
-    Hotkey->Mod.CtrlKey = (Flags & kCGEventFlagMaskControl) == kCGEventFlagMaskControl;
-    Hotkey->Mod.ShiftKey = (Flags & kCGEventFlagMaskShift) == kCGEventFlagMaskShift;
+
+    if((Flags & Hotkey_Modifier_LCmd) == Hotkey_Modifier_LCmd)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_LCmd);
+    if((Flags & Hotkey_Modifier_RCmd) == Hotkey_Modifier_RCmd)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_RCmd);
+
+    if((Flags & Hotkey_Modifier_LShift) == Hotkey_Modifier_LShift)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_LShift);
+    if((Flags & Hotkey_Modifier_RShift) == Hotkey_Modifier_RShift)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_RShift);
+
+    if((Flags & Hotkey_Modifier_LAlt) == Hotkey_Modifier_LAlt)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_LAlt);
+    if((Flags & Hotkey_Modifier_RAlt) == Hotkey_Modifier_RAlt)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_RAlt);
+
+    if((Flags & Hotkey_Modifier_Control) == Hotkey_Modifier_Control)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_Control);
+
     Hotkey->Key = (CGKeyCode)CGEventGetIntegerValueField(Event, kCGKeyboardEventKeycode);
 }
 
-bool HotkeyExists(modifiers Mod, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode)
+bool HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode)
 {
     hotkey TempHotkey = {};
-    TempHotkey.Mod = Mod;
+    TempHotkey.Flags = Flags;
     TempHotkey.Key = Keycode;
 
     mode *BindingMode = GetBindingMode(Mode);

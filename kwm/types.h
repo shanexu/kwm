@@ -171,7 +171,7 @@ struct hotkey
     hotkey_state State;
     bool Passthrough;
 
-    modifiers Mod;
+    uint32_t Flags;
     CGKeyCode Key;
 
     std::string Mode;
