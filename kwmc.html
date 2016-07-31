@@ -93,9 +93,56 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
 
 <h2><a id="create-keybindings" class="anchor" href="#create-keybindings" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Keybindings</h2>
 
-<p>(My keybinds can be found <a href="https://gist.githubusercontent.com/koekeishiya/8760be63d6171e150278/raw/9ad1816abd2daf14a90068a8f0d45dcca373611b/Kwm:%2520binds">here</a> as an example)</p>
+<p>Kwm supports two different ways to create a keybind, either through the key-symbol or the key-code.
+My keybinds can be found <a href="https://gist.githubusercontent.com/koekeishiya/8760be63d6171e150278/raw/9ad1816abd2daf14a90068a8f0d45dcca373611b/Kwm:%2520binds">here</a> as an example.</p>
 
-<p>Kwm supports two different ways to create a keybind, either through the key-symbol or the key-code.</p>
+<p>The following keyboard modifiers are supported.</p>
+<table style="text-align: center;">
+    <tr>
+        <th>Modifier</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>cmd</td>
+        <td>Matches any of the cmd-keys.</td>
+    </tr>
+    <tr>
+        <td>lcmd</td>
+        <td>Matches the left cmd-key.</td>
+    </tr>
+    <tr>
+        <td>rcmd</td>
+        <td>Matches the right cmd-key.</td>
+    </tr>
+    <tr>
+        <td>shift</td>
+        <td>Matches any of the shift-keys.</td>
+    </tr>
+    <tr>
+        <td>lshift</td>
+        <td>Matches the left shift-key.</td>
+    </tr>
+    <tr>
+        <td>rshift</td>
+        <td>Matches the right shift-key.</td>
+    </tr>
+    <tr>
+        <td>alt</td>
+        <td>Matches any of the alt-keys.</td>
+    </tr>
+    <tr>
+        <td>lalt</td>
+        <td>Matches the left alt-key.</td>
+    </tr>
+    <tr>
+        <td>ralt</td>
+        <td>Matches the right alt-key.</td>
+    </tr>
+    <tr>
+        <td>ctrl</td>
+        <td>Matches the control-key.</td>
+    </tr>
+</table>
 
 <ul>
 <li><code>bindsym</code>: accepts a symbol / letter</li>
