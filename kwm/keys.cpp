@@ -558,34 +558,34 @@ void KwmEmitKeystroke(std::string KeySym)
     if(KeyTokens.size() != 2)
         return;
 
-    modifiers Mod = {};
+    uint32_t Flags = 0;
     std::vector<std::string> Modifiers = SplitString(KeyTokens[0], '+');
     for(std::size_t ModIndex = 0; ModIndex < Modifiers.size(); ++ModIndex)
     {
         if(Modifiers[ModIndex] == "cmd")
-            Mod.CmdKey = true;
+            Flags |= Hotkey_Modifier_Flag_Cmd;
         else if(Modifiers[ModIndex] == "alt")
-            Mod.AltKey = true;
+            Flags |= Hotkey_Modifier_Flag_Alt;
         else if(Modifiers[ModIndex] == "ctrl")
-            Mod.CtrlKey = true;
+            Flags |= Hotkey_Modifier_Flag_Control;
         else if(Modifiers[ModIndex] == "shift")
-            Mod.ShiftKey = true;
+            Flags |= Hotkey_Modifier_Flag_Shift;
     }
 
-    KwmEmitKeystroke(Mod, KeyTokens[1]);
+    KwmEmitKeystroke(Flags, KeyTokens[1]);
 }
 
-void KwmEmitKeystroke(modifiers Mod, std::string Key)
+void KwmEmitKeystroke(uint32_t Flags, std::string Key)
 {
-    CGEventFlags Flags = 0;
-    if(Mod.CmdKey)
-        Flags |= kCGEventFlagMaskCommand;
-    if(Mod.CtrlKey)
-        Flags |= kCGEventFlagMaskControl;
-    if(Mod.AltKey)
-        Flags |= kCGEventFlagMaskAlternate;
-    if(Mod.ShiftKey)
-        Flags |= kCGEventFlagMaskShift;
+    CGEventFlags EventFlags = 0;
+    if(Flags & Hotkey_Modifier_Flag_Cmd)
+        EventFlags |= kCGEventFlagMaskCommand;
+    if(Flags & Hotkey_Modifier_Flag_Control)
+        EventFlags |= kCGEventFlagMaskControl;
+    if(Flags & Hotkey_Modifier_Flag_Alt)
+        EventFlags |= kCGEventFlagMaskAlternate;
+    if(Flags & Hotkey_Modifier_Flag_Shift)
+        EventFlags |= kCGEventFlagMaskShift;
 
     CGKeyCode Keycode;
     bool Result = GetLayoutIndependentKeycode(Key, &Keycode);
@@ -596,8 +596,8 @@ void KwmEmitKeystroke(modifiers Mod, std::string Key)
     {
         CGEventRef EventKeyDown = CGEventCreateKeyboardEvent(NULL, Keycode, true);
         CGEventRef EventKeyUp = CGEventCreateKeyboardEvent(NULL, Keycode, false);
-        CGEventSetFlags(EventKeyDown, Flags);
-        CGEventSetFlags(EventKeyUp, Flags);
+        CGEventSetFlags(EventKeyDown, EventFlags);
+        CGEventSetFlags(EventKeyUp, EventFlags);
 
         CGEventPost(kCGHIDEventTap, EventKeyDown);
         CGEventPost(kCGHIDEventTap, EventKeyUp);

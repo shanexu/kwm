@@ -43,7 +43,7 @@ void KwmAddHotkey(std::string KeySym, std::string Command, bool Passthrough, boo
 void KwmRemoveHotkey(std::string KeySym, bool KeycodeInHex);
 bool HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode);
 void KwmEmitKeystrokes(std::string Text);
-void KwmEmitKeystroke(modifiers Mod, std::string Key);
+void KwmEmitKeystroke(uint32_t Flags, std::string Key);
 void KwmEmitKeystroke(std::string KeySym);
 
 mode *GetBindingMode(std::string Mode);

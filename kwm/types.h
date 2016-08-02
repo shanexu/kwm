@@ -33,7 +33,6 @@ struct space_identifier;
 struct color;
 struct mode;
 struct hotkey;
-struct modifiers;
 struct space_settings;
 struct container_offset;
 
@@ -155,14 +154,6 @@ struct space_identifier
         return (ScreenID < Other.ScreenID) ||
                (ScreenID == Other.ScreenID && SpaceID < Other.SpaceID);
     }
-};
-
-struct modifiers
-{
-    bool CmdKey;
-    bool AltKey;
-    bool CtrlKey;
-    bool ShiftKey;
 };
 
 struct hotkey
