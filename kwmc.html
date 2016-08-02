@@ -56,7 +56,10 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
 
 <ul>
 <li><a href="#create-keybindings">Create Keybindings</a>
-  <ul><li><a href="#binding-modes">Binding Modes</a></li></ul>
+  <ul>
+      <li><a href="#binding-modes">Binding Modes</a></li>
+      <li><a href="#variables">Variables</a></li>
+  </ul>
 </li>
 <li><a href="#create-rules">Create Window Rules</a>
   <ul>
@@ -95,6 +98,14 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
 
 <p>Kwm supports two different ways to create a keybind, either through the key-symbol or the key-code.
 My keybinds can be found <a href="https://gist.githubusercontent.com/koekeishiya/8760be63d6171e150278/raw/9ad1816abd2daf14a90068a8f0d45dcca373611b/Kwm:%2520binds">here</a> as an example.</p>
+
+<ul>
+    <li><code>bindsym</code>: accepts a symbol / letter</li>
+    <li><code>bindcode</code>: accepts a hexadecimal keycode</li>
+</ul>
+
+<pre><code>kwmc bindsym mode+mod+mod+mod-key command {opt?}
+kwmc bindcode mode+mod+mod+mod-hex command {opt?}</code></pre>
 
 <p>The following keyboard modifiers are supported.</p>
 <table style="text-align: center;">
@@ -144,16 +155,6 @@ My keybinds can be found <a href="https://gist.githubusercontent.com/koekeishiya
     </tr>
 </table>
 
-<ul>
-<li><code>bindsym</code>: accepts a symbol / letter</li>
-<li><code>bindcode</code>: accepts a hexadecimal keycode</li>
-</ul>
-
-<pre><code>kwmc bindsym mode+mod+mod+mod-key command {opt?}
-kwmc bindcode mode+mod+mod+mod-hex command {opt?}</code></pre>
-
-<p>To run an external command, the prefix 'exec' must be used.</p>
-
 <p>The ';' is interpreted as a separator and allows for Kwm to perform
 multiple commands in a single bind. For more advanced use, make shellscripts.</p>
 
@@ -173,6 +174,10 @@ kwmc bindcode_passthrough ..</code></pre>
 
 <pre><code>kwmc unbindsym mode+mod+mod+mod-key
 kwmc unbindcode mode+mod+mod+mod-hex</code></pre>
+
+<p>To run an external command, the prefix 'exec' must be used.</p>
+
+<pre><code>kwmc bindsym cmd-return exec open -na /Applications/Utilities/Terminal.app</code></pre>
 
 <h4 id="binding-modes">Binding Modes</h4>
 
@@ -195,6 +200,25 @@ kwmc mode my_mode color 0xaarrggbb</code></pre>
 <p>To activate a certain binding-mode, the following command must be used.</p>
 
 <pre><code>kwmc mode activate my_mode</code></pre>
+
+<h4 id="variables">Variables</h4>
+
+<p>Variables can be created using the following define keyword as shown below.
+If a variable already exists, it will be redefined.
+
+<pre><code>define name value</code></pre>
+
+After defining a variable, it can be used as any other word.
+
+<pre><code>define hyper cmd+alt+ctrl+shift
+kwmc bind hyper-h window -f west</code></pre>
+
+The current system is very simple and performs a substitution and so variable names that conflict with kwmc command keywords should be avoided!
+The config files are parsed in a top -> bottom manner and a define statement must therefore appear before the variable can be used.
+Failing to do so can cause undefined behaviour. Variables expansion is not recursive so it is not possible to define a variable
+with a value containing another variable.
+
+Variables are in file-scope. Thus, a variable defined in the kwmrc file will not be usable from within included files.</p>
 
 <h2><a id="create-rules" class="anchor" href="#create-rules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Window Rules</h2>
 
