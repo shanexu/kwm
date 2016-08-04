@@ -473,20 +473,35 @@ void CreateHotkeyFromCGEvent(CGEventRef Event, hotkey *Hotkey)
 {
     CGEventFlags Flags = CGEventGetFlags(Event);
 
-    if((Flags & Hotkey_Modifier_LCmd) == Hotkey_Modifier_LCmd)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_LCmd);
-    if((Flags & Hotkey_Modifier_RCmd) == Hotkey_Modifier_RCmd)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_RCmd);
+    if((Flags & Hotkey_Modifier_Cmd) == Hotkey_Modifier_Cmd)
+    {
+        if((Flags & Hotkey_Modifier_LCmd) == Hotkey_Modifier_LCmd)
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_LCmd);
+        else if((Flags & Hotkey_Modifier_RCmd) == Hotkey_Modifier_RCmd)
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_RCmd);
+        else
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Cmd);
+    }
 
-    if((Flags & Hotkey_Modifier_LShift) == Hotkey_Modifier_LShift)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_LShift);
-    if((Flags & Hotkey_Modifier_RShift) == Hotkey_Modifier_RShift)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_RShift);
+    if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
+    {
+        if((Flags & Hotkey_Modifier_LShift) == Hotkey_Modifier_LShift)
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_LShift);
+        else if((Flags & Hotkey_Modifier_RShift) == Hotkey_Modifier_RShift)
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_RShift);
+        else
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Shift);
+    }
 
-    if((Flags & Hotkey_Modifier_LAlt) == Hotkey_Modifier_LAlt)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_LAlt);
-    if((Flags & Hotkey_Modifier_RAlt) == Hotkey_Modifier_RAlt)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_RAlt);
+    if((Flags & Hotkey_Modifier_Alt) == Hotkey_Modifier_Alt)
+    {
+        if((Flags & Hotkey_Modifier_LAlt) == Hotkey_Modifier_LAlt)
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_LAlt);
+        else if((Flags & Hotkey_Modifier_RAlt) == Hotkey_Modifier_RAlt)
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_RAlt);
+        else
+            AddFlags(Hotkey, Hotkey_Modifier_Flag_Alt);
+    }
 
     if((Flags & Hotkey_Modifier_Control) == Hotkey_Modifier_Control)
         AddFlags(Hotkey, Hotkey_Modifier_Flag_Control);
