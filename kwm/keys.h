@@ -3,21 +3,27 @@
 
 #include "types.h"
 
+/* Taken from: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/
+				Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/IOKit.framework/
+				Versions/A/Headers/hidsystem/IOLLEvent.h
+
+NOTE(koekeishiya): All left and right-masks are device-dependent for some reason. */
+
 enum hotkey_modifier
 {
-    Hotkey_Modifier_Alt = kCGEventFlagMaskAlternate,
-    Hotkey_Modifier_LAlt = 524576,
-    Hotkey_Modifier_RAlt = 524608,
+    Hotkey_Modifier_Alt = 0x00080000,
+    Hotkey_Modifier_LAlt = 0x00000020,
+    Hotkey_Modifier_RAlt = 0x00000040,
 
-    Hotkey_Modifier_Shift = kCGEventFlagMaskShift,
-    Hotkey_Modifier_LShift = 131330,
-    Hotkey_Modifier_RShift = 131332,
+    Hotkey_Modifier_Shift = 0x00020000,
+    Hotkey_Modifier_LShift = 0x00000002,
+    Hotkey_Modifier_RShift = 0x00000004,
 
-    Hotkey_Modifier_Cmd = kCGEventFlagMaskCommand,
-    Hotkey_Modifier_LCmd = 1048840,
-    Hotkey_Modifier_RCmd = 1048848,
+    Hotkey_Modifier_Cmd = 0x00100000,
+    Hotkey_Modifier_LCmd = 0x00000008,
+    Hotkey_Modifier_RCmd = 0x00000010,
 
-    Hotkey_Modifier_Control = kCGEventFlagMaskControl,
+    Hotkey_Modifier_Control = 0x00040000,
 };
 
 enum hotkey_modifier_flag
