@@ -21,7 +21,7 @@ You can also drop by the channel **##kwm** on [freenode](http://webchat.freenode
 *Kwm* requires access to the OSX accessibility API.
 Tested on El Capitan (10.11.1 - 10.11.5).
 
-![img](https://cloud.githubusercontent.com/assets/6175959/16150759/6822282e-3499-11e6-9a2e-5c61af2caba7.png)
+![img](https://cloud.githubusercontent.com/assets/6175959/17399847/d5f0c4d4-5a44-11e6-9526-30e18a6a98a3.png)
 For more screenshots, [click here.](https://github.com/koekeishiya/kwm/issues/2)
 
 The bar seen in the above screenshot can be found [here](https://github.com/koekeishiya/nerdbar.widget).
