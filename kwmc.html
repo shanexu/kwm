@@ -222,6 +222,11 @@ Variables are in file-scope. Thus, a variable defined in the kwmrc file will not
 
 <h2><a id="create-rules" class="anchor" href="#create-rules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Window Rules</h2>
 
+<p><b>NOTE</b>: Some applications launched from the shell have to be whitelisted at startup and cannot use the
+window rules system. These applications have been flagged by OSX with a 'modeBackgroundOnly' flag, and can
+be allowed through by using: <pre><code>kwmc whitelist processname</pre></code></p>
+
+</br>
 <p>The window rule system is used to apply various properties to a range of applications or windows.</p>
 
 <p>Window rules are not applied lazily, and a window will try to match multiple rules.
