@@ -834,6 +834,8 @@ KwmParseKwmc(tokenizer *Tokenizer)
                     TokenEquals(Token, "bindcode_passthrough") ||
                     TokenEquals(Token, "rule"))
                 KwmInterpretCommand(std::string(Token.Text, Token.TextLength) + " " + GetTextTilEndOfLine(Tokenizer), 0);
+            else if(TokenEquals(Token, "whitelist"))
+                KwmInterpretCommand(std::string(Token.Text, Token.TextLength) + " " + GetTextTilEndOfLine(Tokenizer), 0);
             else
                 ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
         } break;

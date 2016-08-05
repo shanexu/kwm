@@ -3,6 +3,7 @@
 
 #include <Carbon/Carbon.h>
 #include <map>
+#include <string>
 #include <unistd.h>
 
 struct ax_application;
@@ -15,5 +16,6 @@ struct carbon_event_handler
 };
 
 bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon, std::map<pid_t, ax_application> *AXApplications);
+void CarbonWhitelistProcess(std::string Name);
 
 #endif

@@ -3,9 +3,24 @@
 #include "application.h"
 
 #include <string>
+#include <unordered_set>
 
 #define internal static
 internal std::map<pid_t, ax_application> *Applications;
+internal std::unordered_set<std::string> ProcessWhitelist;
+
+/* NOTE(koekeishiya): Disables modeOnlyBackground check for a given process. */
+void CarbonWhitelistProcess(std::string Name)
+{
+    ProcessWhitelist.insert(Name);
+}
+
+internal inline bool
+IsProcessWhitelisted(std::string Name)
+{
+    std::unordered_set<std::string>::const_iterator It = ProcessWhitelist.find(Name);
+    return (It != ProcessWhitelist.end());
+}
 
 /* NOTE(koekeishiya): A pascal string has the size of the string stored as the first byte. */
 internal void
@@ -27,17 +42,19 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
      * CFDictionaryRef ProcessInformationCopyDictionary(const ProcessSerialNumber *PSN, UInt32 infoToReturn) */
     GetProcessInformation(&PSN, &ProcessInfo);
 
-    /* NOTE(koekeishiya): Check if we should care about this process. */
-    if((ProcessInfo.processMode & modeOnlyBackground) != 0)
-        return;
-
     char ProcessNameCString[256] = {0};
     if(ProcessInfo.processName)
         CopyPascalStringToC(ProcessInfo.processName, ProcessNameCString);
+    std::string Name = ProcessNameCString;
+
+    /* NOTE(koekeishiya): Check if we should care about this process. */
+    if((!IsProcessWhitelisted(Name)) &&
+       ((ProcessInfo.processMode & modeOnlyBackground) != 0))
+        return;
 
     pid_t PID = 0;
     GetProcessPID(&PSN, &PID);
-    std::string Name = ProcessNameCString;
+
     /*
     printf("Carbon: Application launched %s\n", Name.c_str());
     printf("%d: modeReserved\n", ProcessInfo.processMode & modeReserved);

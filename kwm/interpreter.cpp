@@ -16,6 +16,7 @@
 #include "query.h"
 #include "scratchpad.h"
 #include "cursor.h"
+#include "axlib/axlib.h"
 
 #define internal static
 
@@ -831,4 +832,6 @@ void KwmInterpretCommand(std::string Message, int ClientSockFD)
         KwmAddRule(CreateStringFromTokens(Tokens, 1));
     else if(Tokens[0] == "scratchpad")
         KwmScratchpadCommand(Tokens, ClientSockFD);
+    else if(Tokens[0] == "whitelist")
+        CarbonWhitelistProcess(CreateStringFromTokens(Tokens, 1));
 }
