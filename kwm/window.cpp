@@ -218,11 +218,18 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
     {
         AXLibClearFlags(Display->Space, AXSpace_FastTransition);
         ax_window *Window = GetWindowByID(Display->Space->FocusedWindow);
-        if(Window)
+        if(Window && AXLibSpaceHasWindow(Window, Display->Space->ID))
         {
+            DEBUG("FastTransition: Found window");
             AXLibSetFocusedWindow(Window);
             DrawFocusedBorder(Display);
             MoveCursorToCenterOfWindow(Window);
+        }
+        else
+        {
+            DEBUG("FastTransition: No window found");
+            ClearBorder(&FocusedBorder);
+            FocusFirstLeafNode(Display);
         }
     }
 
