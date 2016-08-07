@@ -166,7 +166,15 @@ void FocusDisplay(ax_display *Display)
         space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
         if(SpaceInfo->RootNode)
         {
-            if(SpaceInfo->Settings.Mode == SpaceModeBSP)
+            ax_window *Window = NULL;
+            if((Display->Space->FocusedWindow) &&
+               ((Window = GetWindowByID(Display->Space->FocusedWindow)) && Window) &&
+               (AXLibSpaceHasWindow(Window, Display->Space->ID)))
+            {
+                AXLibSetFocusedWindow(Window);
+                MoveCursorToCenterOfWindow(Window);
+            }
+            else if(SpaceInfo->Settings.Mode == SpaceModeBSP)
             {
                 tree_node *Node = NULL;
                 GetFirstLeafNode(SpaceInfo->RootNode, (void**)&Node);
