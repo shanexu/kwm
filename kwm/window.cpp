@@ -128,7 +128,7 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayMoved)
 EVENT_CALLBACK(Callback_AXEvent_DisplayChanged)
 {
     FocusedDisplay = AXLibMainDisplay();
-    printf("%d: AXEvent_DisplayChanged\n", FocusedDisplay->ArrangementID);
+    DEBUG("AXEvent_DisplayChanged: " << FocusedDisplay->ArrangementID);
 
     AXLibRunningApplications();
     CreateWindowNodeTree(FocusedDisplay);
