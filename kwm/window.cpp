@@ -1728,6 +1728,9 @@ void FocusFirstLeafNode(ax_display *Display)
     if(Display)
     {
         space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+        if(!SpaceInfo->RootNode)
+            return;
+
         if(SpaceInfo->Settings.Mode == SpaceModeBSP)
         {
             tree_node *Node = NULL;
@@ -1747,6 +1750,9 @@ void FocusLastLeafNode(ax_display *Display)
     if(Display)
     {
         space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+        if(!SpaceInfo->RootNode)
+            return;
+
         if(SpaceInfo->Settings.Mode == SpaceModeBSP)
         {
             tree_node *Node = NULL;
