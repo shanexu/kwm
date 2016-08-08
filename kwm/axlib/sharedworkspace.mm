@@ -34,7 +34,6 @@ std::map<pid_t, std::string> SharedWorkspaceRunningApplications()
         if(NamePtr)
             Name = NamePtr;
 
-        printf("%s\n", Name.c_str());
         List[PID] = Name;
     }
 
