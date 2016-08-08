@@ -1,6 +1,6 @@
 ## AXLib
 
-*C (with simple C++ features)  window management library for OS X*
+*C (with simple C++ features) window management library for Kwm (OSX)*
 
 ## List of main features
 

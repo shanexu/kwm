@@ -1,5 +1,11 @@
 ### Default Binds:
+
 Note: "Secure Keyboard Entry" must be disabled for binds to work.
+
+The following are the binds provided in the sample config. They do not cover all of the options
+available with Kwm, and do not utilize the binding system to its potential. I strongly recommend
+taking the time to experiment and set up your own binds.
+
 
     - prefix-key: ctrl-s
 

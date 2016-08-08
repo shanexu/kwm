@@ -19,7 +19,7 @@ For sample configurations and other useful scripts, check out the [wiki](https:/
 You can also drop by the channel **##kwm** on [freenode](http://webchat.freenode.net)
 
 *Kwm* requires access to the OSX accessibility API.
-Tested on El Capitan (10.11.1 - 10.11.5).
+Tested on El Capitan (10.11.1 - 10.11.6).
 
 ![img](https://cloud.githubusercontent.com/assets/6175959/17399847/d5f0c4d4-5a44-11e6-9526-30e18a6a98a3.png)
 For more screenshots, [click here.](https://github.com/koekeishiya/kwm/issues/2)
@@ -44,6 +44,10 @@ To make *Kwm* start automatically on login through launchd, if compiled from sou
 
       edit /path/to/kwm on line 9 of examples/com.koekeishiya.kwm.plist
       cp examples/com.koekeishiya.kwm.plist ~/Library/LaunchAgents/
+
+Manually start Kwm using launchctl (name of plist file will be different if installed through Homebrew).
+
+      launchctl load -w ~/Library/LaunchAgents/com.koekeishiya.kwm.plist
 
 I would recommend for *Kwm* to be managed by launchd, as it otherwise requires
 the terminal application to have Accessibility Permissions (Not Recommended).
