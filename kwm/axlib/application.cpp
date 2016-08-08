@@ -110,25 +110,48 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         ax_window *Window = AXLibGetWindowByRef(Application, Element);
         if(Window)
         {
-            /* NOTE(koekeishiya): When a window is deminimized, we receive a FocusedWindowChanged notification before the
-               window is visible. Only notify our callback when we know that we can interact with the window in question. */
-            if(!AXLibHasFlags(Window, AXWindow_Minimized))
+            if(AXLibHasFlags(Application, AXApplication_IgnoreFocus))
             {
-                uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
-                *WindowID = Window->ID;
-                AXLibConstructEvent(AXEvent_WindowFocused, WindowID, false);
-            }
+                /* NOTE(koekeishiya): When Kwm tries to focus the window of an application that
+                 * has windows open on multiple displays, OSX prioritizes the window on the
+                 * active display. If this application has been flagged, we ignore the OSX notification. */
+                AXLibClearFlags(Application, AXApplication_IgnoreFocus);
 
-            /* NOTE(koekeishiya): If the application corresponding to this window is flagged for activation and
-                                  the window is visible to the user, this should be the focused application. */
-            if(AXLibHasFlags(Window->Application, AXApplication_Activate))
+                /* NOTE(koekeishiya): Even if this request is ignored, OSX does make that window
+                 * the focused window for the application in question. We restore focus back to
+                 * the window that had focus before OSX decided to **** things up. */
+                AXLibAddFlags(Application, AXApplication_RestoreFocus);
+                AXLibSetWindowProperty(Application->Focus->Ref, kAXMainAttribute, kCFBooleanTrue);
+            }
+            else if(AXLibHasFlags(Application, AXApplication_RestoreFocus))
             {
-                AXLibClearFlags(Window->Application, AXApplication_Activate);
+                /* NOTE(koekeishiya): The window that we restore focus to is already marked as the focused
+                 * window for this application as far as Kwm is concerned and we do not have to update our
+                 * state, which is why we do not emit a new AXEvent_WindowFocused event. */
+                AXLibClearFlags(Application, AXApplication_RestoreFocus);
+            }
+            else
+            {
+                /* NOTE(koekeishiya): When a window is deminimized, we receive a FocusedWindowChanged notification before the
+                   window is visible. Only notify our callback when we know that we can interact with the window in question. */
                 if(!AXLibHasFlags(Window, AXWindow_Minimized))
                 {
-                    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-                    *ApplicationPID = Window->Application->PID;
-                    AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+                    uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+                    *WindowID = Window->ID;
+                    AXLibConstructEvent(AXEvent_WindowFocused, WindowID, false);
+                }
+
+                /* NOTE(koekeishiya): If the application corresponding to this window is flagged for activation and
+                                      the window is visible to the user, this should be the focused application. */
+                if(AXLibHasFlags(Window->Application, AXApplication_Activate))
+                {
+                    AXLibClearFlags(Window->Application, AXApplication_Activate);
+                    if(!AXLibHasFlags(Window, AXWindow_Minimized))
+                    {
+                        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+                        *ApplicationPID = Window->Application->PID;
+                        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+                    }
                 }
             }
         }

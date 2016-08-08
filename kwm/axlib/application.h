@@ -14,6 +14,9 @@
 enum ax_application_flags
 {
     AXApplication_Activate = (1 << 0),
+    AXApplication_PrepIgnoreFocus = (1 << 1),
+    AXApplication_IgnoreFocus = (1 << 2),
+    AXApplication_RestoreFocus = (1 << 3),
 };
 
 struct ax_application

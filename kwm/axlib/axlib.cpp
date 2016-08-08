@@ -102,15 +102,26 @@ ax_window *AXLibGetFocusedWindow(ax_application *Application)
                       application corresponding to this window is not active, it will be activated. */
 void AXLibSetFocusedWindow(ax_window *Window)
 {
-    AXLibSetWindowProperty(Window->Ref, kAXMainAttribute, kCFBooleanTrue);
-    AXLibSetWindowProperty(Window->Ref, kAXFocusedAttribute, kCFBooleanTrue);
-    AXUIElementPerformAction(Window->Ref, kAXRaiseAction);
-    SetFrontProcessWithOptions(&Window->Application->PSN, kSetFrontProcessFrontWindowOnly);
-
-    /* NOTE(koekeishiya): Calling SetFrontProcessWithOptions is faster than performing this sequence of functions.
     if(!AXLibIsApplicationActive(Window->Application))
-        AXLibActivateApplication(Window->Application);
-    */
+    {
+        AXLibSetWindowProperty(Window->Ref, kAXMainAttribute, kCFBooleanTrue);
+        AXLibSetWindowProperty(Window->Ref, kAXFocusedAttribute, kCFBooleanTrue);
+        AXUIElementPerformAction(Window->Ref, kAXRaiseAction);
+
+        /* NOTE(koekeishiya): If the window to gain focus is on a different display,
+         * we want to ignore the window focused event emitted by OSX after the
+         * application has been activated. */
+        if(AXLibWindowDisplay(Window) != AXLibMainDisplay())
+            AXLibAddFlags(Window->Application, AXApplication_PrepIgnoreFocus);
+
+        SetFrontProcessWithOptions(&Window->Application->PSN, kSetFrontProcessFrontWindowOnly);
+    }
+    else
+    {
+        /* NOTE(koekeishiya): The application is already the active application,
+         * and so we simply need to make this window the focused one. */
+        AXLibSetWindowProperty(Window->Ref, kAXMainAttribute, kCFBooleanTrue);
+    }
 }
 
 /* NOTE(koekeishiya): Returns a vector of all windows that we currently know about. This fuction is probably not necessary. */

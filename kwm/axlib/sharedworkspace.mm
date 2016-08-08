@@ -151,6 +151,12 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
     {
         ax_application *Application = &(*Applications)[PID];
 
+        if(AXLibHasFlags(Application, AXApplication_PrepIgnoreFocus))
+        {
+            AXLibClearFlags(Application, AXApplication_PrepIgnoreFocus);
+            AXLibAddFlags(Application, AXApplication_IgnoreFocus);
+        }
+
         /* NOTE(koekeishiya): When an application that is already running, but has no open windows, is activated,
                               or a window is deminimized, we receive 'didApplicationActivate' notification first.
                               We have to preserve our insertion point and flag this application for activation at a later point in time. */
