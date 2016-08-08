@@ -34,6 +34,9 @@ std::map<pid_t, std::string> SharedWorkspaceRunningApplications()
         if(NamePtr)
             Name = NamePtr;
 
+        if(Name == "kwm-overlay")
+            continue;
+
         List[PID] = Name;
     }
 
