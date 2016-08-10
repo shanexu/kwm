@@ -27,17 +27,19 @@ std::map<pid_t, std::string> SharedWorkspaceRunningApplications()
 
     for(NSRunningApplication *Application in [[NSWorkspace sharedWorkspace] runningApplications])
     {
-        pid_t PID = Application.processIdentifier;
+        if([Application activationPolicy] == NSApplicationActivationPolicyRegular)
+        {
+            pid_t PID = Application.processIdentifier;
+            std::string Name = "[Unknown]";
+            const char *NamePtr = [[Application localizedName] UTF8String];
+            if(NamePtr)
+                Name = NamePtr;
 
-        std::string Name = "[Unknown]";
-        const char *NamePtr = [[Application localizedName] UTF8String];
-        if(NamePtr)
-            Name = NamePtr;
+            if(Name == "kwm-overlay")
+                continue;
 
-        if(Name == "kwm-overlay")
-            continue;
-
-        List[PID] = Name;
+            List[PID] = Name;
+        }
     }
 
     return List;
