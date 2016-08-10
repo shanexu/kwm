@@ -17,9 +17,11 @@ std::string KwmReadFromSocket(int ClientSockFD)
     return Message;
 }
 
-void KwmWriteToSocket(int ClientSockFD, std::string Msg)
+void KwmWriteToSocket(std::string Msg, int ClientSockFD)
 {
     send(ClientSockFD, Msg.c_str(), Msg.size(), 0);
+    shutdown(ClientSockFD, SHUT_RDWR);
+    close(ClientSockFD);
 }
 
 void * KwmDaemonHandleConnectionBG(void *)
@@ -41,8 +43,6 @@ void KwmDaemonHandleConnection()
     {
         std::string Message = KwmReadFromSocket(ClientSockFD);
         KwmInterpretCommand(Message, ClientSockFD);
-        shutdown(ClientSockFD, SHUT_RDWR);
-        close(ClientSockFD);
     }
 }
 

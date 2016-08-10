@@ -14,7 +14,6 @@ void ToggleScratchpadWindow(int Index);
 void HideScratchpadWindow(int Index);
 void ShowScratchpadWindow(int Index);
 void ResizeScratchpadWindow(ax_display *Display, ax_window *Window);
-std::string GetWindowsOnScratchpad();
 void ShowAllScratchpadWindows();
 
 #endif

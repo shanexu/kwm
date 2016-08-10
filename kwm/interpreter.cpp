@@ -13,9 +13,9 @@
 #include "serializer.h"
 #include "helpers.h"
 #include "rules.h"
-#include "query.h"
 #include "scratchpad.h"
 #include "cursor.h"
+#include "event.h"
 #include "axlib/axlib.h"
 
 #define internal static
@@ -292,54 +292,74 @@ KwmQueryCommand(std::vector<std::string> &Tokens, int ClientSockFD)
     if(Tokens[1] == "tiling")
     {
         if(Tokens[2] == "mode")
-            KwmWriteToSocket(ClientSockFD, GetActiveTilingMode());
+            KwmConstructEvent(KWMEvent_QueryTilingMode, KwmCreateContext(ClientSockFD));
         else if(Tokens[2] == "spawn")
-            KwmWriteToSocket(ClientSockFD, GetActiveSpawnPosition());
+            KwmConstructEvent(KWMEvent_QuerySpawnPosition, KwmCreateContext(ClientSockFD));
         else if(Tokens[2] == "split-mode")
-            KwmWriteToSocket(ClientSockFD, GetActiveSplitMode());
+            KwmConstructEvent(KWMEvent_QuerySplitMode, KwmCreateContext(ClientSockFD));
         else if(Tokens[2] == "split-ratio")
-            KwmWriteToSocket(ClientSockFD, GetActiveSplitRatio());
+            KwmConstructEvent(KWMEvent_QuerySplitRatio, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "window")
     {
         if(Tokens[2] == "focused")
         {
             if(Tokens[3] == "id")
-                KwmWriteToSocket(ClientSockFD, GetIdOfFocusedWindow());
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowId, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "name")
-                KwmWriteToSocket(ClientSockFD, GetNameOfFocusedWindow());
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowName, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "split")
-                KwmWriteToSocket(ClientSockFD, GetSplitModeOfFocusedWindow());
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowSplit, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "float")
-                KwmWriteToSocket(ClientSockFD, GetFloatStatusOfFocusedWindow());
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowFloat, KwmCreateContext(ClientSockFD));
             else
-                KwmWriteToSocket(ClientSockFD, GetWindowIdInDirectionOfFocusedWindow(Tokens[3]));
+            {
+                int *Args = (int *) malloc(sizeof(int) * 2);
+                *Args = ClientSockFD;
+
+                if(Tokens[3] == "north")
+                    *(Args + 1) = 0;
+                else if(Tokens[3] == "east")
+                    *(Args + 1) = 90;
+                else if(Tokens[3] == "south")
+                    *(Args + 1) = 180;
+                else if(Tokens[3] == "west")
+                    *(Args + 1) = 270;
+                else
+                    *(Args + 1) = 0;
+
+                KwmConstructEvent(KWMEvent_QueryWindowIdInDirectionOfFocusedWindow, Args);
+            }
         }
         else if(Tokens[2] == "marked")
         {
             if(Tokens[3] == "id")
-                KwmWriteToSocket(ClientSockFD, GetIdOfMarkedWindow());
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowId, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "name")
-                KwmWriteToSocket(ClientSockFD, GetNameOfMarkedWindow());
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowName, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "split")
-                KwmWriteToSocket(ClientSockFD, GetSplitModeOfMarkedWindow());
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowSplit, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "float")
-                KwmWriteToSocket(ClientSockFD, GetFloatStatusOfMarkedWindow());
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowFloat, KwmCreateContext(ClientSockFD));
         }
         else if(Tokens[2] == "parent")
         {
-            int FirstID = ConvertStringToInt(Tokens[3]);
-            int SecondID = ConvertStringToInt(Tokens[4]);
-            KwmWriteToSocket(ClientSockFD, GetStateOfParentNode(FirstID, SecondID));
+            int *Args = (int *) malloc(sizeof(int) * 3);
+            *Args = ClientSockFD;
+            *(Args + 1) = ConvertStringToInt(Tokens[3]);
+            *(Args + 2) = ConvertStringToInt(Tokens[4]);
+            KwmConstructEvent(KWMEvent_QueryParentNodeState, Args);
         }
         else if(Tokens[2] == "child")
         {
-            int WindowID = ConvertStringToInt(Tokens[3]);
-            KwmWriteToSocket(ClientSockFD, GetPositionInNode(WindowID));
+            int *Args = (int *) malloc(sizeof(int) * 2);
+            *Args = ClientSockFD;
+            *(Args + 1) = ConvertStringToInt(Tokens[3]);
+            KwmConstructEvent(KWMEvent_QueryNodePosition, Args);
         }
         else if(Tokens[2] == "list")
         {
-            KwmWriteToSocket(ClientSockFD, GetWindowList());
+            KwmConstructEvent(KWMEvent_QueryWindowList, KwmCreateContext(ClientSockFD));
         }
     }
     else if(Tokens[1] == "space")
@@ -347,54 +367,54 @@ KwmQueryCommand(std::vector<std::string> &Tokens, int ClientSockFD)
         if(Tokens[2] == "active")
         {
             if(Tokens[3] == "tag")
-                KwmWriteToSocket(ClientSockFD, GetTagOfCurrentSpace());
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceTag, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "name")
-                KwmWriteToSocket(ClientSockFD, GetNameOfCurrentSpace());
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceName, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "id")
-                KwmWriteToSocket(ClientSockFD, GetIdOfCurrentSpace());
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceId, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "mode")
-                KwmWriteToSocket(ClientSockFD, GetModeOfCurrentSpace());
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceMode, KwmCreateContext(ClientSockFD));
         }
         else if(Tokens[2] == "previous")
         {
             if(Tokens[3] == "name")
-                KwmWriteToSocket(ClientSockFD, GetNameOfPreviousSpace());
+                KwmConstructEvent(KWMEvent_QueryPreviousSpaceName, KwmCreateContext(ClientSockFD));
             else if(Tokens[3] == "id")
-                KwmWriteToSocket(ClientSockFD, GetIdOfPreviousSpace());
+                KwmConstructEvent(KWMEvent_QueryPreviousSpaceId, KwmCreateContext(ClientSockFD));
         }
         else if(Tokens[2] == "list")
-            KwmWriteToSocket(ClientSockFD, GetListOfSpaces());
+            KwmConstructEvent(KWMEvent_QuerySpaces, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "border")
     {
         if(Tokens[2] == "focused")
-            KwmWriteToSocket(ClientSockFD, GetStateOfFocusedBorder());
+            KwmConstructEvent(KWMEvent_QueryFocusedBorder, KwmCreateContext(ClientSockFD));
         else if(Tokens[2] == "marked")
-            KwmWriteToSocket(ClientSockFD, GetStateOfMarkedBorder());
+            KwmConstructEvent(KWMEvent_QueryMarkedBorder, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "cycle-focus")
     {
-        KwmWriteToSocket(ClientSockFD, GetStateOfCycleFocus());
+        KwmConstructEvent(KWMEvent_QueryCycleFocus, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "float-non-resizable")
     {
-        KwmWriteToSocket(ClientSockFD, GetStateOfFloatNonResizable());
+        KwmConstructEvent(KWMEvent_QueryFloatNonResizable, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "lock-to-container")
     {
-        KwmWriteToSocket(ClientSockFD, GetStateOfLockToContainer());
+        KwmConstructEvent(KWMEvent_QueryLockToContainer, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "standby-on-float")
     {
-        KwmWriteToSocket(ClientSockFD, GetStateOfStandbyOnFloat());
+        KwmConstructEvent(KWMEvent_QueryStandbyOnFloat, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "focus-follows-mouse")
     {
-        KwmWriteToSocket(ClientSockFD, GetStateOfFocusFollowsMouse());
+        KwmConstructEvent(KWMEvent_QueryFocusFollowsMouse, KwmCreateContext(ClientSockFD));
     }
     else if(Tokens[1] == "mouse-follows-focus")
     {
-        KwmWriteToSocket(ClientSockFD, GetStateOfMouseFollowsFocus());
+        KwmConstructEvent(KWMEvent_QueryMouseFollowsFocus, KwmCreateContext(ClientSockFD));
     }
 }
 
@@ -794,7 +814,7 @@ KwmScratchpadCommand(std::vector<std::string> &Tokens, int ClientSockFD)
     }
     else if(Tokens[1] == "list")
     {
-        KwmWriteToSocket(ClientSockFD, GetWindowsOnScratchpad());
+        KwmConstructEvent(KWMEvent_QueryScratchpad, KwmCreateContext(ClientSockFD));
     }
 }
 
@@ -834,4 +854,10 @@ void KwmInterpretCommand(std::string Message, int ClientSockFD)
         KwmScratchpadCommand(Tokens, ClientSockFD);
     else if(Tokens[0] == "whitelist")
         CarbonWhitelistProcess(CreateStringFromTokens(Tokens, 1));
+
+    if(Tokens[0] != "query")
+    {
+        shutdown(ClientSockFD, SHUT_RDWR);
+        close(ClientSockFD);
+    }
 }

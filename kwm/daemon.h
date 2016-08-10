@@ -9,7 +9,7 @@
 #include "interpreter.h"
 
 std::string KwmReadFromSocket(int ClientSockFD);
-void KwmWriteToSocket(int ClientSockFD, std::string Msg);
+void KwmWriteToSocket(std::string Msg, int ClientSockFD);
 void * KwmDaemonHandleConnectionBG(void *);
 void KwmDaemonHandleConnection();
 void KwmTerminateDaemon();

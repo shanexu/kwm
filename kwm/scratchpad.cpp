@@ -168,23 +168,3 @@ void ShowAllScratchpadWindows()
     for(It = Scratchpad.Windows.begin(); It != Scratchpad.Windows.end(); ++It)
         ShowScratchpadWindow(It->first);
 }
-
-std::string GetWindowsOnScratchpad()
-{
-    std::string Result;
-
-    int Index = 0;
-    std::map<int, ax_window*>::iterator It;
-    for(It = Scratchpad.Windows.begin(); It != Scratchpad.Windows.end(); ++It)
-    {
-        Result += std::to_string(It->first) + ": " +
-                  std::to_string(It->second->ID) + ", " +
-                  It->second->Application->Name + ", " +
-                  It->second->Name;
-
-        if(Index++ < Scratchpad.Windows.size() - 1)
-            Result += "\n";
-    }
-
-    return Result;
-}
