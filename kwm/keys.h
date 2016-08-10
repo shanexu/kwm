@@ -55,5 +55,6 @@ void KwmEmitKeystroke(std::string KeySym);
 mode *GetBindingMode(std::string Mode);
 void KwmActivateBindingMode(std::string Mode);
 void CheckPrefixTimeout();
+void KwmExecuteSystemCommand(std::string Command);
 
 #endif

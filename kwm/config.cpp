@@ -3,7 +3,7 @@
 #include "interpreter.h"
 #include "rules.h"
 #include "helpers.h"
-#include "command.h"
+#include "keys.h"
 
 #define internal static
 

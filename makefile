@@ -5,7 +5,7 @@ SWIFT_STATIC  = $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swi
 SDK_ROOT      = $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
 KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/window.cpp kwm/display.cpp \
 				kwm/daemon.cpp kwm/interpreter.cpp kwm/keys.cpp kwm/space.cpp kwm/border.cpp kwm/cursor.cpp \
-				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/command.cpp kwm/config.cpp \
+				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp \
 				kwm/axlib/axlib.cpp kwm/axlib/element.cpp kwm/axlib/window.cpp kwm/axlib/application.cpp kwm/axlib/observer.cpp \
 				kwm/axlib/event.cpp kwm/axlib/sharedworkspace.mm kwm/axlib/display.mm kwm/axlib/carbon.cpp
 KWM_OBJS_TMP  = $(KWM_SRCS:.cpp=.o)

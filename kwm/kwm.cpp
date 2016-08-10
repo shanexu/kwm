@@ -9,7 +9,6 @@
 #include "scratchpad.h"
 #include "border.h"
 #include "config.h"
-#include "command.h"
 #include "cursor.h"
 #include "axlib/axlib.h"
 
