@@ -702,6 +702,19 @@ bool AXLibSpaceHasWindow(ax_window *Window, CGSSpaceID SpaceID)
     return Result;
 }
 
+bool AXLibStickyWindow(ax_window *Window)
+{
+    bool Result = false;
+    NSArray *NSArrayWindow = @[ @(Window->ID) ];
+    CFArrayRef Spaces = CGSCopySpacesForWindows(CGSDefaultConnection, kCGSSpaceAll, (__bridge CFArrayRef)NSArrayWindow);
+    int NumberOfSpaces = CFArrayGetCount(Spaces);
+    Result = NumberOfSpaces > 1;
+
+    CFRelease(Spaces);
+    [NSArrayWindow release];
+    return Result;
+}
+
 bool AXLibDisplayHasSeparateSpaces()
 {
     return [NSScreen screensHaveSeparateSpaces];

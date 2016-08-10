@@ -75,7 +75,8 @@ TileWindow(ax_display *Display, ax_window *Window)
     {
         if((!AXLibHasFlags(Window, AXWindow_Minimized)) &&
            (AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
-           (!AXLibHasFlags(Window, AXWindow_Floating)))
+           (!AXLibHasFlags(Window, AXWindow_Floating)) &&
+           (!AXLibStickyWindow(Window)))
         {
             AddWindowToNodeTree(Display, Window->ID);
         }
@@ -146,7 +147,8 @@ AddMinimizedWindowsToTree(ax_display *Display)
         {
             AXLibClearFlags(Window, AXWindow_Minimized);
             if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
-               (!AXLibHasFlags(Window, AXWindow_Floating)))
+               (!AXLibHasFlags(Window, AXWindow_Floating)) &&
+               (!AXLibStickyWindow(Window)))
             {
                 AddWindowToNodeTree(Display, Window->ID);
             }
@@ -431,7 +433,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDeminimized)
         Assert(Display != NULL);
 
         if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
-                (!AXLibHasFlags(Window, AXWindow_Floating)))
+           (!AXLibHasFlags(Window, AXWindow_Floating)))
         {
             AddWindowToNodeTree(Display, Window->ID);
         }
@@ -639,7 +641,9 @@ GetAllWindowIDSOnDisplay(ax_display *Display)
                     continue;
             }
 
-            Windows.push_back(Window->ID);
+            if((AXLibSpaceHasWindow(Window, Display->Space->ID)) &&
+               (!AXLibStickyWindow(Window)))
+                Windows.push_back(Window->ID);
         }
     }
 
@@ -1910,4 +1914,3 @@ void MoveFloatingWindow(int X, int Y)
                                Window->Position.y + Y);
     }
 }
-

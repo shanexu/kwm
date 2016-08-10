@@ -93,5 +93,6 @@ void AXLibSpaceTransition(ax_display *Display, CGSSpaceID SpaceID);
 bool AXLibSpaceHasWindow(ax_window *Window, CGSSpaceID SpaceID);
 void AXLibSpaceAddWindow(CGSSpaceID SpaceID, uint32_t WindowID);
 void AXLibSpaceRemoveWindow(CGSSpaceID SpaceID, uint32_t WindowID);
+bool AXLibStickyWindow(ax_window *Window);
 
 #endif
