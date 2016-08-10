@@ -944,7 +944,7 @@ void KwmParseConfig(std::string File)
                     if(TokenEquals(Token, "kwmc"))
                         KwmParseKwmc(&Tokenizer);
                     else if(TokenEquals(Token, "exec"))
-                        KwmExecuteThreadedSystemCommand(GetTextTilEndOfLine(&Tokenizer));
+                        KwmExecuteSystemCommand(GetTextTilEndOfLine(&Tokenizer));
                     else if(TokenEquals(Token, "include"))
                         KwmParseInclude(&Tokenizer);
                     else if(TokenEquals(Token, "define"))

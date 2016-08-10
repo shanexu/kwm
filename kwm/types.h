@@ -333,7 +333,6 @@ struct kwm_settings
 
 struct kwm_thread
 {
-    pthread_t SystemCommand;
     pthread_t Daemon;
 };
 

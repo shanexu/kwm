@@ -292,7 +292,7 @@ KwmExecuteHotkey(hotkey *Hotkey)
         {
             DEBUG("KwmExecuteHotkey() " << Command);
             if(IsPrefixOfString(Command, "exec"))
-                KwmExecuteThreadedSystemCommand(Command);
+                KwmExecuteSystemCommand(Command);
             else
                 KwmInterpretCommand(Command, 0);
 

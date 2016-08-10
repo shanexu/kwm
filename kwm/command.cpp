@@ -1,8 +1,6 @@
 #include "command.h"
 #include "helpers.h"
 
-extern kwm_thread KWMThread;
-
 void KwmExecuteSystemCommand(std::string Command)
 {
     int ChildPID = fork();
@@ -22,18 +20,4 @@ void KwmExecuteSystemCommand(std::string Command)
         DEBUG("Exec failed with code: " << StatusCode);
         exit(StatusCode);
     }
-}
-
-void KwmExecuteThreadedSystemCommand(std::string Command)
-{
-    std::string *HCommand = new std::string(Command);
-    pthread_create(&KWMThread.SystemCommand, NULL, &KwmStartThreadedSystemCommand, HCommand);
-}
-
-void * KwmStartThreadedSystemCommand(void *Args)
-{
-    std::string Command = *((std::string*)Args);
-    KwmExecuteSystemCommand(Command);
-    delete (std::string*)Args;
-    return NULL;
 }

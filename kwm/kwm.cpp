@@ -166,7 +166,7 @@ KwmExecuteInitScript()
 
     struct stat Buffer;
     if(stat(InitFile.c_str(), &Buffer) == 0)
-        KwmExecuteThreadedSystemCommand(InitFile);
+        KwmExecuteSystemCommand(InitFile);
 }
 
 internal void
