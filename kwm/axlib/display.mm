@@ -358,65 +358,69 @@ AXLibMoveDisplay(CGDirectDisplayID DisplayID)
 internal void
 AXDisplayReconfigurationCallBack(CGDirectDisplayID DisplayID, CGDisplayChangeSummaryFlags Flags, void *UserInfo)
 {
-    /* TODO(koekeishiya): Debug the following sequence of actions, which led to a crash for some reason.
-                          1. Start Kwm
-                          2. Connect external monitor
-                          3. Close macbook lid (clamshell mode)
-                          4. External monitor becomes main
-                          5. Reopen macbook lid, crash happens (?) */
-
-    /* TODO(koekeishiya): Can we somehow save the flags performed between the call to
-                          BeginDisplayConfiguration and EndDisplayConfiguration and
-                          then notify our callbacks in the correct order (?) */
-
+    AXLibPauseEventLoop();
     static int DisplayCallbackCount = 0;
+#ifdef DEBUG_BUILD
     printf("%d: Begin Display Callback\n", ++DisplayCallbackCount);
+#endif
 
     if(Flags & kCGDisplayAddFlag)
     {
+#ifdef DEBUG_BUILD
         printf("%d: Display detected\n", DisplayID);
+#endif
         AXLibAddDisplay(DisplayID);
     }
 
     if(Flags & kCGDisplayRemoveFlag)
     {
+#ifdef DEBUG_BUILD
         printf("%d: Display removed\n", DisplayID);
+#endif
+        AXLibAddDisplay(DisplayID);
         AXLibRemoveDisplay(DisplayID);
     }
 
     if(Flags & kCGDisplayDesktopShapeChangedFlag)
     {
+#ifdef DEBUG_BUILD
         printf("%d: Display resolution changed\n", DisplayID);
+#endif
         AXLibResizeDisplay(DisplayID);
     }
 
     if(Flags & kCGDisplayMovedFlag)
     {
+#ifdef DEBUG_BUILD
         printf("%d: Display moved\n", DisplayID);
+#endif
         AXLibMoveDisplay(DisplayID);
     }
 
-    if (Flags & kCGDisplaySetMainFlag)
+#ifdef DEBUG_BUILD
+    if(Flags & kCGDisplaySetMainFlag)
     {
-        printf("%d: Display became main\n", DisplayID);
+       printf("%d: Display became main\n", DisplayID);
     }
 
-    if (Flags & kCGDisplaySetModeFlag)
+    if(Flags & kCGDisplaySetModeFlag)
     {
-        printf("%d: Display changed mode\n", DisplayID);
+       printf("%d: Display changed mode\n", DisplayID);
     }
 
-    if (Flags & kCGDisplayEnabledFlag)
+    if(Flags & kCGDisplayEnabledFlag)
     {
-        printf("%d: Display enabled\n", DisplayID);
+       printf("%d: Display enabled\n", DisplayID);
     }
 
-    if (Flags & kCGDisplayDisabledFlag)
+    if(Flags & kCGDisplayDisabledFlag)
     {
         printf("%d: Display disabled\n", DisplayID);
     }
 
     printf("%d: End Display Callback\n", DisplayCallbackCount);
+#endif
+    AXLibResumeEventLoop();
 }
 
 /* NOTE(koekeishiya): Populate map with information about all connected displays. */
