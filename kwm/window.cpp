@@ -596,17 +596,15 @@ GetAllWindowIDsInTree(space_info *Space)
 }
 
 internal std::vector<uint32_t>
-GetAllAXWindowIDsToRemoveFromTree(std::vector<uint32_t> &WindowIDsInTree)
+GetAllAXWindowIDsToRemoveFromTree(std::vector<ax_window *> &VisibleWindows, std::vector<uint32_t> &WindowIDsInTree)
 {
     std::vector<uint32_t> Windows;
-    std::vector<ax_window *> AXWindows = AXLibGetAllVisibleWindows();
-
     for(std::size_t IDIndex = 0; IDIndex < WindowIDsInTree.size(); ++IDIndex)
     {
         bool Found = false;
-        for(std::size_t WindowIndex = 0; WindowIndex < AXWindows.size(); ++WindowIndex)
+        for(std::size_t WindowIndex = 0; WindowIndex < VisibleWindows.size(); ++WindowIndex)
         {
-            if(AXWindows[WindowIndex]->ID == WindowIDsInTree[IDIndex])
+            if(VisibleWindows[WindowIndex]->ID == WindowIDsInTree[IDIndex])
             {
                 Found = true;
                 break;
@@ -621,14 +619,13 @@ GetAllAXWindowIDsToRemoveFromTree(std::vector<uint32_t> &WindowIDsInTree)
 }
 
 internal std::vector<ax_window *>
-GetAllAXWindowsNotInTree(ax_display *Display, std::vector<uint32_t> &WindowIDsInTree)
+GetAllAXWindowsNotInTree(ax_display *Display, std::vector<ax_window *> &VisibleWindows, std::vector<uint32_t> &WindowIDsInTree)
 {
     std::vector<ax_window *> Windows;
-    std::vector<ax_window *> AXWindows = AXLibGetAllVisibleWindows();
-    for(std::size_t WindowIndex = 0; WindowIndex < AXWindows.size(); ++WindowIndex)
+    for(std::size_t WindowIndex = 0; WindowIndex < VisibleWindows.size(); ++WindowIndex)
     {
         bool Found = false;
-        ax_window *Window = AXWindows[WindowIndex];
+        ax_window *Window = VisibleWindows[WindowIndex];
         for(std::size_t IDIndex = 0; IDIndex < WindowIDsInTree.size(); ++IDIndex)
         {
             if(Window->ID == WindowIDsInTree[IDIndex])
@@ -1055,12 +1052,13 @@ void RemoveWindowFromNodeTree(ax_display *Display, uint32_t WindowID)
 internal void
 RebalanceBSPTree(ax_display *Display)
 {
-    space_info *Space = &WindowTree[Display->Space->Identifier];
-    if(Space->RootNode)
+    space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+    if(SpaceInfo->RootNode)
     {
-        std::vector<uint32_t> WindowIDsInTree = GetAllWindowIDsInTree(Space);
-        std::vector<ax_window *> WindowsToAdd = GetAllAXWindowsNotInTree(Display, WindowIDsInTree);
-        std::vector<uint32_t> WindowsToRemove = GetAllAXWindowIDsToRemoveFromTree(WindowIDsInTree);
+        std::vector<ax_window *> VisibleWindows = AXLibGetAllVisibleWindows();
+        std::vector<uint32_t> WindowIDsInTree = GetAllWindowIDsInTree(SpaceInfo);
+        std::vector<ax_window *> WindowsToAdd = GetAllAXWindowsNotInTree(Display, VisibleWindows, WindowIDsInTree);
+        std::vector<uint32_t> WindowsToRemove = GetAllAXWindowIDsToRemoveFromTree(VisibleWindows, WindowIDsInTree);
 
         for(std::size_t WindowIndex = 0; WindowIndex < WindowsToRemove.size(); ++WindowIndex)
         {
@@ -1082,9 +1080,10 @@ RebalanceMonocleTree(ax_display *Display)
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(SpaceInfo->RootNode && SpaceInfo->RootNode->List)
     {
+        std::vector<ax_window *> VisibleWindows = AXLibGetAllVisibleWindows();
         std::vector<uint32_t> WindowIDsInTree = GetAllWindowIDsInTree(SpaceInfo);
-        std::vector<ax_window *> WindowsToAdd = GetAllAXWindowsNotInTree(Display, WindowIDsInTree);
-        std::vector<uint32_t> WindowsToRemove = GetAllAXWindowIDsToRemoveFromTree(WindowIDsInTree);
+        std::vector<ax_window *> WindowsToAdd = GetAllAXWindowsNotInTree(Display, VisibleWindows, WindowIDsInTree);
+        std::vector<uint32_t> WindowsToRemove = GetAllAXWindowIDsToRemoveFromTree(VisibleWindows, WindowIDsInTree);
 
         for(std::size_t WindowIndex = 0; WindowIndex < WindowsToRemove.size(); ++WindowIndex)
         {
