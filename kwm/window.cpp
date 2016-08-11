@@ -620,6 +620,33 @@ GetAllAXWindowIDsToRemoveFromTree(std::vector<uint32_t> &WindowIDsInTree)
     return Windows;
 }
 
+internal std::vector<ax_window *>
+GetAllAXWindowsNotInTree(ax_display *Display, std::vector<uint32_t> &WindowIDsInTree)
+{
+    std::vector<ax_window *> Windows;
+    std::vector<ax_window *> AXWindows = AXLibGetAllVisibleWindows();
+    for(std::size_t WindowIndex = 0; WindowIndex < AXWindows.size(); ++WindowIndex)
+    {
+        bool Found = false;
+        ax_window *Window = AXWindows[WindowIndex];
+        for(std::size_t IDIndex = 0; IDIndex < WindowIDsInTree.size(); ++IDIndex)
+        {
+            if(Window->ID == WindowIDsInTree[IDIndex])
+            {
+                Found = true;
+                break;
+            }
+        }
+
+        if((!Found) &&
+           (AXLibSpaceHasWindow(Window, Display->Space->ID)) &&
+           (!AXLibStickyWindow(Window)))
+            Windows.push_back(Window);
+    }
+
+    return Windows;
+}
+
 internal std::vector<uint32_t>
 GetAllWindowIDSOnDisplay(ax_display *Display)
 {
@@ -648,6 +675,13 @@ GetAllWindowIDSOnDisplay(ax_display *Display)
     }
 
     return Windows;
+}
+
+internal inline bool
+IsWindowInTree(space_info *SpaceInfo, uint32_t WindowID)
+{
+    std::vector<uint32_t> WindowIDs = GetAllWindowIDsInTree(SpaceInfo);
+    return std::find(WindowIDs.begin(), WindowIDs.end(), WindowID) != WindowIDs.end();
 }
 
 /* TODO(koekeishiya): Fix how these settings are stored. */
@@ -1001,9 +1035,11 @@ void AddWindowToNodeTree(ax_display *Display, uint32_t WindowID)
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(!SpaceInfo->RootNode)
         CreateWindowNodeTree(Display);
-    else if(SpaceInfo->Settings.Mode == SpaceModeBSP)
+    else if((SpaceInfo->Settings.Mode == SpaceModeBSP) &&
+            (!IsWindowInTree(SpaceInfo, WindowID)))
         AddWindowToBSPTree(Display, SpaceInfo, WindowID);
-    else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
+    else if((SpaceInfo->Settings.Mode == SpaceModeMonocle) &&
+            (!IsWindowInTree(SpaceInfo, WindowID)))
         AddWindowToMonocleTree(Display, SpaceInfo, WindowID);
 }
 
@@ -1023,12 +1059,19 @@ RebalanceBSPTree(ax_display *Display)
     if(Space->RootNode)
     {
         std::vector<uint32_t> WindowIDsInTree = GetAllWindowIDsInTree(Space);
+        std::vector<ax_window *> WindowsToAdd = GetAllAXWindowsNotInTree(Display, WindowIDsInTree);
         std::vector<uint32_t> WindowsToRemove = GetAllAXWindowIDsToRemoveFromTree(WindowIDsInTree);
 
         for(std::size_t WindowIndex = 0; WindowIndex < WindowsToRemove.size(); ++WindowIndex)
         {
             DEBUG("RebalanceBSPTree() Remove Window " << WindowsToRemove[WindowIndex]);
             RemoveWindowFromBSPTree(Display, WindowsToRemove[WindowIndex]);
+        }
+
+        for(std::size_t WindowIndex = 0; WindowIndex < WindowsToAdd.size(); ++WindowIndex)
+        {
+            DEBUG("RebalanceBSPTree() Add Window " << WindowsToAdd[WindowIndex]->ID);
+            TileWindow(Display, WindowsToAdd[WindowIndex]);
         }
     }
 }
@@ -1040,12 +1083,19 @@ RebalanceMonocleTree(ax_display *Display)
     if(SpaceInfo->RootNode && SpaceInfo->RootNode->List)
     {
         std::vector<uint32_t> WindowIDsInTree = GetAllWindowIDsInTree(SpaceInfo);
+        std::vector<ax_window *> WindowsToAdd = GetAllAXWindowsNotInTree(Display, WindowIDsInTree);
         std::vector<uint32_t> WindowsToRemove = GetAllAXWindowIDsToRemoveFromTree(WindowIDsInTree);
 
         for(std::size_t WindowIndex = 0; WindowIndex < WindowsToRemove.size(); ++WindowIndex)
         {
             DEBUG("RebalanceMonocleTree() Remove Window " << WindowsToRemove[WindowIndex]);
             RemoveWindowFromMonocleTree(Display, WindowsToRemove[WindowIndex]);
+        }
+
+        for(std::size_t WindowIndex = 0; WindowIndex < WindowsToAdd.size(); ++WindowIndex)
+        {
+            DEBUG("RebalanceMonocleTree() Add Window " << WindowsToAdd[WindowIndex]->ID);
+            TileWindow(Display, WindowsToAdd[WindowIndex]);
         }
     }
 }
