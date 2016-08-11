@@ -1027,20 +1027,8 @@ RebalanceBSPTree(ax_display *Display)
 
         for(std::size_t WindowIndex = 0; WindowIndex < WindowsToRemove.size(); ++WindowIndex)
         {
-            ax_window *Window = GetWindowByID(WindowsToRemove[WindowIndex]);
-
-            if((Window) &&
-               (!AXLibHasFlags(Window, AXWindow_Floating)) &&
-               (AXLibSpaceHasWindow(Window, Display->Space->ID)))
-            {
-                DEBUG("RebalanceBSPTree() Retile Window " << WindowsToRemove[WindowIndex]);
-                TileWindow(Display, Window);
-            }
-            else
-            {
-                DEBUG("RebalanceBSPTree() Remove Window " << WindowsToRemove[WindowIndex]);
-                RemoveWindowFromBSPTree(Display, WindowsToRemove[WindowIndex]);
-            }
+            DEBUG("RebalanceBSPTree() Remove Window " << WindowsToRemove[WindowIndex]);
+            RemoveWindowFromBSPTree(Display, WindowsToRemove[WindowIndex]);
         }
     }
 }
@@ -1056,20 +1044,8 @@ RebalanceMonocleTree(ax_display *Display)
 
         for(std::size_t WindowIndex = 0; WindowIndex < WindowsToRemove.size(); ++WindowIndex)
         {
-            ax_window *Window = GetWindowByID(WindowsToRemove[WindowIndex]);
-
-            if((Window) &&
-               (!AXLibHasFlags(Window, AXWindow_Floating)) &&
-               (AXLibSpaceHasWindow(Window, Display->Space->ID)))
-            {
-                DEBUG("RebalanceMonocleTree() Retile Window " << WindowsToRemove[WindowIndex]);
-                TileWindow(Display, Window);
-            }
-            else
-            {
-                DEBUG("RebalanceMonocleTree() Remove Window " << WindowsToRemove[WindowIndex]);
-                RemoveWindowFromMonocleTree(Display, WindowsToRemove[WindowIndex]);
-            }
+            DEBUG("RebalanceMonocleTree() Remove Window " << WindowsToRemove[WindowIndex]);
+            RemoveWindowFromMonocleTree(Display, WindowsToRemove[WindowIndex]);
         }
     }
 }
