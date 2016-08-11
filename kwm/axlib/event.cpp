@@ -84,6 +84,28 @@ AXLibTerminateEventLoop()
     pthread_mutex_destroy(&EventLoop.WorkerLock);
 }
 
+void AXLibPauseEventLoop()
+{
+    if(EventLoop.Running)
+    {
+        pthread_mutex_lock(&EventLoop.StateLock);
+#ifdef DEBUG_BUILD
+        printf("EventLoop: PAUSE\n");
+#endif
+    }
+}
+
+void AXLibResumeEventLoop()
+{
+    if(EventLoop.Running)
+    {
+#ifdef DEBUG_BUILD
+        printf("EventLoop: RESUME\n");
+#endif
+        pthread_mutex_unlock(&EventLoop.StateLock);
+    }
+}
+
 bool AXLibStartEventLoop()
 {
     if(!EventLoop.Running && AXLibInitializeEventLoop())
