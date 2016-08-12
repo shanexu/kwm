@@ -251,6 +251,22 @@ HotkeysAreEqual(hotkey *A, hotkey *B)
     return false;
 }
 
+internal void
+CheckPrefixTimeout()
+{
+    if(KWMHotkeys.ActiveMode->Prefix)
+    {
+        kwm_time_point NewPrefixTime = std::chrono::steady_clock::now();
+        std::chrono::duration<double> Diff = NewPrefixTime - KWMHotkeys.ActiveMode->Time;
+        if(Diff.count() > KWMHotkeys.ActiveMode->Timeout)
+        {
+            DEBUG("Prefix timeout expired. Switching to mode " << KWMHotkeys.ActiveMode->Restore);
+            KwmActivateBindingMode(KWMHotkeys.ActiveMode->Restore);
+        }
+    }
+}
+
+
 internal bool
 IsHotkeyStateReqFulfilled(hotkey *Hotkey)
 {
@@ -454,20 +470,6 @@ void KwmActivateBindingMode(std::string Mode)
     }
 }
 
-void CheckPrefixTimeout()
-{
-    if(KWMHotkeys.ActiveMode->Prefix)
-    {
-        kwm_time_point NewPrefixTime = std::chrono::steady_clock::now();
-        std::chrono::duration<double> Diff = NewPrefixTime - KWMHotkeys.ActiveMode->Time;
-        if(Diff.count() > KWMHotkeys.ActiveMode->Timeout)
-        {
-            DEBUG("Prefix timeout expired. Switching to mode " << KWMHotkeys.ActiveMode->Restore);
-            KwmActivateBindingMode(KWMHotkeys.ActiveMode->Restore);
-        }
-    }
-}
-
 void CreateHotkeyFromCGEvent(CGEventRef Event, hotkey *Hotkey)
 {
     CGEventFlags Flags = CGEventGetFlags(Event);
@@ -541,6 +543,39 @@ EVENT_CALLBACK(Callback_AXEvent_HotkeyPressed)
     delete Hotkey;
 }
 
+internal void
+KwmEmitKeystroke(uint32_t Flags, std::string Key)
+{
+    CGEventFlags EventFlags = 0;
+    if(Flags & Hotkey_Modifier_Flag_Cmd)
+        EventFlags |= kCGEventFlagMaskCommand;
+    if(Flags & Hotkey_Modifier_Flag_Control)
+        EventFlags |= kCGEventFlagMaskControl;
+    if(Flags & Hotkey_Modifier_Flag_Alt)
+        EventFlags |= kCGEventFlagMaskAlternate;
+    if(Flags & Hotkey_Modifier_Flag_Shift)
+        EventFlags |= kCGEventFlagMaskShift;
+
+    CGKeyCode Keycode;
+    bool Result = GetLayoutIndependentKeycode(Key, &Keycode);
+    if(!Result)
+        Result = KeycodeForChar(Key[0], &Keycode);
+
+    if(Result)
+    {
+        CGEventRef EventKeyDown = CGEventCreateKeyboardEvent(NULL, Keycode, true);
+        CGEventRef EventKeyUp = CGEventCreateKeyboardEvent(NULL, Keycode, false);
+        CGEventSetFlags(EventKeyDown, EventFlags);
+        CGEventSetFlags(EventKeyUp, EventFlags);
+
+        CGEventPost(kCGHIDEventTap, EventKeyDown);
+        CGEventPost(kCGHIDEventTap, EventKeyUp);
+
+        CFRelease(EventKeyDown);
+        CFRelease(EventKeyUp);
+    }
+}
+
 void KwmEmitKeystrokes(std::string Text)
 {
     CFStringRef TextRef = CFStringCreateWithCString(NULL, Text.c_str(), kCFStringEncodingMacRoman);
@@ -587,38 +622,6 @@ void KwmEmitKeystroke(std::string KeySym)
     }
 
     KwmEmitKeystroke(Flags, KeyTokens[1]);
-}
-
-void KwmEmitKeystroke(uint32_t Flags, std::string Key)
-{
-    CGEventFlags EventFlags = 0;
-    if(Flags & Hotkey_Modifier_Flag_Cmd)
-        EventFlags |= kCGEventFlagMaskCommand;
-    if(Flags & Hotkey_Modifier_Flag_Control)
-        EventFlags |= kCGEventFlagMaskControl;
-    if(Flags & Hotkey_Modifier_Flag_Alt)
-        EventFlags |= kCGEventFlagMaskAlternate;
-    if(Flags & Hotkey_Modifier_Flag_Shift)
-        EventFlags |= kCGEventFlagMaskShift;
-
-    CGKeyCode Keycode;
-    bool Result = GetLayoutIndependentKeycode(Key, &Keycode);
-    if(!Result)
-        Result = KeycodeForChar(Key[0], &Keycode);
-
-    if(Result)
-    {
-        CGEventRef EventKeyDown = CGEventCreateKeyboardEvent(NULL, Keycode, true);
-        CGEventRef EventKeyUp = CGEventCreateKeyboardEvent(NULL, Keycode, false);
-        CGEventSetFlags(EventKeyDown, EventFlags);
-        CGEventSetFlags(EventKeyUp, EventFlags);
-
-        CGEventPost(kCGHIDEventTap, EventKeyDown);
-        CGEventPost(kCGHIDEventTap, EventKeyUp);
-
-        CFRelease(EventKeyDown);
-        CFRelease(EventKeyUp);
-    }
 }
 
 void KwmExecuteSystemCommand(std::string Command)
