@@ -12,28 +12,8 @@
 extern std::map<const char *, space_info> WindowTree;
 extern kwm_settings KWMSettings;
 
-tree_node *CreateTreeFromWindowIDList(ax_display *Display, std::vector<uint32_t> *Windows)
-{
-    tree_node *RootNode = CreateRootNode();
-    SetRootNodeContainer(Display, RootNode);
-    bool Result = false;
-
-    space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
-    if(SpaceInfo->Settings.Mode == SpaceModeBSP)
-        Result = CreateBSPTree(RootNode, Display, Windows);
-    else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
-        Result = CreateMonocleTree(RootNode, Display, Windows);
-
-    if(!Result)
-    {
-        free(RootNode);
-        RootNode = NULL;
-    }
-
-    return RootNode;
-}
-
-bool CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)
+internal bool
+CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)
 {
     bool Result = false;
     std::vector<uint32_t> &Windows = *WindowsPtr;
@@ -63,7 +43,8 @@ bool CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_
     return Result;
 }
 
-bool CreateMonocleTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)
+internal bool
+CreateMonocleTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)
 {
     bool Result = false;
     std::vector<uint32_t> &Windows = *WindowsPtr;
@@ -92,6 +73,27 @@ bool CreateMonocleTree(tree_node *RootNode, ax_display *Display, std::vector<uin
     }
 
     return Result;
+}
+
+tree_node *CreateTreeFromWindowIDList(ax_display *Display, std::vector<uint32_t> *Windows)
+{
+    tree_node *RootNode = CreateRootNode();
+    SetRootNodeContainer(Display, RootNode);
+    bool Result = false;
+
+    space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+    if(SpaceInfo->Settings.Mode == SpaceModeBSP)
+        Result = CreateBSPTree(RootNode, Display, Windows);
+    else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
+        Result = CreateMonocleTree(RootNode, Display, Windows);
+
+    if(!Result)
+    {
+        free(RootNode);
+        RootNode = NULL;
+    }
+
+    return RootNode;
 }
 
 tree_node *GetNearestLeafNodeNeighbour(tree_node *Node)
@@ -312,7 +314,8 @@ void ApplyTreeNodeContainer(tree_node *Node)
     }
 }
 
-void DestroyLinkList(link_node *Link)
+internal void
+DestroyLinkList(link_node *Link)
 {
     if(Link)
     {

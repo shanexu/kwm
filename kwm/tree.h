@@ -5,8 +5,6 @@
 #include "axlib/display.h"
 
 tree_node *CreateTreeFromWindowIDList(ax_display *Display, std::vector<uint32_t> *Windows);
-bool CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr);
-bool CreateMonocleTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr);
 void FillDeserializedTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr);
 void RotateBSPTree(int Deg);
 tree_node *GetNearestLeafNodeNeighbour(tree_node *Node);
@@ -22,7 +20,6 @@ void GetLastLeafNode(tree_node *Node, void **Result);
 tree_node *GetFirstPseudoLeafNode(tree_node *Node);
 void ApplyLinkNodeContainer(link_node *Link);
 void ApplyTreeNodeContainer(tree_node *Node);
-void DestroyLinkList(link_node *Link);
 void DestroyNodeTree(tree_node *Node);
 void ChangeSplitRatio(double Value);
 
