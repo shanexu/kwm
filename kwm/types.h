@@ -299,11 +299,15 @@ struct kwm_hotkeys
 
 struct kwm_path
 {
-    std::string EnvHome;
     std::string FilePath;
-    std::string ConfigFolder;
-    std::string ConfigFile;
-    std::string BSPLayouts;
+    std::string EnvHome;
+
+    std::string Config;
+    std::string Init;
+
+    std::string Home;
+    std::string Include;
+    std::string Layouts;
 };
 
 struct kwm_settings

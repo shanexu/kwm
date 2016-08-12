@@ -139,7 +139,7 @@ void SaveBSPTreeToFile(ax_display *Display, space_info *SpaceInfo, std::string N
         return;
 
     struct stat Buffer;
-    std::string TempPath = KWMPath.EnvHome + "/" + KWMPath.ConfigFolder + "/" + KWMPath.BSPLayouts;
+    std::string TempPath = KWMPath.Layouts;
     if (stat(TempPath.c_str(), &Buffer) == -1)
         mkdir(TempPath.c_str(), 0700);
 
@@ -162,7 +162,7 @@ void LoadBSPTreeFromFile(ax_display *Display, space_info *SpaceInfo, std::string
     if(SpaceInfo->Settings.Mode != SpaceModeBSP)
         return;
 
-    std::string TempPath = KWMPath.EnvHome + "/" + KWMPath.ConfigFolder + "/" + KWMPath.BSPLayouts;
+    std::string TempPath = KWMPath.Layouts;
     std::ifstream InFD(TempPath + "/" + Name);
     if(InFD.fail())
         return;

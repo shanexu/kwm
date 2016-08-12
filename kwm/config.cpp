@@ -850,7 +850,7 @@ KwmParseKwmc(tokenizer *Tokenizer)
 internal void
 KwmParseInclude(tokenizer *Tokenizer)
 {
-    std::string File = GetTextTilEndOfLine(Tokenizer);
+    std::string File = KWMPath.Include + "/" + GetTextTilEndOfLine(Tokenizer);
     KwmParseConfig(File);
 }
 
@@ -912,15 +912,16 @@ KwmPreprocessConfig(std::string &Text)
     KwmExpandVariables(Defines, Text);
 }
 
+/* NOTE(koekeishiya): The passed string has to include the absolute path to the file. */
 void KwmParseConfig(std::string File)
 {
     tokenizer Tokenizer = {};
-    std::string AbsoluteFilePath = KWMPath.EnvHome + "/" + KWMPath.ConfigFolder + "/" + File;
-    char *FileContents = ReadFile(AbsoluteFilePath);
+    char *FileContents = ReadFile(File);
 
     if(FileContents)
     {
         std::string FileContentsString(FileContents);
+        free(FileContents);
 
         KwmPreprocessConfig(FileContentsString);
         Tokenizer.At = const_cast<char*>(FileContentsString.c_str());
@@ -949,6 +950,21 @@ void KwmParseConfig(std::string File)
                         KwmParseInclude(&Tokenizer);
                     else if(TokenEquals(Token, "define"))
                         GetTextTilEndOfLine(&Tokenizer);
+                    else if(TokenEquals(Token, "kwm_home"))
+                    {
+                        printf("Set kwm_home\n");
+                        KWMPath.Home = GetTextTilEndOfLine(&Tokenizer);
+                    }
+                    else if(TokenEquals(Token, "kwm_include"))
+                    {
+                        printf("Set kwm_include\n");
+                        KWMPath.Include = GetTextTilEndOfLine(&Tokenizer);
+                    }
+                    else if(TokenEquals(Token, "kwm_layouts"))
+                    {
+                        printf("Set kwm_layouts\n");
+                        KWMPath.Layouts = GetTextTilEndOfLine(&Tokenizer);
+                    }
                     else
                         ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
                 } break;
@@ -959,7 +975,5 @@ void KwmParseConfig(std::string File)
                 } break;
             }
         }
-
-        free(FileContents);
     }
 }

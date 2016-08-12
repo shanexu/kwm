@@ -11,6 +11,7 @@
 #include "config.h"
 #include "cursor.h"
 #include "axlib/axlib.h"
+#include <getopt.h>
 
 #define internal static
 const std::string KwmCurrentVersion = "Kwm Version 3.0.5";
@@ -98,24 +99,6 @@ CheckPrivileges()
 }
 
 internal bool
-CheckArguments(int argc, char **argv)
-{
-    bool Result = false;
-
-    if(argc == 2)
-    {
-        std::string Arg = argv[1];
-        if(Arg == "--version")
-        {
-            std::cout << KwmCurrentVersion << std::endl;
-            Result = true;
-        }
-    }
-
-    return Result;
-}
-
-internal bool
 GetKwmFilePath()
 {
     bool Result = false;
@@ -145,27 +128,14 @@ KwmClearSettings()
 }
 
 internal void
-KwmExecuteConfig()
-{
-    char *HomeP = std::getenv("HOME");
-    if(!HomeP)
-    {
-        DEBUG("Failed to get environment variable 'HOME'");
-        return;
-    }
-
-    KWMPath.EnvHome = HomeP;
-    KwmParseConfig(KWMPath.ConfigFile);
-}
-
-internal void
 KwmExecuteInitScript()
 {
-    std::string InitFile = KWMPath.EnvHome + "/" + KWMPath.ConfigFolder + "/init";
+    if(KWMPath.Init.empty())
+        KWMPath.Init = KWMPath.Home + "/init";
 
     struct stat Buffer;
-    if(stat(InitFile.c_str(), &Buffer) == 0)
-        KwmExecuteSystemCommand(InitFile);
+    if(stat(KWMPath.Init.c_str(), &Buffer) == 0)
+        KwmExecuteSystemCommand(KWMPath.Init);
 }
 
 internal void
@@ -224,11 +194,23 @@ KwmInit()
     FocusedBorder.Radius = -1;
     MarkedBorder.Radius = -1;
 
-    KWMPath.ConfigFile = "kwmrc";
-    KWMPath.ConfigFolder = ".kwm";
-    KWMPath.BSPLayouts = "layouts";
-    KWMHotkeys.ActiveMode = GetBindingMode("default");
+    char *HomeP = std::getenv("HOME");
+    if(HomeP)
+    {
+        KWMPath.EnvHome = HomeP;
+        KWMPath.Home = KWMPath.EnvHome + "/.kwm";
+        KWMPath.Include = KWMPath.Home;
+        KWMPath.Layouts = KWMPath.Home + "/layouts";
 
+        if(KWMPath.Config.empty())
+            KWMPath.Config = KWMPath.Home + "/kwmrc";
+    }
+    else
+    {
+        Fatal("Failed to get environment variable 'HOME'");
+    }
+
+    KWMHotkeys.ActiveMode = GetBindingMode("default");
     GetKwmFilePath();
 }
 
@@ -244,12 +226,45 @@ void KwmQuit()
 void KwmReloadConfig()
 {
     KwmClearSettings();
-    KwmExecuteConfig();
+    KwmParseConfig(KWMPath.Config);
+}
+
+/* NOTE(koekeishiya): Returns true for operations that cause Kwm to exit. */
+internal bool
+ParseArguments(int argc, char **argv)
+{
+    int Option;
+    const char *ShortOptions = "vc:";
+    struct option LongOptions[] =
+    {
+        {"version", no_argument, NULL, 'v'},
+        {"config", required_argument, NULL, 'c'},
+        {NULL, 0, NULL, 0}
+    };
+
+    while((Option = getopt_long(argc, argv, ShortOptions, LongOptions, NULL)) != -1)
+    {
+        switch(Option)
+        {
+            case 'v':
+            {
+                printf("%s\n", KwmCurrentVersion.c_str());
+                return true;
+            } break;
+            case 'c':
+            {
+                DEBUG("Config file: " << optarg);
+                KWMPath.Config = optarg;
+            } break;
+        }
+    }
+
+    return false;
 }
 
 int main(int argc, char **argv)
 {
-    if(CheckArguments(argc, argv))
+    if(ParseArguments(argc, argv))
         return 0;
 
     NSApplicationLoad();
@@ -275,7 +290,7 @@ int main(int argc, char **argv)
     /* ----------------------------------- */
 
     KwmInit();
-    KwmExecuteConfig();
+    KwmParseConfig(KWMPath.Config);
     KwmExecuteInitScript();
     CreateWindowNodeTree(MainDisplay);
 
