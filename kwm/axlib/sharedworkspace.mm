@@ -6,7 +6,6 @@
 #define internal static
 #define local_persist static
 
-/* NOTE(koekeishiya): Subscribe to necessary notifications from NSWorkspace */
 @interface WorkspaceWatcher : NSObject {
 }
 - (id)init;
