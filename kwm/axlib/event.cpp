@@ -4,7 +4,6 @@
 #include "display.h"
 
 #define internal static
-
 internal ax_event_loop EventLoop = {};
 
 /* NOTE(koekeishiya): Must be thread-safe! Called through AXLibConstructEvent macro */
@@ -26,7 +25,6 @@ AXLibProcessEventQueue(void *)
 {
     while(EventLoop.Running)
     {
-
         pthread_mutex_lock(&EventLoop.StateLock);
         while(!EventLoop.Queue.empty())
         {
