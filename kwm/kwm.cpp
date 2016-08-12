@@ -31,7 +31,8 @@ kwm_border FocusedBorder = {};
 kwm_border MarkedBorder = {};
 scratchpad Scratchpad = {};
 
-CGEventRef CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void *Refcon)
+internal CGEventRef
+CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void *Refcon)
 {
     switch(Type)
     {
@@ -40,7 +41,7 @@ CGEventRef CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef E
         {
             if(!KWMMach.DisableEventTapInternal)
             {
-                DEBUG("Restarting Event Tap");
+                DEBUG("Notice: Restarting Event Tap");
                 CGEventTapEnable(KWMMach.EventTap, true);
             }
         } break;
@@ -175,7 +176,7 @@ KwmInit()
     signal(SIGKILL, SignalHandler);
     signal(SIGINT, SignalHandler);
 #else
-    printf("Kwm: Signal handlers are disabled!\n");
+    printf("Notice: Signal handlers disabled!\n");
 #endif
 
     KWMSettings.SplitRatio = 0.5;
@@ -207,7 +208,7 @@ KwmInit()
     }
     else
     {
-        Fatal("Failed to get environment variable 'HOME'");
+        Fatal("Error: Failed to get environment variable 'HOME'");
     }
 
     KWMHotkeys.ActiveMode = GetBindingMode("default");
@@ -253,7 +254,7 @@ ParseArguments(int argc, char **argv)
             } break;
             case 'c':
             {
-                DEBUG("Config file: " << optarg);
+                DEBUG("Notice: Using config file " << optarg);
                 KWMPath.Config = optarg;
             } break;
         }
@@ -271,7 +272,6 @@ int main(int argc, char **argv)
     if(!AXLibDisplayHasSeparateSpaces())
         Fatal("Error: 'Displays have separate spaces' must be enabled!");
 
-    /* NOTE(koekeishiya): Initialize AXLIB */
     AXLibInit(&AXState);
     AXLibStartEventLoop();
 
@@ -287,7 +287,6 @@ int main(int argc, char **argv)
 
     FocusedDisplay = MainDisplay;
     FocusedApplication = AXLibGetFocusedApplication();
-    /* ----------------------------------- */
 
     KwmInit();
     KwmParseConfig(KWMPath.Config);
@@ -295,7 +294,7 @@ int main(int argc, char **argv)
     CreateWindowNodeTree(MainDisplay);
 
     if(CGSIsSecureEventInputSet())
-        fprintf(stderr, "Secure Keyboard Entry is enabled, hotkeys will not work!\n");
+        fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");
 
     KWMMach.EventMask = ((1 << kCGEventKeyDown) |
                          (1 << kCGEventMouseMoved));
