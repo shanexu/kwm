@@ -308,7 +308,6 @@ AXLibRemoveDisplay(CGDirectDisplayID DisplayID)
             if((*Displays)[StoredDisplayID].Identifier)
                 CFRelease((*Displays)[StoredDisplayID].Identifier);
 
-            /* TODO(koekeishiya): Properly free memory allocated to space identifiers of the removed display. */
             Displays->erase(StoredDisplayID);
         }
     }
