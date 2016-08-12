@@ -25,8 +25,6 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include "axlib/observer.h"
-
 struct token;
 struct tokenizer;
 struct space_identifier;
