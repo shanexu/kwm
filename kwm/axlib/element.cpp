@@ -86,7 +86,10 @@ bool AXLibSetWindowPosition(AXUIElementRef WindowRef, int X, int Y)
     CFTypeRef WindowPosRef = (CFTypeRef)AXValueCreate(kAXValueCGPointType, (const void*)&WindowPos);
     if(WindowPosRef)
     {
-        Result = AXLibSetWindowProperty(WindowRef, kAXPositionAttribute, WindowPosRef);
+        AXError Error = AXLibSetWindowProperty(WindowRef, kAXPositionAttribute, WindowPosRef);
+        if(Error == kAXErrorSuccess)
+            Result = true;
+
         CFRelease(WindowPosRef);
     }
 
@@ -101,7 +104,10 @@ bool AXLibSetWindowSize(AXUIElementRef WindowRef, int Width, int Height)
     CFTypeRef WindowSizeRef = (CFTypeRef)AXValueCreate(kAXValueCGSizeType, (void*)&WindowSize);
     if(WindowSizeRef)
     {
-        Result = AXLibSetWindowProperty(WindowRef, kAXSizeAttribute, WindowSizeRef);
+        AXError Error = AXLibSetWindowProperty(WindowRef, kAXSizeAttribute, WindowSizeRef);
+        if(Error == kAXErrorSuccess)
+            Result = true;
+
         CFRelease(WindowSizeRef);
     }
 
