@@ -34,7 +34,7 @@ enum ax_space_flags
 
 struct ax_space
 {
-    const char *Identifier;
+    std::string Identifier;
     CGSSpaceID ID;
     CGSSpaceType Type;
     uint32_t Flags;

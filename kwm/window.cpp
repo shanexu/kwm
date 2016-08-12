@@ -17,7 +17,7 @@
 #define internal static
 #define local_persist static
 
-extern std::map<const char *, space_info> WindowTree;
+extern std::map<std::string, space_info> WindowTree;
 extern ax_state AXState;
 extern ax_display *FocusedDisplay;
 extern ax_application *FocusedApplication;

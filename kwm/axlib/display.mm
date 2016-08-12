@@ -136,9 +136,15 @@ AXLibConstructSpace(CFStringRef Identifier, CGSSpaceID SpaceID, CGSSpaceType Spa
 {
     ax_space Space;
 
-    Space.Identifier = CopyCFStringToC(Identifier, true);
-    if(!Space.Identifier)
-        Space.Identifier = CopyCFStringToC(Identifier, false);
+    char *IdentifierC = CopyCFStringToC(Identifier, true);
+    if(!IdentifierC)
+        IdentifierC = CopyCFStringToC(Identifier, false);
+
+    if(IdentifierC)
+    {
+        Space.Identifier = std::string(IdentifierC);
+        free(IdentifierC);
+    }
 
     Space.ID = SpaceID;
     Space.Type = SpaceType;
@@ -200,20 +206,16 @@ AXLibChangeDisplayID(CGDirectDisplayID OldDisplayID, CGDirectDisplayID NewDispla
     if(OldDisplayID == NewDisplayID)
         return;
 
-    ax_display Display = (*Displays)[OldDisplayID];
-    (*Displays)[NewDisplayID] = Display;
-    (*Displays)[NewDisplayID].ID = NewDisplayID;
+    ax_display OldDisplay = (*Displays)[OldDisplayID];
+    (*Displays)[NewDisplayID] = OldDisplay;
     Displays->erase(OldDisplayID);
 
-    ax_display *DisplayPtr = &(*Displays)[NewDisplayID];
-    std::map<CGSSpaceID, ax_space>::iterator It;
-    for(It = DisplayPtr->Spaces.begin(); It != DisplayPtr->Spaces.end(); ++It)
-        free((char *)It->second.Identifier);
-
-    DisplayPtr->Spaces.clear();
-    AXLibConstructSpacesForDisplay(DisplayPtr);
-    DisplayPtr->Space = AXLibGetActiveSpace(DisplayPtr);
-    DisplayPtr->PrevSpace = DisplayPtr->Space;
+    ax_display *Display = &(*Displays)[NewDisplayID];
+    Display->ID = NewDisplayID;
+    Display->Spaces.clear();
+    AXLibConstructSpacesForDisplay(Display);
+    Display->Space = AXLibGetActiveSpace(Display);
+    Display->PrevSpace = Display->Space;
 }
 
 /* NOTE(koekeishiya): Initializes an ax_display for a given CGDirectDisplayID. Also populates the list of spaces. */

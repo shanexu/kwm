@@ -4,7 +4,7 @@
 
 #define internal static
 
-extern std::map<const char *, space_info> WindowTree;
+extern std::map<std::string, space_info> WindowTree;
 extern kwm_settings KWMSettings;
 
 internal node_container

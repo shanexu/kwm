@@ -15,7 +15,7 @@
 
 #define internal static
 const std::string KwmCurrentVersion = "Kwm Version 3.0.5";
-std::map<const char *, space_info> WindowTree;
+std::map<std::string, space_info> WindowTree;
 
 ax_state AXState = {};
 ax_display *FocusedDisplay = NULL;

@@ -20,7 +20,7 @@
 
 #define internal static
 
-extern std::map<const char *, space_info> WindowTree;
+extern std::map<std::string, space_info> WindowTree;
 extern ax_application *FocusedApplication;
 extern ax_window *MarkedWindow;
 

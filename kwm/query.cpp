@@ -9,7 +9,7 @@
 
 #define internal static
 
-extern std::map<const char *, space_info> WindowTree;
+extern std::map<std::string, space_info> WindowTree;
 extern ax_window *MarkedWindow;
 
 extern kwm_settings KWMSettings;
