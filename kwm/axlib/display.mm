@@ -377,7 +377,6 @@ AXDisplayReconfigurationCallBack(CGDirectDisplayID DisplayID, CGDisplayChangeSum
 #ifdef DEBUG_BUILD
         printf("%d: Display removed\n", DisplayID);
 #endif
-        AXLibAddDisplay(DisplayID);
         AXLibRemoveDisplay(DisplayID);
     }
 
