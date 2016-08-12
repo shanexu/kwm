@@ -1117,12 +1117,6 @@ void CreateInactiveWindowNodeTree(ax_display *Display, std::vector<uint32_t> *Wi
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(!SpaceInfo->Initialized && !SpaceInfo->RootNode)
     {
-        std::vector<ax_window *> KnownWindows = AXLibGetAllKnownWindows();
-        for(std::size_t Index = 0; Index < KnownWindows.size(); ++Index)
-        {
-            ax_window *Window = KnownWindows[Index];
-            ApplyWindowRules(Window);
-        }
         CreateAndInitializeSpaceInfoWithWindowTree(Display, SpaceInfo, Windows);
     }
     else if(SpaceInfo->Initialized && !SpaceInfo->RootNode)
