@@ -1907,22 +1907,38 @@ void CenterWindowInsideNodeContainer(ax_window *Window, int *Xptr, int *Yptr, in
         Height -= YOff > 0 ? YOff : 0;
 
         AXLibAddFlags(Window, AXWindow_MoveIntrinsic);
-        AXLibSetWindowPosition(Window->Ref, X, Y);
+        if(!AXLibSetWindowPosition(Window->Ref, X, Y))
+            AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
 
         AXLibAddFlags(Window, AXWindow_SizeIntrinsic);
-        AXLibSetWindowSize(Window->Ref, Width, Height);
+        if(!AXLibSetWindowSize(Window->Ref, Width, Height))
+            AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
     }
 }
 
 void SetWindowDimensions(ax_window *Window, int X, int Y, int Width, int Height)
 {
-    AXLibAddFlags(Window, AXWindow_MoveIntrinsic);
-    AXLibSetWindowPosition(Window->Ref, X, Y);
+    bool Changed = false;
+    if((Window->Position.x != X) ||
+       (Window->Position.y != Y))
+    {
+        Changed = true;
+        AXLibAddFlags(Window, AXWindow_MoveIntrinsic);
+        if(!AXLibSetWindowPosition(Window->Ref, X, Y))
+            AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
+    }
 
-    AXLibAddFlags(Window, AXWindow_SizeIntrinsic);
-    AXLibSetWindowSize(Window->Ref, Width, Height);
+    if((Window->Size.width != Width) ||
+       (Window->Size.height != Height))
+    {
+        Changed = true;
+        AXLibAddFlags(Window, AXWindow_SizeIntrinsic);
+        if(!AXLibSetWindowSize(Window->Ref, Width, Height))
+            AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
+    }
 
-    CenterWindowInsideNodeContainer(Window, &X, &Y, &Width, &Height);
+    if(Changed)
+        CenterWindowInsideNodeContainer(Window, &X, &Y, &Width, &Height);
 }
 
 void CenterWindow(ax_display *Display, ax_window *Window)
