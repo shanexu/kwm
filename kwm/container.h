@@ -4,7 +4,6 @@
 #include "types.h"
 #include "axlib/display.h"
 
-/* NOTE(koekeishiya): The following functions are working as expected. */
 void SetRootNodeContainer(ax_display *Display, tree_node *Node);
 void SetLinkNodeContainer(ax_display *Display, link_node *Link);
 void CreateNodeContainer(ax_display *Display, tree_node *Node, int ContainerType);
