@@ -8,14 +8,12 @@
 
 extern std::map<const char *, space_info> WindowTree;
 extern ax_application *FocusedApplication;
-
 extern kwm_settings KWMSettings;
 
 tree_node *CreateRootNode()
 {
-    tree_node Clear = {0};
     tree_node *RootNode = (tree_node*) malloc(sizeof(tree_node));
-    *RootNode = Clear;
+    memset(RootNode, 0, sizeof(tree_node));
 
     RootNode->WindowID = 0;
     RootNode->Type = NodeTypeTree;
@@ -30,9 +28,8 @@ tree_node *CreateRootNode()
 
 link_node *CreateLinkNode()
 {
-    link_node Clear = {0};
     link_node *Link = (link_node*) malloc(sizeof(link_node));
-    *Link = Clear;
+    memset(Link, 0, sizeof(link_node));
 
     Link->WindowID = 0;
     Link->Prev = NULL;
@@ -41,11 +38,10 @@ link_node *CreateLinkNode()
     return Link;
 }
 
-tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, int WindowID, int ContainerType)
+tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t WindowID, int ContainerType)
 {
-    tree_node Clear = {0};
     tree_node *Leaf = (tree_node*) malloc(sizeof(tree_node));
-    *Leaf = Clear;
+    memset(Leaf, 0, sizeof(tree_node));
 
     Leaf->Parent = Parent;
     Leaf->WindowID = WindowID;
@@ -59,7 +55,7 @@ tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, int WindowID, 
     return Leaf;
 }
 
-void CreateLeafNodePair(ax_display *Display, tree_node *Parent, int FirstWindowID, int SecondWindowID, split_type SplitMode)
+void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWindowID, uint32_t SecondWindowID, split_type SplitMode)
 {
     Parent->WindowID = 0;
     Parent->SplitMode = SplitMode;
@@ -70,8 +66,8 @@ void CreateLeafNodePair(ax_display *Display, tree_node *Parent, int FirstWindowI
     Parent->Type = NodeTypeTree;
     Parent->List = NULL;
 
-    int LeftWindowID = KWMSettings.SpawnAsLeftChild ? SecondWindowID : FirstWindowID;
-    int RightWindowID = KWMSettings.SpawnAsLeftChild ? FirstWindowID : SecondWindowID;
+    uint32_t LeftWindowID = KWMSettings.SpawnAsLeftChild ? SecondWindowID : FirstWindowID;
+    uint32_t RightWindowID = KWMSettings.SpawnAsLeftChild ? FirstWindowID : SecondWindowID;
 
     if(SplitMode == SPLIT_VERTICAL)
     {

@@ -5,11 +5,10 @@
 #include "axlib/display.h"
 #include "axlib/window.h"
 
-/* NOTE(koekeishiya): The following functions are working as expected. */
 tree_node *CreateRootNode();
 link_node *CreateLinkNode();
-tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, int WindowID, int ContainerType);
-void CreateLeafNodePair(ax_display *Display, tree_node *Parent, int FirstWindowID, int SecondWindowID, split_type SplitMode);
+tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t WindowID, int ContainerType);
+void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWindowID, uint32_t SecondWindowID, split_type SplitMode);
 void CreatePseudoNode();
 void RemovePseudoNode();
 bool IsLeafNode(tree_node *Node);
@@ -28,8 +27,6 @@ void ModifyContainerSplitRatio(double Offset);
 void ModifyContainerSplitRatio(double Offset, int Degrees);
 bool IsLeftChildInSubTree(tree_node *Root, tree_node *Target);
 tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B);
-
-/* NOTE(koekeishiya): The following functions still need to be investigated. */
 void ToggleTypeOfFocusedNode();
 void ChangeTypeOfFocusedNode(node_type Type);
 
