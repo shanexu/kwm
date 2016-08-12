@@ -324,15 +324,18 @@ AXLibResizeDisplay(CGDirectDisplayID DisplayID)
 {
     /* NOTE(koekeishiya): Display frames consists of both an origin and size dimension. When a display
                           is resized, we need to refresh the boundary information for all other displays. */
-    CFStringRef DisplayIdentifier = AXLibGetDisplayIdentifier(DisplayID);
-    AXLibRefreshDisplays();
+    if(!CGDisplayIsAsleep(DisplayID))
+    {
+        CFStringRef DisplayIdentifier = AXLibGetDisplayIdentifier(DisplayID);
+        AXLibRefreshDisplays();
 
-    ax_display *Display = AXLibDisplay(DisplayIdentifier);
-    if(Display)
-        AXLibConstructEvent(AXEvent_DisplayResized, Display, false);
+        ax_display *Display = AXLibDisplay(DisplayIdentifier);
+        if(Display)
+            AXLibConstructEvent(AXEvent_DisplayResized, Display, false);
 
-    if(DisplayIdentifier)
-        CFRelease(DisplayIdentifier);
+        if(DisplayIdentifier)
+            CFRelease(DisplayIdentifier);
+    }
 }
 
 /* NOTE(koekeishiya): Caused by a change in monitor arrangements (?) */
@@ -341,15 +344,18 @@ AXLibMoveDisplay(CGDirectDisplayID DisplayID)
 {
     /* NOTE(koekeishiya): Display frames consists of both an origin and size dimension. When a display
                           is moved, we need to refresh the boundary information for all other displays. */
-    CFStringRef DisplayIdentifier = AXLibGetDisplayIdentifier(DisplayID);
-    AXLibRefreshDisplays();
+    if(!CGDisplayIsAsleep(DisplayID))
+    {
+        CFStringRef DisplayIdentifier = AXLibGetDisplayIdentifier(DisplayID);
+        AXLibRefreshDisplays();
 
-    ax_display *Display = AXLibDisplay(DisplayIdentifier);
-    if(Display)
-        AXLibConstructEvent(AXEvent_DisplayMoved, Display, false);
+        ax_display *Display = AXLibDisplay(DisplayIdentifier);
+        if(Display)
+            AXLibConstructEvent(AXEvent_DisplayMoved, Display, false);
 
-    if(DisplayIdentifier)
-        CFRelease(DisplayIdentifier);
+        if(DisplayIdentifier)
+            CFRelease(DisplayIdentifier);
+    }
 }
 
 
