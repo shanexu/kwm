@@ -220,8 +220,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
 
             uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
             *WindowID = Window->ID;
-            AXLibConstructEvent(AXEvent_WindowMoved, WindowID, AXLibHasFlags(Window, AXWindow_MoveIntrinsic));
+            bool Intrinsic = AXLibHasFlags(Window, AXWindow_MoveIntrinsic);
             AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
+            AXLibConstructEvent(AXEvent_WindowMoved, WindowID, Intrinsic);
         }
     }
     else if(CFEqual(Notification, kAXWindowResizedNotification))
@@ -235,8 +236,9 @@ OBSERVER_CALLBACK(AXApplicationCallback)
 
             uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
             *WindowID = Window->ID;
-            AXLibConstructEvent(AXEvent_WindowResized, WindowID, AXLibHasFlags(Window, AXWindow_SizeIntrinsic));
+            bool Intrinsic = AXLibHasFlags(Window, AXWindow_SizeIntrinsic);
             AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
+            AXLibConstructEvent(AXEvent_WindowResized, WindowID, Intrinsic);
         }
     }
     else if(CFEqual(Notification, kAXTitleChangedNotification))
