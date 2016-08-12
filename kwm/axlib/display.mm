@@ -359,8 +359,9 @@ internal void
 AXDisplayReconfigurationCallBack(CGDirectDisplayID DisplayID, CGDisplayChangeSummaryFlags Flags, void *UserInfo)
 {
     AXLibPauseEventLoop();
-    static int DisplayCallbackCount = 0;
+
 #ifdef DEBUG_BUILD
+    static int DisplayCallbackCount = 0;
     printf("%d: Begin Display Callback\n", ++DisplayCallbackCount);
 #endif
 
@@ -419,6 +420,7 @@ AXDisplayReconfigurationCallBack(CGDirectDisplayID DisplayID, CGDisplayChangeSum
 
     printf("%d: End Display Callback\n", DisplayCallbackCount);
 #endif
+
     AXLibResumeEventLoop();
 }
 
