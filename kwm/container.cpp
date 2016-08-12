@@ -65,7 +65,6 @@ LowerHorizontalContainerSplit(ax_display *Display, tree_node *Node)
 
 void SetRootNodeContainer(ax_display *Display, tree_node *Node)
 {
-    Assert(Node);
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
 
     Node->Container.X = Display->Frame.origin.x + SpaceInfo->Settings.Offset.PaddingLeft;
@@ -79,7 +78,6 @@ void SetRootNodeContainer(ax_display *Display, tree_node *Node)
 
 void SetLinkNodeContainer(ax_display *Display, link_node *Link)
 {
-    Assert(Link);
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
 
     Link->Container.X = Display->Frame.origin.x + SpaceInfo->Settings.Offset.PaddingLeft;
