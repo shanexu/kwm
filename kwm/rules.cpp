@@ -248,6 +248,7 @@ void KwmAddRule(std::string RuleSym)
         KWMSettings.WindowRules.push_back(Rule);
 }
 
+/* TODO(koekeishiya): This entire system is just stupid. Reimplement in a proper way. */
 bool ApplyWindowRules(ax_window *Window)
 {
     bool Skip = false;
