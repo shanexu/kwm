@@ -951,20 +951,11 @@ void KwmParseConfig(std::string File)
                     else if(TokenEquals(Token, "define"))
                         GetTextTilEndOfLine(&Tokenizer);
                     else if(TokenEquals(Token, "kwm_home"))
-                    {
-                        printf("Set kwm_home\n");
                         KWMPath.Home = GetTextTilEndOfLine(&Tokenizer);
-                    }
                     else if(TokenEquals(Token, "kwm_include"))
-                    {
-                        printf("Set kwm_include\n");
                         KWMPath.Include = GetTextTilEndOfLine(&Tokenizer);
-                    }
                     else if(TokenEquals(Token, "kwm_layouts"))
-                    {
-                        printf("Set kwm_layouts\n");
                         KWMPath.Layouts = GetTextTilEndOfLine(&Tokenizer);
-                    }
                     else
                         ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
                 } break;
