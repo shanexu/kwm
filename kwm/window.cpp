@@ -805,12 +805,13 @@ RemoveWindowFromBSPTree(ax_display *Display, uint32_t WindowID)
     if(!SpaceInfo->RootNode)
         return;
 
-    if(SpaceInfo->RootNode->WindowID == WindowID)
-        SpaceInfo->RootNode->WindowID = 0;
-
     tree_node *WindowNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, WindowID);
     if(WindowNode)
     {
+        if((SpaceInfo->RootNode != WindowNode) &&
+           (SpaceInfo->RootNode->WindowID == WindowID))
+            SpaceInfo->RootNode->WindowID = 0;
+
         tree_node *Parent = WindowNode->Parent;
         if(Parent && Parent->LeftChild && Parent->RightChild)
         {
@@ -854,6 +855,9 @@ RemoveWindowFromBSPTree(ax_display *Display, uint32_t WindowID)
         tree_node *Root = GetTreeNodeFromLink(SpaceInfo->RootNode, Link);
         if(Link)
         {
+            if(SpaceInfo->RootNode->WindowID == WindowID)
+                SpaceInfo->RootNode->WindowID = 0;
+
             link_node *Prev = Link->Prev;
             link_node *Next = Link->Next;
 
