@@ -83,6 +83,30 @@ TileWindow(ax_display *Display, ax_window *Window)
     }
 }
 
+internal inline void
+SyncFocusedApplication(ax_display *Display)
+{
+    FocusedApplication = AXLibGetFocusedApplication();
+    if(FocusedApplication)
+    {
+        FocusedApplication->Focus = AXLibGetFocusedWindow(FocusedApplication);
+        if((FocusedApplication->Focus) &&
+           (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
+        {
+            DrawFocusedBorder(Display);
+            MoveCursorToCenterOfWindow(FocusedApplication->Focus);
+            Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
+        }
+    }
+}
+
+internal inline void
+ClearBorderIfFullscreenSpace(ax_display *Display)
+{
+    if(Display->Space->Type != kCGSSpaceUser)
+        ClearBorder(&FocusedBorder);
+}
+
 /* TODO(koekeishiya): Event context is a pointer to the new display. */
 EVENT_CALLBACK(Callback_AXEvent_DisplayAdded)
 {
@@ -129,11 +153,22 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayMoved)
 EVENT_CALLBACK(Callback_AXEvent_DisplayChanged)
 {
     FocusedDisplay = AXLibMainDisplay();
+
+    ax_space *PrevSpace = FocusedDisplay->Space;
+    FocusedDisplay->Space = AXLibGetActiveSpace(FocusedDisplay);
+    if(FocusedDisplay->Space != PrevSpace)
+        FocusedDisplay->PrevSpace = PrevSpace;
+
     DEBUG("AXEvent_DisplayChanged: " << FocusedDisplay->ArrangementID);
 
     AXLibRunningApplications();
-    CreateWindowNodeTree(FocusedDisplay);
     RebalanceNodeTree(FocusedDisplay);
+    CreateWindowNodeTree(FocusedDisplay);
+
+    /* NOTE(koekeishiya): Always update state of focused application and its window after a display transition. */
+    SyncFocusedApplication(FocusedDisplay);
+
+    ClearBorderIfFullscreenSpace(FocusedDisplay);
 }
 
 internal void
@@ -201,18 +236,7 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
                           before, this will cause us to end up on that space with an unsynchronized focused application state.
 
                           Always update state of focused application and its window after a space transition. */
-    FocusedApplication = AXLibGetFocusedApplication();
-    if(FocusedApplication)
-    {
-        FocusedApplication->Focus = AXLibGetFocusedWindow(FocusedApplication);
-        if((FocusedApplication->Focus) &&
-           (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
-        {
-            DrawFocusedBorder(Display);
-            MoveCursorToCenterOfWindow(FocusedApplication->Focus);
-            Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
-        }
-    }
+    SyncFocusedApplication(Display);
 
     /* NOTE(koekeishiya): This space transition was triggered through AXLibSpaceTransition(..) and OSX does not
                           update our focus in this case. We manually try to activate the appropriate window. */
@@ -235,8 +259,7 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
         }
     }
 
-    if(Display->Space->Type != kCGSSpaceUser)
-        ClearBorder(&FocusedBorder);
+    ClearBorderIfFullscreenSpace(Display);
 }
 
 /* NOTE(koekeishiya): Event context is a pointer to the PID of the launched application. */
