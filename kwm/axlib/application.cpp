@@ -112,7 +112,8 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         {
             /* NOTE(koekeishiya): If the currently focused window and the window requesting
              * focus are both on the same disaplay, reset our IgnoreFocus flag. */
-            if((Application->Focus) &&
+            if((AXLibHasFlags(Application, AXApplication_IgnoreFocus)) &&
+               (Application->Focus) &&
                (AXLibWindowDisplay(Window) == AXLibWindowDisplay(Application->Focus)))
             {
                 AXLibClearFlags(Application, AXApplication_IgnoreFocus);
