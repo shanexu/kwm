@@ -1334,6 +1334,9 @@ void LockWindowToContainerSize(ax_window *Window)
 
 void DetachAndReinsertWindow(unsigned int WindowID, int Degrees)
 {
+    if(WindowID == 0)
+        return;
+
     if(MarkedWindow && MarkedWindow->ID == WindowID)
     {
         ax_window *FocusedWindow = FocusedApplication->Focus;
@@ -1347,12 +1350,6 @@ void DetachAndReinsertWindow(unsigned int WindowID, int Degrees)
     }
     else
     {
-        if(WindowID == 0)
-            return;
-
-        if(MarkedWindow && MarkedWindow->ID == WindowID)
-            return;
-
         ax_window *ClosestWindow = NULL;
         if(FindClosestWindow(Degrees, &ClosestWindow, false))
         {
@@ -1362,6 +1359,7 @@ void DetachAndReinsertWindow(unsigned int WindowID, int Degrees)
             ToggleWindowFloating(WindowID, false);
             MoveCursorToCenterOfFocusedWindow();
             MarkedWindow = PrevMarkedWindow;
+            UpdateBorder("marked");
         }
     }
 }
