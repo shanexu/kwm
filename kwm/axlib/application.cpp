@@ -110,6 +110,14 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         ax_window *Window = AXLibGetWindowByRef(Application, Element);
         if(Window)
         {
+            /* NOTE(koekeishiya): If the currently focused window and the window requesting
+             * focus are both on the same disaplay, reset our IgnoreFocus flag. */
+            if((Application->Focus) &&
+               (AXLibWindowDisplay(Window) == AXLibWindowDisplay(Application->Focus)))
+            {
+                AXLibClearFlags(Application, AXApplication_IgnoreFocus);
+            }
+
             if(AXLibHasFlags(Application, AXApplication_IgnoreFocus))
             {
                 /* NOTE(koekeishiya): When Kwm tries to focus the window of an application that
