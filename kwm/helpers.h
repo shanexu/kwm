@@ -69,7 +69,8 @@ SplitString(std::string Line, char Delim)
     return Elements;
 }
 
-inline std::string &LTrimString(std::string &Input)
+inline std::string &
+LTrimString(std::string &Input)
 {
     Input.erase(Input.begin(), std::find_if(Input.begin(),
                 Input.end(),
@@ -78,7 +79,8 @@ inline std::string &LTrimString(std::string &Input)
     return  Input;
 }
 
-inline std::string &RTrimString(std::string &Input)
+inline std::string &
+RTrimString(std::string &Input)
 {
     Input.erase(std::find_if(Input.rbegin(), Input.rend(),
                 std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
@@ -87,7 +89,8 @@ inline std::string &RTrimString(std::string &Input)
     return Input;
 }
 
-inline std::string &TrimString(std::string &Input)
+inline std::string &
+TrimString(std::string &Input)
 {
     return LTrimString(RTrimString(Input));
 }
@@ -113,16 +116,6 @@ ConvertHexRGBAToColor(unsigned int Color)
     Result.Alpha = ((Color >> 24) & 0xff) / 255.0;
 
     return Result;
-}
-
-inline unsigned int
-ConvertRGBAToHex(color *Color)
-{
-    unsigned int Hex = 0;
-    Hex = ((int)Color->Red & 0xff) << 16;
-    Hex += ((int)Color->Green & 0xff) << 8;
-    Hex += ((int)Color->Blue & 0xff) << 0;
-    return Hex;
 }
 
 inline char*
