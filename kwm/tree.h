@@ -17,10 +17,11 @@ tree_node *GetNearestTreeNodeToTheLeft(tree_node *Node);
 tree_node *GetNearestTreeNodeToTheRight(tree_node *Node);
 void GetFirstLeafNode(tree_node *Node, void **Result);
 void GetLastLeafNode(tree_node *Node, void **Result);
+void FocusFirstLeafNode(ax_display *Display);
+void FocusLastLeafNode(ax_display *Display);
 tree_node *GetFirstPseudoLeafNode(tree_node *Node);
 void ApplyLinkNodeContainer(link_node *Link);
 void ApplyTreeNodeContainer(tree_node *Node);
 void DestroyNodeTree(tree_node *Node);
-void ChangeSplitRatio(double Value);
 
 #endif

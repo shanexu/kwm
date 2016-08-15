@@ -276,6 +276,53 @@ void GetLastLeafNode(tree_node *Node, void **Result)
     }
 }
 
+void FocusFirstLeafNode(ax_display *Display)
+{
+    if(Display)
+    {
+        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+        if(!SpaceInfo->RootNode)
+            return;
+
+        if(SpaceInfo->Settings.Mode == SpaceModeBSP)
+        {
+            tree_node *Node = NULL;
+            GetFirstLeafNode(SpaceInfo->RootNode, (void**)&Node);
+            SetWindowFocusByNode(Node);
+        }
+        else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
+        {
+            link_node *Node = SpaceInfo->RootNode->List;
+            SetWindowFocusByNode(Node);
+        }
+    }
+}
+
+void FocusLastLeafNode(ax_display *Display)
+{
+    if(Display)
+    {
+        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+        if(!SpaceInfo->RootNode)
+            return;
+
+        if(SpaceInfo->Settings.Mode == SpaceModeBSP)
+        {
+            tree_node *Node = NULL;
+            GetLastLeafNode(SpaceInfo->RootNode, (void **)&Node);
+            SetWindowFocusByNode(Node);
+        }
+        else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
+        {
+            link_node *Node = SpaceInfo->RootNode->List;
+            while(Node && Node->Next)
+                Node = Node->Next;
+
+            SetWindowFocusByNode(Node);
+        }
+    }
+}
+
 tree_node *GetFirstPseudoLeafNode(tree_node *Node)
 {
     tree_node *Leaf = NULL;
@@ -415,14 +462,5 @@ void FillDeserializedTree(tree_node *RootNode, ax_display *Display, std::vector<
             CreateLeafNodePair(Display, Root, Root->WindowID, Windows[Counter], GetOptimalSplitMode(Root));
             Root = RootNode;
         }
-    }
-}
-
-void ChangeSplitRatio(double Value)
-{
-    if(Value > 0.0 && Value < 1.0)
-    {
-        DEBUG("ChangeSplitRatio() New Split-Ratio is " << Value);
-        KWMSettings.SplitRatio = Value;
     }
 }

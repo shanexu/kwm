@@ -87,9 +87,21 @@ enum space_tiling_option
 
 enum split_type
 {
+    SPLIT_NONE = 0,
     SPLIT_OPTIMAL = -1,
     SPLIT_VERTICAL = 1,
     SPLIT_HORIZONTAL = 2
+};
+
+enum container_type
+{
+    CONTAINER_NONE = 0,
+
+    CONTAINER_LEFT = 1,
+    CONTAINER_RIGHT = 2,
+
+    CONTAINER_UPPER = 3,
+    CONTAINER_LOWER = 4
 };
 
 enum node_type

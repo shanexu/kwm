@@ -71,8 +71,8 @@ void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWi
 
     if(SplitMode == SPLIT_VERTICAL)
     {
-        Parent->LeftChild = CreateLeafNode(Display, Parent, LeftWindowID, 1);
-        Parent->RightChild = CreateLeafNode(Display, Parent, RightWindowID, 2);
+        Parent->LeftChild = CreateLeafNode(Display, Parent, LeftWindowID, CONTAINER_LEFT);
+        Parent->RightChild = CreateLeafNode(Display, Parent, RightWindowID, CONTAINER_RIGHT);
 
         tree_node *Node = KWMSettings.SpawnAsLeftChild ?  Parent->RightChild : Parent->LeftChild;
         Node->Type = ParentType;
@@ -81,8 +81,8 @@ void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWi
     }
     else if(SplitMode == SPLIT_HORIZONTAL)
     {
-        Parent->LeftChild = CreateLeafNode(Display, Parent, LeftWindowID, 3);
-        Parent->RightChild = CreateLeafNode(Display, Parent, RightWindowID, 4);
+        Parent->LeftChild = CreateLeafNode(Display, Parent, LeftWindowID, CONTAINER_UPPER);
+        Parent->RightChild = CreateLeafNode(Display, Parent, RightWindowID, CONTAINER_LOWER);
 
         tree_node *Node = KWMSettings.SpawnAsLeftChild ?  Parent->RightChild : Parent->LeftChild;
         Node->Type = ParentType;

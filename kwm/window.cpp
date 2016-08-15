@@ -1795,53 +1795,6 @@ void ShiftSubTreeWindowFocus(int Shift)
     }
 }
 
-void FocusFirstLeafNode(ax_display *Display)
-{
-    if(Display)
-    {
-        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
-        if(!SpaceInfo->RootNode)
-            return;
-
-        if(SpaceInfo->Settings.Mode == SpaceModeBSP)
-        {
-            tree_node *Node = NULL;
-            GetFirstLeafNode(SpaceInfo->RootNode, (void**)&Node);
-            SetWindowFocusByNode(Node);
-        }
-        else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
-        {
-            link_node *Node = SpaceInfo->RootNode->List;
-            SetWindowFocusByNode(Node);
-        }
-    }
-}
-
-void FocusLastLeafNode(ax_display *Display)
-{
-    if(Display)
-    {
-        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
-        if(!SpaceInfo->RootNode)
-            return;
-
-        if(SpaceInfo->Settings.Mode == SpaceModeBSP)
-        {
-            tree_node *Node = NULL;
-            GetLastLeafNode(SpaceInfo->RootNode, (void **)&Node);
-            SetWindowFocusByNode(Node);
-        }
-        else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
-        {
-            link_node *Node = SpaceInfo->RootNode->List;
-            while(Node && Node->Next)
-                Node = Node->Next;
-
-            SetWindowFocusByNode(Node);
-        }
-    }
-}
-
 void FocusWindowByID(uint32_t WindowID)
 {
     ax_window *Window = GetWindowByID(WindowID);

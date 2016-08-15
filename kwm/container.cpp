@@ -73,7 +73,7 @@ void SetRootNodeContainer(ax_display *Display, tree_node *Node)
     Node->Container.Height = Display->Frame.size.height - SpaceInfo->Settings.Offset.PaddingTop - SpaceInfo->Settings.Offset.PaddingBottom;
     Node->SplitMode = GetOptimalSplitMode(Node);
 
-    Node->Container.Type = 0;
+    Node->Container.Type = CONTAINER_NONE;
 }
 
 void SetLinkNodeContainer(ax_display *Display, link_node *Link)
@@ -93,25 +93,25 @@ void CreateNodeContainer(ax_display *Display, tree_node *Node, int ContainerType
 
     switch(ContainerType)
     {
-        case 1:
+        case CONTAINER_LEFT:
         {
             Node->Container = LeftVerticalContainerSplit(Display, Node->Parent);
         } break;
-        case 2:
+        case CONTAINER_RIGHT:
         {
             Node->Container = RightVerticalContainerSplit(Display, Node->Parent);
         } break;
-        case 3:
+        case CONTAINER_UPPER:
         {
             Node->Container = UpperHorizontalContainerSplit(Display, Node->Parent);
         } break;
-        case 4:
+        case CONTAINER_LOWER:
         {
             Node->Container = LowerHorizontalContainerSplit(Display, Node->Parent);
         } break;
     }
 
-    if(Node->SplitMode == 0)
+    if(Node->SplitMode == SPLIT_NONE)
         Node->SplitMode = GetOptimalSplitMode(Node);
 
     Node->Container.Type = ContainerType;
@@ -121,13 +121,13 @@ void CreateNodeContainerPair(ax_display *Display, tree_node *LeftNode, tree_node
 {
     if(SplitMode == SPLIT_VERTICAL)
     {
-        CreateNodeContainer(Display, LeftNode, 1);
-        CreateNodeContainer(Display, RightNode, 2);
+        CreateNodeContainer(Display, LeftNode, CONTAINER_LEFT);
+        CreateNodeContainer(Display, RightNode, CONTAINER_RIGHT);
     }
     else
     {
-        CreateNodeContainer(Display, LeftNode, 3);
-        CreateNodeContainer(Display, RightNode, 4);
+        CreateNodeContainer(Display, LeftNode, CONTAINER_UPPER);
+        CreateNodeContainer(Display, RightNode, CONTAINER_LOWER);
     }
 }
 
@@ -179,12 +179,12 @@ void CreateNodeContainers(ax_display *Display, tree_node *Node, bool OptimalSpli
 void CreateDeserializedNodeContainer(ax_display *Display, tree_node *Node)
 {
     int SplitMode = Node->Parent->SplitMode;
-    int ContainerType = 0;
+    int ContainerType = CONTAINER_NONE;
 
     if(SplitMode == SPLIT_VERTICAL)
-        ContainerType = IsLeftChild(Node) ? 1 : 2;
+        ContainerType = IsLeftChild(Node) ? CONTAINER_LEFT : CONTAINER_RIGHT;
     else
-        ContainerType = IsLeftChild(Node) ? 3 : 4;
+        ContainerType = IsLeftChild(Node) ? CONTAINER_UPPER : CONTAINER_LOWER;
 
     CreateNodeContainer(Display, Node, ContainerType);
 }

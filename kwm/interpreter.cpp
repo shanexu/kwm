@@ -282,7 +282,11 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
     }
     else if(Tokens[1] == "split-ratio")
     {
-        ChangeSplitRatio(ConvertStringToDouble(Tokens[2]));
+        double Value = ConvertStringToDouble(Tokens[2]);
+        if(Value > 0.0 && Value < 1.0)
+        {
+            KWMSettings.SplitRatio = Value;
+        }
     }
 }
 
