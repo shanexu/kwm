@@ -61,13 +61,13 @@ and different types of hotkeys.</p>
 
 <p><em>Kwm</em> runs a local daemon to read messages and trigger functions.
 <em>Kwmc</em> is used to write to <em>Kwm</em>'s socket, and must be used when interacting with and configuring how <em>Kwm</em> works.
-For a list of various commands that can be issued, check the readme located within the <em>Kwmc</em> folder.</p>
+For a list of various commands and settings, <a href="kwmc.html"><strong>view the Kwmc configuration reference</strong></a>.</p>
 
 <p>For in depth information, sample configurations, and useful scripts to implement new features by combining
 <em>Kwmc</em> commands, check out the <a href="https://github.com/koekeishiya/kwm/wiki">wiki</a></p>
 
 <p><em>Kwm</em> requires access to the OSX accessibility API.
-Tested on El Capitan (10.11.1 - 10.11.5).</p>
+Tested on El Capitan (10.11.1 - 10.11.6).</p>
 
 <p><img src="https://cloud.githubusercontent.com/assets/6175959/17399847/d5f0c4d4-5a44-11e6-9526-30e18a6a98a3.png" alt="img"><br>
 For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">click here.</a></p>
@@ -115,6 +115,10 @@ Using hotkeys to change window focus will work even if focus-follows-mouse has b
 <pre><code>  edit /path/to/kwm on line 9 of examples/com.koekeishiya.kwm.plist
   cp examples/com.koekeishiya.kwm.plist ~/Library/LaunchAgents/
 </code></pre>
+
+<p>Manually start Kwm using launchctl (name of plist file will be different if installed through Homebrew).</p>
+
+<pre><code>  launchctl load -w ~/Library/LaunchAgents/com.koekeishiya.kwm.plist</code></pre>
 
 <p>I would recommend for <em>Kwm</em> to be managed by launchd, as it otherwise requires
 the terminal application to have Accessibility Permissions (Not Recommended).</p>
