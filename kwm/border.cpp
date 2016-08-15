@@ -8,18 +8,22 @@ extern kwm_border FocusedBorder;
 extern kwm_border MarkedBorder;
 extern kwm_hotkeys KWMHotkeys;
 
-void UpdateBorder(std::string BorderType)
+void UpdateBorder(border_type Type)
 {
-    Assert(BorderType == "focused" || BorderType == "marked");
+    kwm_border *Border = NULL;
+    ax_window *Window = NULL;
 
-    kwm_border *Border = &FocusedBorder;
-    ax_application *Application = AXLibGetFocusedApplication();
-    ax_window *Window = Application ? Application->Focus : NULL;
+    if(Type == BORDER_FOCUSED)
+    {
+        Border = &FocusedBorder;
+        ax_application *Application = AXLibGetFocusedApplication();
+        if(Application)
+            Window = Application->Focus;
 
-    if(!KWMHotkeys.ActiveMode->Color.Format.empty())
-        Border->Color = KWMHotkeys.ActiveMode->Color;
-
-    if(BorderType == "marked")
+        if(!KWMHotkeys.ActiveMode->Color.Format.empty())
+            Border->Color = KWMHotkeys.ActiveMode->Color;
+    }
+    else if(Type == BORDER_MARKED)
     {
         Window = MarkedWindow;
         Border = &MarkedBorder;

@@ -86,12 +86,12 @@ void SetLinkNodeContainer(ax_display *Display, link_node *Link)
     Link->Container.Height = Display->Frame.size.height - SpaceInfo->Settings.Offset.PaddingTop - SpaceInfo->Settings.Offset.PaddingBottom;
 }
 
-void CreateNodeContainer(ax_display *Display, tree_node *Node, int ContainerType)
+void CreateNodeContainer(ax_display *Display, tree_node *Node, container_type Type)
 {
     if(Node->SplitRatio == 0)
         Node->SplitRatio = KWMSettings.SplitRatio;
 
-    switch(ContainerType)
+    switch(Type)
     {
         case CONTAINER_LEFT:
         {
@@ -109,12 +109,13 @@ void CreateNodeContainer(ax_display *Display, tree_node *Node, int ContainerType
         {
             Node->Container = LowerHorizontalContainerSplit(Display, Node->Parent);
         } break;
+        default: { /* NOTE(koekeishiya): No container specified. */} break;
     }
 
     if(Node->SplitMode == SPLIT_NONE)
         Node->SplitMode = GetOptimalSplitMode(Node);
 
-    Node->Container.Type = ContainerType;
+    Node->Container.Type = Type;
 }
 
 void CreateNodeContainerPair(ax_display *Display, tree_node *LeftNode, tree_node *RightNode, split_type SplitMode)
@@ -179,12 +180,12 @@ void CreateNodeContainers(ax_display *Display, tree_node *Node, bool OptimalSpli
 void CreateDeserializedNodeContainer(ax_display *Display, tree_node *Node)
 {
     int SplitMode = Node->Parent->SplitMode;
-    int ContainerType = CONTAINER_NONE;
+    container_type Type = CONTAINER_NONE;
 
     if(SplitMode == SPLIT_VERTICAL)
-        ContainerType = IsLeftChild(Node) ? CONTAINER_LEFT : CONTAINER_RIGHT;
+        Type = IsLeftChild(Node) ? CONTAINER_LEFT : CONTAINER_RIGHT;
     else
-        ContainerType = IsLeftChild(Node) ? CONTAINER_UPPER : CONTAINER_LOWER;
+        Type = IsLeftChild(Node) ? CONTAINER_UPPER : CONTAINER_LOWER;
 
-    CreateNodeContainer(Display, Node, ContainerType);
+    CreateNodeContainer(Display, Node, Type);
 }

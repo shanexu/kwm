@@ -35,7 +35,7 @@ DrawFocusedBorder(ax_display *Display)
     if((Display) &&
        (Display->Space->Type == kCGSSpaceUser))
     {
-        UpdateBorder("focused");
+        UpdateBorder(BORDER_FOCUSED);
     }
 }
 
@@ -44,7 +44,7 @@ FloatNonResizable(ax_window *Window)
 {
     if(Window)
     {
-        if((KWMSettings.FloatNonResizable) &&
+        if((HasFlags(&KWMSettings, Settings_FloatNonResizable)) &&
            (!AXLibHasFlags(Window, AXWindow_Resizable)))
         {
             AXLibAddFlags(Window, AXWindow_Floating);
@@ -57,7 +57,7 @@ StandbyOnFloat(ax_window *Window)
 {
     if(Window)
     {
-        if((KWMSettings.StandbyOnFloat) &&
+        if((HasFlags(&KWMSettings, Settings_StandbyOnFloat)) &&
            (KWMSettings.Focus != FocusModeDisabled))
         {
             if(AXLibHasFlags(Window, AXWindow_Floating))
@@ -519,7 +519,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
         else
             DEBUG("AXEvent_WindowMoved: " << Window->Application->Name << " - [Unknown]");
 
-        if(!Event->Intrinsic && KWMSettings.LockToContainer)
+        if(!Event->Intrinsic && HasFlags(&KWMSettings, Settings_LockToContainer))
             LockWindowToContainerSize(Window);
 
         ax_display *Display = AXLibWindowDisplay(Window);
@@ -530,7 +530,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
             DrawFocusedBorder(Display);
 
         if(MarkedWindow == Window)
-            UpdateBorder("marked");
+            UpdateBorder(BORDER_MARKED);
     }
 }
 
@@ -548,7 +548,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowResized)
         else
             DEBUG("AXEvent_WindowResized: " << Window->Application->Name << " - [Unknown]");
 
-        if(!Event->Intrinsic && KWMSettings.LockToContainer)
+        if(!Event->Intrinsic && HasFlags(&KWMSettings, Settings_LockToContainer))
             LockWindowToContainerSize(Window);
 
         ax_display *Display = AXLibWindowDisplay(Window);
@@ -559,7 +559,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowResized)
             DrawFocusedBorder(Display);
 
         if(MarkedWindow == Window)
-            UpdateBorder("marked");
+            UpdateBorder(BORDER_MARKED);
     }
 }
 
@@ -1202,7 +1202,7 @@ void ToggleWindowFloating(uint32_t WindowID, bool Center)
     {
         AXLibClearFlags(Window, AXWindow_Floating);
         TileWindow(Display, Window);
-        if((KWMSettings.StandbyOnFloat) &&
+        if((HasFlags(&KWMSettings, Settings_StandbyOnFloat)) &&
            (KWMSettings.Focus != FocusModeDisabled))
             KWMSettings.Focus = FocusModeAutoraise;
     }
@@ -1211,10 +1211,10 @@ void ToggleWindowFloating(uint32_t WindowID, bool Center)
         AXLibAddFlags(Window, AXWindow_Floating);
         RemoveWindowFromNodeTree(Display, Window->ID);
 
-        if(Center && KWMSettings.CenterOnFloat)
+        if(Center && HasFlags(&KWMSettings, Settings_CenterOnFloat))
             CenterWindow(Display, Window);
 
-        if((KWMSettings.StandbyOnFloat) &&
+        if((HasFlags(&KWMSettings, Settings_StandbyOnFloat)) &&
            (KWMSettings.Focus != FocusModeDisabled))
             KWMSettings.Focus = FocusModeStandby;
     }
@@ -1386,7 +1386,7 @@ void DetachAndReinsertWindow(unsigned int WindowID, int Degrees)
             ToggleWindowFloating(WindowID, false);
             MoveCursorToCenterOfFocusedWindow();
             MarkedWindow = PrevMarkedWindow;
-            UpdateBorder("marked");
+            UpdateBorder(BORDER_MARKED);
         }
     }
 }
@@ -1823,7 +1823,7 @@ void MarkWindowContainer(ax_window *Window)
         {
             DEBUG("MarkWindowContainer() Marked " << Window->Name);
             MarkedWindow = Window;
-            UpdateBorder("marked");
+            UpdateBorder(BORDER_MARKED);
         }
     }
 }

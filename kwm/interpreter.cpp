@@ -47,12 +47,12 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
             if(Tokens[3] == "on")
             {
                 FocusedBorder.Enabled = true;
-                UpdateBorder("focused");
+                UpdateBorder(BORDER_FOCUSED);
             }
             else if(Tokens[3] == "off")
             {
                 FocusedBorder.Enabled = false;
-                UpdateBorder("focused");
+                UpdateBorder(BORDER_FOCUSED);
             }
             else if(Tokens[3] == "size")
             {
@@ -79,7 +79,7 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
             else if(Tokens[3] == "off")
             {
                 MarkedBorder.Enabled = false;
-                UpdateBorder("marked");
+                UpdateBorder(BORDER_MARKED);
             }
             else if(Tokens[3] == "size")
             {
@@ -99,23 +99,23 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
     else if(Tokens[1] == "float-non-resizable")
     {
         if(Tokens[2] == "off")
-            KWMSettings.FloatNonResizable = false;
+            ClearFlags(&KWMSettings, Settings_FloatNonResizable);
         else if(Tokens[2] == "on")
-            KWMSettings.FloatNonResizable = true;
+            AddFlags(&KWMSettings, Settings_FloatNonResizable);
     }
     else if(Tokens[1] == "lock-to-container")
     {
         if(Tokens[2] == "off")
-            KWMSettings.LockToContainer = false;
+            ClearFlags(&KWMSettings, Settings_LockToContainer);
         else if(Tokens[2] == "on")
-            KWMSettings.LockToContainer = true;
+            AddFlags(&KWMSettings, Settings_LockToContainer);
     }
     else if(Tokens[1] == "spawn")
     {
         if(Tokens[2] == "left")
-            KWMSettings.SpawnAsLeftChild = true;
+            AddFlags(&KWMSettings, Settings_SpawnAsLeftChild);
         else if(Tokens[2] == "right")
-            KWMSettings.SpawnAsLeftChild = false;
+            ClearFlags(&KWMSettings, Settings_SpawnAsLeftChild);
     }
     else if(Tokens[1] == "tiling")
     {
@@ -224,23 +224,23 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
     else if(Tokens[1] == "mouse-follows-focus")
     {
         if(Tokens[2] == "off")
-            KWMSettings.UseMouseFollowsFocus = false;
+            ClearFlags(&KWMSettings, Settings_MouseFollowsFocus);
         else if(Tokens[2] == "on")
-            KWMSettings.UseMouseFollowsFocus = true;
+            AddFlags(&KWMSettings, Settings_MouseFollowsFocus);
     }
     else if(Tokens[1] == "standby-on-float")
     {
         if(Tokens[2] == "off")
-            KWMSettings.StandbyOnFloat = false;
+            ClearFlags(&KWMSettings, Settings_StandbyOnFloat);
         else if(Tokens[2] == "on")
-            KWMSettings.StandbyOnFloat = true;
+            AddFlags(&KWMSettings, Settings_StandbyOnFloat);
     }
     else if(Tokens[1] == "center-on-float")
     {
         if(Tokens[2] == "off")
-            KWMSettings.CenterOnFloat = false;
+            ClearFlags(&KWMSettings, Settings_CenterOnFloat);
         else if(Tokens[2] == "on")
-            KWMSettings.CenterOnFloat = true;
+            AddFlags(&KWMSettings, Settings_CenterOnFloat);
     }
     else if(Tokens[1] == "cycle-focus")
     {
@@ -252,9 +252,9 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
     else if(Tokens[1] == "hotkeys")
     {
         if(Tokens[2] == "off")
-            KWMSettings.UseBuiltinHotkeys = false;
+            ClearFlags(&KWMSettings, Settings_BuiltinHotkeys);
         else if(Tokens[2] == "on")
-            KWMSettings.UseBuiltinHotkeys = true;
+            AddFlags(&KWMSettings, Settings_BuiltinHotkeys);
     }
     else if(Tokens[1] == "padding")
     {

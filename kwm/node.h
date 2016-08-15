@@ -7,7 +7,7 @@
 
 tree_node *CreateRootNode();
 link_node *CreateLinkNode();
-tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t WindowID, int ContainerType);
+tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t WindowID, container_type Type);
 void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWindowID, uint32_t SecondWindowID, split_type SplitMode);
 void CreatePseudoNode();
 void RemovePseudoNode();

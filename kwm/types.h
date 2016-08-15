@@ -212,7 +212,7 @@ struct node_container
 {
     double X, Y;
     double Width, Height;
-    int Type;
+    container_type Type;
 };
 
 struct link_node
@@ -320,34 +320,56 @@ struct kwm_path
     std::string Layouts;
 };
 
+struct kwm_thread
+{
+    pthread_t Daemon;
+};
+
 struct kwm_settings
 {
     space_tiling_option Space;
     cycle_focus_option Cycle;
     focus_option Focus;
 
-    bool UseMouseFollowsFocus;
-    bool UseBuiltinHotkeys;
-    bool StandbyOnFloat;
-    bool CenterOnFloat;
-
-    double OptimalRatio;
-    bool SpawnAsLeftChild;
-    bool FloatNonResizable;
-    bool LockToContainer;
-
+    container_offset DefaultOffset;
     split_type SplitMode;
     double SplitRatio;
-    container_offset DefaultOffset;
+    double OptimalRatio;
+    uint32_t Flags;
 
     std::map<unsigned int, space_settings> DisplaySettings;
     std::map<space_identifier, space_settings> SpaceSettings;
     std::vector<window_rule> WindowRules;
 };
 
-struct kwm_thread
+enum kwm_toggleable
 {
-    pthread_t Daemon;
+    Settings_MouseFollowsFocus = (1 << 0),
+    Settings_BuiltinHotkeys = (1 << 1),
+    Settings_StandbyOnFloat = (1 << 2),
+    Settings_CenterOnFloat = (1 << 3),
+    Settings_SpawnAsLeftChild = (1 << 4),
+    Settings_FloatNonResizable = (1 << 5),
+    Settings_LockToContainer = (1 << 6),
 };
+
+inline void
+AddFlags(kwm_settings *Settings, uint32_t Flag)
+{
+    Settings->Flags |= Flag;
+}
+
+inline bool
+HasFlags(kwm_settings *Settings, uint32_t Flag)
+{
+    bool Result = Settings->Flags & Flag;
+    return Result;
+}
+
+inline void
+ClearFlags(kwm_settings *Settings, uint32_t Flag)
+{
+    Settings->Flags &= ~Flag;
+}
 
 #endif

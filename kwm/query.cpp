@@ -89,7 +89,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QuerySpawnPosition)
 {
     int *SockFD = (int *) Event->Context;
 
-    std::string Output = KWMSettings.SpawnAsLeftChild ? "left" : "right";
+    std::string Output = HasFlags(&KWMSettings, Settings_SpawnAsLeftChild) ? "left" : "right";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -112,7 +112,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryMouseFollowsFocus)
 {
     int *SockFD = (int *) Event->Context;
 
-    std::string Output = KWMSettings.UseMouseFollowsFocus ? "on" : "off";
+    std::string Output = HasFlags(&KWMSettings, Settings_MouseFollowsFocus) ? "on" : "off";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -130,7 +130,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryFloatNonResizable)
 {
     int *SockFD = (int *) Event->Context;
 
-    std::string Output = KWMSettings.FloatNonResizable ? "on" : "off";
+    std::string Output = HasFlags(&KWMSettings, Settings_FloatNonResizable) ? "on" : "off";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -139,7 +139,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryLockToContainer)
 {
     int *SockFD = (int *) Event->Context;
 
-    std::string Output = KWMSettings.LockToContainer ? "on" : "off";
+    std::string Output = HasFlags(&KWMSettings, Settings_LockToContainer) ? "on" : "off";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -148,7 +148,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryStandbyOnFloat)
 {
     int *SockFD = (int *) Event->Context;
 
-    std::string Output = KWMSettings.StandbyOnFloat ? "on" : "off";
+    std::string Output = HasFlags(&KWMSettings, Settings_StandbyOnFloat) ? "on" : "off";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }

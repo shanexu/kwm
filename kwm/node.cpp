@@ -38,7 +38,7 @@ link_node *CreateLinkNode()
     return Link;
 }
 
-tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t WindowID, int ContainerType)
+tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t WindowID, container_type Type)
 {
     tree_node *Leaf = (tree_node*) malloc(sizeof(tree_node));
     memset(Leaf, 0, sizeof(tree_node));
@@ -47,7 +47,7 @@ tree_node *CreateLeafNode(ax_display *Display, tree_node *Parent, uint32_t Windo
     Leaf->WindowID = WindowID;
     Leaf->Type = NodeTypeTree;
 
-    CreateNodeContainer(Display, Leaf, ContainerType);
+    CreateNodeContainer(Display, Leaf, Type);
 
     Leaf->LeftChild = NULL;
     Leaf->RightChild = NULL;
@@ -66,15 +66,31 @@ void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWi
     Parent->Type = NodeTypeTree;
     Parent->List = NULL;
 
-    uint32_t LeftWindowID = KWMSettings.SpawnAsLeftChild ? SecondWindowID : FirstWindowID;
-    uint32_t RightWindowID = KWMSettings.SpawnAsLeftChild ? FirstWindowID : SecondWindowID;
+    uint32_t LeftWindowID;
+    uint32_t RightWindowID;
+
+    if(HasFlags(&KWMSettings, Settings_SpawnAsLeftChild))
+    {
+        LeftWindowID = SecondWindowID;
+        RightWindowID = FirstWindowID;
+    }
+    else
+    {
+        LeftWindowID = FirstWindowID;
+        RightWindowID = SecondWindowID;
+    }
 
     if(SplitMode == SPLIT_VERTICAL)
     {
         Parent->LeftChild = CreateLeafNode(Display, Parent, LeftWindowID, CONTAINER_LEFT);
         Parent->RightChild = CreateLeafNode(Display, Parent, RightWindowID, CONTAINER_RIGHT);
 
-        tree_node *Node = KWMSettings.SpawnAsLeftChild ?  Parent->RightChild : Parent->LeftChild;
+        tree_node *Node;
+        if(HasFlags(&KWMSettings, Settings_SpawnAsLeftChild))
+            Node = Parent->RightChild;
+        else
+            Node = Parent->LeftChild;
+
         Node->Type = ParentType;
         Node->List = ParentList;
         ResizeLinkNodeContainers(Node);
@@ -84,7 +100,12 @@ void CreateLeafNodePair(ax_display *Display, tree_node *Parent, uint32_t FirstWi
         Parent->LeftChild = CreateLeafNode(Display, Parent, LeftWindowID, CONTAINER_UPPER);
         Parent->RightChild = CreateLeafNode(Display, Parent, RightWindowID, CONTAINER_LOWER);
 
-        tree_node *Node = KWMSettings.SpawnAsLeftChild ?  Parent->RightChild : Parent->LeftChild;
+        tree_node *Node;
+        if(HasFlags(&KWMSettings, Settings_SpawnAsLeftChild))
+            Node = Parent->RightChild;
+        else
+            Node = Parent->LeftChild;
+
         Node->Type = ParentType;
         Node->List = ParentList;
         ResizeLinkNodeContainers(Node);

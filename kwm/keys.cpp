@@ -7,6 +7,7 @@
 #include "axlib/event.h"
 
 #define internal static
+#define local_persist static
 
 extern ax_application *FocusedApplication;
 extern kwm_hotkeys KWMHotkeys;
@@ -29,10 +30,10 @@ internal CFStringRef
 KeycodeToString(CGKeyCode Keycode)
 {
     TISInputSourceRef Keyboard = TISCopyCurrentASCIICapableKeyboardLayoutInputSource();
-    CFDataRef Uchr = (CFDataRef)TISGetInputSourceProperty(Keyboard, kTISPropertyUnicodeKeyLayoutData);
+    CFDataRef Uchr = (CFDataRef) TISGetInputSourceProperty(Keyboard, kTISPropertyUnicodeKeyLayoutData);
     CFRelease(Keyboard);
-    const UCKeyboardLayout *KeyboardLayout = (const UCKeyboardLayout*)CFDataGetBytePtr(Uchr);
 
+    UCKeyboardLayout *KeyboardLayout = (UCKeyboardLayout *) CFDataGetBytePtr(Uchr);
     if(KeyboardLayout)
     {
         UInt32 DeadKeyState = 0;
@@ -48,7 +49,7 @@ KeycodeToString(CGKeyCode Keycode)
                                          &ActualStringLength,
                                          UnicodeString);
 
-        if (ActualStringLength == 0 && DeadKeyState)
+        if(ActualStringLength == 0 && DeadKeyState)
         {
             Status = UCKeyTranslate(KeyboardLayout, kVK_Space,
                                     kUCKeyActionDown, 0,
@@ -69,17 +70,17 @@ KeycodeToString(CGKeyCode Keycode)
 internal bool
 KeycodeForChar(char Key, CGKeyCode *Keycode)
 {
-    static CFMutableDictionaryRef CharToCodeDict = NULL;
+    local_persist CFMutableDictionaryRef CharToCodeDict = NULL;
 
     bool Result = true;
     UniChar Character = Key;
     CFStringRef CharStr;
 
-    if (!CharToCodeDict)
+    if(!CharToCodeDict)
     {
         CharToCodeDict = CFDictionaryCreateMutable(kCFAllocatorDefault, 128,
                                                    &kCFCopyStringDictionaryKeyCallBacks, NULL);
-        if (!CharToCodeDict)
+        if(!CharToCodeDict)
             return false;
 
         for(std::size_t KeyIndex = 0; KeyIndex < 128; ++KeyIndex)
@@ -94,7 +95,7 @@ KeycodeForChar(char Key, CGKeyCode *Keycode)
     }
 
     CharStr = CFStringCreateWithCharacters(kCFAllocatorDefault, &Character, 1);
-    if (!CFDictionaryGetValueIfPresent(CharToCodeDict, CharStr, (const void **)Keycode))
+    if(!CFDictionaryGetValueIfPresent(CharToCodeDict, CharStr, (const void **)Keycode))
         Result = false;
 
     CFRelease(CharStr);
@@ -459,7 +460,7 @@ void KwmActivateBindingMode(std::string Mode)
         BindingMode = GetBindingMode("default");
 
     KWMHotkeys.ActiveMode = BindingMode;
-    UpdateBorder("focused");
+    UpdateBorder(BORDER_FOCUSED);
     if(BindingMode->Prefix)
     {
         BindingMode->Time = std::chrono::steady_clock::now();

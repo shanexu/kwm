@@ -3,17 +3,23 @@
 
 #include "types.h"
 #include "window.h"
-
 #include "axlib/axlib.h"
 
+#define local_persist static
 extern kwm_path KWMPath;
+
+enum border_type
+{
+    BORDER_FOCUSED,
+    BORDER_MARKED,
+};
 
 inline void
 OpenBorder(kwm_border *Border)
 {
     if(Border->Enabled && !Border->Handle)
     {
-        static std::string OverlayBin = KWMPath.FilePath + "/kwm-overlay";
+        local_persist std::string OverlayBin = KWMPath.FilePath + "/kwm-overlay";
         Border->Handle = popen(OverlayBin.c_str(), "w");
         if(!Border->Handle)
             Border->Enabled = false;
@@ -25,7 +31,7 @@ CloseBorder(kwm_border *Border)
 {
     if(Border->Handle)
     {
-        static std::string Terminate = "quit\n";
+        local_persist std::string Terminate = "quit\n";
         fwrite(Terminate.c_str(), Terminate.size(), 1, Border->Handle);
         fflush(Border->Handle);
         pclose(Border->Handle);
@@ -38,7 +44,7 @@ ClearBorder(kwm_border *Border)
 {
     if(Border->Handle)
     {
-        static std::string Command = "clear\n";
+        local_persist std::string Command = "clear\n";
         fwrite(Command.c_str(), Command.size(), 1, Border->Handle);
         fflush(Border->Handle);
     }
@@ -59,6 +65,6 @@ RefreshBorder(kwm_border *Border, ax_window *Window)
     fflush(Border->Handle);
 }
 
-void UpdateBorder(std::string BorderType);
+void UpdateBorder(border_type Type);
 
 #endif

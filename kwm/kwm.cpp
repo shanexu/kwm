@@ -49,7 +49,7 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         {
             /* TODO(koekeishiya): Is there a better way to decide whether
                                   we should eat the CGEventRef or not (?) */
-            if(KWMSettings.UseBuiltinHotkeys)
+            if(HasFlags(&KWMSettings, Settings_BuiltinHotkeys))
             {
                 hotkey Eventkey = {}, *Hotkey = NULL;
                 Hotkey = new hotkey;
@@ -182,11 +182,14 @@ KwmInit()
     KWMSettings.SplitRatio = 0.5;
     KWMSettings.SplitMode = SPLIT_OPTIMAL;
     KWMSettings.DefaultOffset = CreateDefaultScreenOffset();
-
-    KWMSettings.UseBuiltinHotkeys = true;
-    KWMSettings.UseMouseFollowsFocus = true;
     KWMSettings.OptimalRatio = 1.618;
-    KWMSettings.LockToContainer = true;
+
+    AddFlags(&KWMSettings,
+            Settings_MouseFollowsFocus |
+            Settings_BuiltinHotkeys |
+            Settings_StandbyOnFloat |
+            Settings_CenterOnFloat |
+            Settings_LockToContainer);
 
     KWMSettings.Space = SpaceModeBSP;
     KWMSettings.Focus = FocusModeAutoraise;
