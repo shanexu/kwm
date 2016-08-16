@@ -23,7 +23,7 @@ IsProcessWhitelisted(std::string Name)
 }
 
 /* NOTE(koekeishiya): A pascal string has the size of the string stored as the first byte. */
-internal void
+internal inline void
 CopyPascalStringToC(ConstStr255Param Source, char *Destination)
 {
     strncpy(Destination, (char *) Source + 1, Source[0]);
@@ -152,6 +152,6 @@ bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon, std::map<pi
     Carbon->EventType[1].eventClass = kEventClassApplication;
     Carbon->EventType[1].eventKind = kEventAppTerminated;
 
-    /* TODO(koekeishiya): Do we fallback to NSWorkspaceNotifications if we cannot install the Carbon handle, or simply abort (?) */
+    /* TODO(koekeishiya): If we cannot install the Carbon handler, abort. */
     return InstallEventHandler(Carbon->EventTarget, Carbon->EventHandler, 2, Carbon->EventType, NULL, &Carbon->CurHandler) == noErr;
 }

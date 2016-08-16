@@ -3,7 +3,7 @@
 #define internal static
 #define local_persist static
 
-char * CopyCFStringToC(CFStringRef String, bool UTF8)
+char *CopyCFStringToC(CFStringRef String, bool UTF8)
 {
     char *Result = NULL;
     CFStringEncoding Encoding = UTF8 ? kCFStringEncodingUTF8 : kCFStringEncodingMacRoman;
@@ -60,7 +60,7 @@ bool AXLibIsWindowMovable(AXUIElementRef WindowRef)
 {
     bool Result;
 
-    AXError Error = AXUIElementIsAttributeSettable(WindowRef, kAXPositionAttribute, (Boolean*)&Result);
+    AXError Error = AXUIElementIsAttributeSettable(WindowRef, kAXPositionAttribute, (Boolean *)&Result);
     if(Error != kAXErrorSuccess)
         Result = false;
 
@@ -71,7 +71,7 @@ bool AXLibIsWindowResizable(AXUIElementRef WindowRef)
 {
     bool Result;
 
-    AXError Error = AXUIElementIsAttributeSettable(WindowRef, kAXSizeAttribute, (Boolean*)&Result);
+    AXError Error = AXUIElementIsAttributeSettable(WindowRef, kAXSizeAttribute, (Boolean *)&Result);
     if(Error != kAXErrorSuccess)
         Result = false;
 
@@ -83,7 +83,7 @@ bool AXLibSetWindowPosition(AXUIElementRef WindowRef, int X, int Y)
     bool Result = false;
 
     CGPoint WindowPos = CGPointMake(X, Y);
-    CFTypeRef WindowPosRef = (CFTypeRef)AXValueCreate(kAXValueCGPointType, (const void*)&WindowPos);
+    CFTypeRef WindowPosRef = (CFTypeRef)AXValueCreate(kAXValueCGPointType, (const void *)&WindowPos);
     if(WindowPosRef)
     {
         AXError Error = AXLibSetWindowProperty(WindowRef, kAXPositionAttribute, WindowPosRef);
@@ -101,7 +101,7 @@ bool AXLibSetWindowSize(AXUIElementRef WindowRef, int Width, int Height)
     bool Result = false;
 
     CGSize WindowSize = CGSizeMake(Width, Height);
-    CFTypeRef WindowSizeRef = (CFTypeRef)AXValueCreate(kAXValueCGSizeType, (void*)&WindowSize);
+    CFTypeRef WindowSizeRef = (CFTypeRef)AXValueCreate(kAXValueCGSizeType, (void *)&WindowSize);
     if(WindowSizeRef)
     {
         AXError Error = AXLibSetWindowProperty(WindowRef, kAXSizeAttribute, WindowSizeRef);

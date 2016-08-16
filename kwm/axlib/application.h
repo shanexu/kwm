@@ -31,8 +31,8 @@ struct ax_application
     uint32_t Notifications;
 
     ax_window *Focus;
-    std::map<uint32_t, ax_window*> Windows;
-    std::vector<ax_window*> NullWindows;
+    std::map<uint32_t, ax_window *> Windows;
+    std::vector<ax_window *> NullWindows;
 };
 
 inline bool

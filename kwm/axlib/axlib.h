@@ -43,7 +43,7 @@ struct ax_state
 
 ax_application *AXLibGetApplicationByPID(pid_t PID);
 
-ax_application * AXLibGetFocusedApplication();
+ax_application *AXLibGetFocusedApplication();
 ax_window *AXLibGetFocusedWindow(ax_application *Application);
 void AXLibSetFocusedWindow(ax_window *Window);
 

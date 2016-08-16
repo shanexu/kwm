@@ -153,7 +153,7 @@ AXLibConstructSpace(CFStringRef Identifier, CGSSpaceID SpaceID, CGSSpaceType Spa
 }
 
 /* NOTE(koekeishiya): Find the active ax_space for a given ax_display. */
-ax_space * AXLibGetActiveSpace(ax_display *Display)
+ax_space *AXLibGetActiveSpace(ax_display *Display)
 {
     CGSSpaceID SpaceID = AXLibGetActiveSpaceID(Display);
 
@@ -451,8 +451,8 @@ AXLibActiveDisplays()
 /* NOTE(koekeishiya): The main display is the display which currently holds the window that accepts key-input. */
 ax_display *AXLibMainDisplay()
 {
-    NSDictionary* ScreenDictionary = [[NSScreen mainScreen] deviceDescription];
-    NSNumber* ScreenID = [ScreenDictionary objectForKey:@"NSScreenNumber"];
+    NSDictionary *ScreenDictionary = [[NSScreen mainScreen] deviceDescription];
+    NSNumber *ScreenID = [ScreenDictionary objectForKey:@"NSScreenNumber"];
     CGDirectDisplayID MainDisplay = [ScreenID unsignedIntValue];
     return &(*Displays)[MainDisplay];
 }
@@ -701,7 +701,7 @@ bool AXLibSpaceHasWindow(ax_window *Window, CGSSpaceID SpaceID)
     int NumberOfSpaces = CFArrayGetCount(Spaces);
     for(int Index = 0; Index < NumberOfSpaces; ++Index)
     {
-        NSNumber *ID = (__bridge NSNumber*)CFArrayGetValueAtIndex(Spaces, Index);
+        NSNumber *ID = (__bridge NSNumber *)CFArrayGetValueAtIndex(Spaces, Index);
         if(SpaceID == [ID intValue])
         {
             Result = true;

@@ -132,7 +132,7 @@ std::vector<ax_window *> AXLibGetAllKnownWindows()
     for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
     {
         ax_application *Application = &It->second;
-        std::map<uint32_t, ax_window*>::iterator WIt;
+        std::map<uint32_t, ax_window *>::iterator WIt;
         for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
             Windows.push_back(WIt->second);
     }
@@ -175,7 +175,7 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
                 ax_application *Application = &It->second;
                 if(!AXLibIsApplicationHidden(Application))
                 {
-                    std::map<uint32_t, ax_window*>::iterator WIt;
+                    std::map<uint32_t, ax_window *>::iterator WIt;
                     for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
                     {
                         ax_window *Window = WIt->second;
