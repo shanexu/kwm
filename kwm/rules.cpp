@@ -12,33 +12,7 @@
 
 extern kwm_settings KWMSettings;
 
-/* Current Window Properties:
- *          float = "true" | "false"
- *          display = "id"
- *          space = "id"
- *
- * Examples:
- *          kwmc rule owner="" name="" properties={float=""; display=""; space=""} except=""
- *
- * Apply given properties to all iTerm2 windows that does not have
- * a title containing $except:
- *          kwmc rule owner="iTerm2" properties={float="true"} except="borderless"
- *
- * Apply given properties to all iTerm2 windows that does have a
- * title containing $name and at the same times does not contain $except:
- *          kwmc rule owner="iTerm2" name="borderless" properties={float="true"} except="ignore"
- *
- * Apply given properties to all Steam windows
- *          kwmc rule owner="Steam" properties={float="true"}
- *
- * Apply given properties to all iTunes windows
- *          kwmc rule owner="iTunes" properties={display="1"}
- *
- * Assign iTunes to space 1 of display 1
- *          kwmc rule owner="iTunes" properties={space="1"; display="1"}
-*/
-
-internal void
+internal inline void
 ReportInvalidRule(std::string Command)
 {
     std::cerr << "  Rule Parse error: " << Command << std::endl;
