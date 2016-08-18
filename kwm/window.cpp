@@ -165,9 +165,6 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayChanged)
     RebalanceNodeTree(FocusedDisplay);
     CreateWindowNodeTree(FocusedDisplay);
 
-    /* NOTE(koekeishiya): Always update state of focused application and its window after a display transition. */
-    SyncFocusedApplication(FocusedDisplay);
-
     ClearBorderIfFullscreenSpace(FocusedDisplay);
 }
 
