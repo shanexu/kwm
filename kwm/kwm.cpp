@@ -279,8 +279,6 @@ ConfigureRunLoop()
     CFRunLoopAddSource(CFRunLoopGetMain(),
                        CFMachPortCreateRunLoopSource(kCFAllocatorDefault, KWMMach.EventTap, 0),
                        kCFRunLoopCommonModes);
-
-    CGEventTapEnable(KWMMach.EventTap, true);
 }
 
 int main(int argc, char **argv)
