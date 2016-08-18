@@ -28,6 +28,8 @@ The bar seen in the above screenshot can be found [here](https://github.com/koek
 
 ## Install:
 
+**NOTE:** Kwm requires ['Displays have separate spaces'](https://support.apple.com/library/content/dam/edam/applecare/images/en_US/osx/separate_spaces.png) to be enabled.
+
 A codesigned binary release is available through Homebrew
 
       brew install koekeishiya/kwm/kwm
