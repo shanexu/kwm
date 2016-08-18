@@ -290,6 +290,34 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
     }
 }
 
+/* NOTE(koekeishiya): Event context is a pointer to the PID of the application. */
+EVENT_CALLBACK(Callback_AXEvent_ApplicationHidden)
+{
+    pid_t *ApplicationPID = (pid_t *) Event->Context;
+    ax_application *Application = AXLibGetApplicationByPID(*ApplicationPID);
+    free(ApplicationPID);
+
+    if(Application)
+    {
+        DEBUG("AXEvent_ApplicationHidden: " << Application->Name);
+        RebalanceNodeTree(FocusedDisplay);
+    }
+}
+
+/* NOTE(koekeishiya): Event context is a pointer to the PID of the application. */
+EVENT_CALLBACK(Callback_AXEvent_ApplicationVisible)
+{
+    pid_t *ApplicationPID = (pid_t *) Event->Context;
+    ax_application *Application = AXLibGetApplicationByPID(*ApplicationPID);
+    free(ApplicationPID);
+
+    if(Application)
+    {
+        DEBUG("AXEvent_ApplicationVisible: " << Application->Name);
+        RebalanceNodeTree(FocusedDisplay);
+    }
+}
+
 /* NOTE(koekeishiya): Event context is NULL */
 EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
 {

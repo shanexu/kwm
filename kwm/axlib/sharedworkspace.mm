@@ -95,6 +95,16 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
                 name:NSWorkspaceDidActivateApplicationNotification
                 object:nil];
 
+       [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
+                selector:@selector(didHideApplication:)
+                name:NSWorkspaceDidHideApplicationNotification
+                object:nil];
+
+       [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
+                selector:@selector(didUnhideApplication:)
+                name:NSWorkspaceDidUnhideApplicationNotification
+                object:nil];
+
        /* NOTE(koekeishiya): We use the Carbon event system instead for these events.
        [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
                 selector:@selector(didLaunchApplication:)
@@ -169,6 +179,32 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
             *ApplicationPID = Application->PID;
             AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
         }
+    }
+}
+
+- (void)didHideApplication:(NSNotification *)notification
+{
+    pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
+    if(Applications->find(PID) != Applications->end())
+    {
+        ax_application *Application = &(*Applications)[PID];
+
+        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+        *ApplicationPID = Application->PID;
+        AXLibConstructEvent(AXEvent_ApplicationHidden, ApplicationPID, false);
+    }
+}
+
+- (void)didUnhideApplication:(NSNotification *)notification
+{
+    pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
+    if(Applications->find(PID) != Applications->end())
+    {
+        ax_application *Application = &(*Applications)[PID];
+
+        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+        *ApplicationPID = Application->PID;
+        AXLibConstructEvent(AXEvent_ApplicationVisible, ApplicationPID, false);
     }
 }
 
