@@ -266,6 +266,23 @@ ParseArguments(int argc, char **argv)
     return false;
 }
 
+internal inline void
+ConfigureRunLoop()
+{
+    KWMMach.EventMask = ((1 << kCGEventKeyDown) |
+                         (1 << kCGEventMouseMoved));
+
+    KWMMach.EventTap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionDefault, KWMMach.EventMask, CGEventCallback, NULL);
+    if(!KWMMach.EventTap || !CGEventTapIsEnabled(KWMMach.EventTap))
+        Fatal("Error: Could not create event-tap!");
+
+    CFRunLoopAddSource(CFRunLoopGetMain(),
+                       CFMachPortCreateRunLoopSource(kCFAllocatorDefault, KWMMach.EventTap, 0),
+                       kCFRunLoopCommonModes);
+
+    CGEventTapEnable(KWMMach.EventTap, true);
+}
+
 int main(int argc, char **argv)
 {
     if(ParseArguments(argc, argv))
@@ -294,22 +311,14 @@ int main(int argc, char **argv)
     KwmInit();
     KwmParseConfig(KWMPath.Config);
     KwmExecuteInitScript();
+
     CreateWindowNodeTree(MainDisplay);
+    UpdateBorder(BORDER_FOCUSED);
 
     if(CGSIsSecureEventInputSet())
         fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");
 
-    KWMMach.EventMask = ((1 << kCGEventKeyDown) |
-                         (1 << kCGEventMouseMoved));
-
-    KWMMach.EventTap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionDefault, KWMMach.EventMask, CGEventCallback, NULL);
-    if(!KWMMach.EventTap || !CGEventTapIsEnabled(KWMMach.EventTap))
-        Fatal("Error: Could not create event-tap!");
-
-    CFRunLoopAddSource(CFRunLoopGetMain(),
-                       CFMachPortCreateRunLoopSource(kCFAllocatorDefault, KWMMach.EventTap, 0),
-                       kCFRunLoopCommonModes);
-    CGEventTapEnable(KWMMach.EventTap, true);
+    ConfigureRunLoop();
     CFRunLoopRun();
     return 0;
 }
