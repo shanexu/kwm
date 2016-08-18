@@ -288,7 +288,6 @@ struct kwm_mach
     CFRunLoopSourceRef RunLoopSource;
     CFMachPortRef EventTap;
     CGEventMask EventMask;
-    bool DisableEventTapInternal;
 };
 
 struct kwm_border

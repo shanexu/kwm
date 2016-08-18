@@ -39,11 +39,8 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         case kCGEventTapDisabledByTimeout:
         case kCGEventTapDisabledByUserInput:
         {
-            if(!KWMMach.DisableEventTapInternal)
-            {
-                DEBUG("Notice: Restarting Event Tap");
-                CGEventTapEnable(KWMMach.EventTap, true);
-            }
+            DEBUG("Notice: Restarting Event Tap");
+            CGEventTapEnable(KWMMach.EventTap, true);
         } break;
         case kCGEventKeyDown:
         {
