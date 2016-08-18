@@ -46,12 +46,13 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
             if(Tokens[3] == "on")
             {
                 FocusedBorder.Enabled = true;
-                UpdateBorder(BORDER_FOCUSED);
+                if(!FocusedBorder.Color.Format.empty())
+                    UpdateBorder(BORDER_FOCUSED);
             }
             else if(Tokens[3] == "off")
             {
                 FocusedBorder.Enabled = false;
-                UpdateBorder(BORDER_FOCUSED);
+                CloseBorder(&FocusedBorder);
             }
             else if(Tokens[3] == "size")
             {
@@ -78,7 +79,7 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
             else if(Tokens[3] == "off")
             {
                 MarkedBorder.Enabled = false;
-                UpdateBorder(BORDER_MARKED);
+                CloseBorder(&MarkedBorder);
             }
             else if(Tokens[3] == "size")
             {
