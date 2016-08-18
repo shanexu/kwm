@@ -27,7 +27,6 @@ extern ax_window *MarkedWindow;
 extern kwm_settings KWMSettings;;
 extern kwm_border FocusedBorder;
 extern kwm_border MarkedBorder;
-extern kwm_hotkeys KWMHotkeys;
 
 internal void
 KwmConfigCommand(std::vector<std::string> &Tokens)

@@ -10,7 +10,6 @@
 
 #define internal static
 extern std::map<std::string, space_info> WindowTree;
-extern kwm_settings KWMSettings;
 
 internal bool
 CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)

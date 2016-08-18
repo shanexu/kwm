@@ -11,7 +11,6 @@
 
 extern ax_application *FocusedApplication;
 extern kwm_hotkeys KWMHotkeys;
-extern kwm_thread KWMThread;
 
 internal inline bool
 HasFlags(hotkey *Hotkey, uint32_t Flag)

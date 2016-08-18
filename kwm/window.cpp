@@ -24,8 +24,6 @@ extern ax_application *FocusedApplication;
 extern ax_window *MarkedWindow;
 
 extern kwm_settings KWMSettings;
-extern kwm_path KWMPath;
-extern kwm_thread KWMThread;
 extern kwm_border MarkedBorder;
 extern kwm_border FocusedBorder;
 
