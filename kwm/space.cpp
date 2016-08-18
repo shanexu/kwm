@@ -5,11 +5,10 @@
 #include "border.h"
 #include "keys.h"
 #include "helpers.h"
-
 #include "axlib/axlib.h"
+
 extern std::map<std::string, space_info> WindowTree;
 extern ax_application *FocusedApplication;
-
 extern kwm_settings KWMSettings;
 
 void GetTagForMonocleSpace(space_info *Space, std::string &Tag)
