@@ -173,22 +173,10 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
                           notification before the 'didActiveSpaceChange' notification. If a space has not been visited
                           before, this will cause us to end up on that space with an unsynchronized focused application state.
 
-                          Always update state of focused application and its window after a space transition. */
-    FocusedApplication = AXLibGetFocusedApplication();
-    if(FocusedApplication)
-    {
-        FocusedApplication->Focus = AXLibGetFocusedWindow(FocusedApplication);
-        if((FocusedApplication->Focus) &&
-           (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
-        {
-            DrawFocusedBorder(Display);
-            MoveCursorToCenterOfWindow(FocusedApplication->Focus);
-            Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
-        }
-    }
+                          Always update state of focused application and its window after a space transition.
 
-    /* NOTE(koekeishiya): This space transition was triggered through AXLibSpaceTransition(..) and OSX does not
-                          update our focus in this case. We manually try to activate the appropriate window. */
+                          If this space transition was triggered through AXLibSpaceTransition(..), OSX does not
+                          update our focus, so we manually try to activate the appropriate window. */
     if(AXLibHasFlags(Display->Space, AXSpace_FastTransition))
     {
         AXLibClearFlags(Display->Space, AXSpace_FastTransition);
@@ -205,6 +193,21 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
             DEBUG("FastTransition: No window found");
             ClearBorder(&FocusedBorder);
             FocusFirstLeafNode(Display);
+        }
+    }
+    else
+    {
+        FocusedApplication = AXLibGetFocusedApplication();
+        if(FocusedApplication)
+        {
+            FocusedApplication->Focus = AXLibGetFocusedWindow(FocusedApplication);
+            if((FocusedApplication->Focus) &&
+               (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
+            {
+                DrawFocusedBorder(Display);
+                MoveCursorToCenterOfWindow(FocusedApplication->Focus);
+                Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
+            }
         }
     }
 
