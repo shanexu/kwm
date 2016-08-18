@@ -297,7 +297,14 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationHidden)
     if(Application)
     {
         DEBUG("AXEvent_ApplicationHidden: " << Application->Name);
-        RebalanceNodeTree(FocusedDisplay);
+
+        std::map<uint32_t, ax_window *>::iterator It;
+        for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+        {
+            ax_window *Window = It->second;
+            if(AXLibSpaceHasWindow(Window, FocusedDisplay->Space->ID))
+                RemoveWindowFromNodeTree(FocusedDisplay, Window->ID);
+        }
     }
 }
 
@@ -311,7 +318,14 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationVisible)
     if(Application)
     {
         DEBUG("AXEvent_ApplicationVisible: " << Application->Name);
-        RebalanceNodeTree(FocusedDisplay);
+
+        std::map<uint32_t, ax_window *>::iterator It;
+        for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+        {
+            ax_window *Window = It->second;
+            if(AXLibSpaceHasWindow(Window, FocusedDisplay->Space->ID))
+                TileWindow(FocusedDisplay, Window);
+        }
     }
 }
 
