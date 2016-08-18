@@ -277,8 +277,8 @@ struct space_settings
 struct space_info
 {
     space_settings Settings;
+    bool ResolutionChanged;
     bool Initialized;
-    bool NeedsUpdate;
 
     tree_node *RootNode;
 };
