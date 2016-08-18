@@ -20,6 +20,8 @@ OpenBorder(kwm_border *Border)
     if(Border->Enabled && !Border->Handle)
     {
         local_persist std::string OverlayBin = KWMPath.FilePath + "/kwm-overlay";
+        DEBUG("Kwm: popen " << OverlayBin);
+
         Border->Handle = popen(OverlayBin.c_str(), "w");
         if(!Border->Handle)
             Border->Enabled = false;
