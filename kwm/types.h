@@ -156,7 +156,6 @@ struct tokenizer
 
 struct space_identifier
 {
-
     int ScreenID, SpaceID;
 
     bool operator<(const space_identifier &Other) const
@@ -170,7 +169,6 @@ struct hotkey
 {
     std::vector<std::string> List;
     hotkey_state State;
-    bool Passthrough;
 
     uint32_t Flags;
     CGKeyCode Key;
@@ -262,7 +260,7 @@ struct window_rule
 struct ax_window;
 struct scratchpad
 {
-    std::map<int, ax_window*> Windows;
+    std::map<int, ax_window *> Windows;
     int LastFocus;
 };
 

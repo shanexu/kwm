@@ -41,6 +41,8 @@ enum hotkey_modifier_flag
     Hotkey_Modifier_Flag_RCmd = (1 << 8),
 
     Hotkey_Modifier_Flag_Control = (1 << 9),
+
+    Hotkey_Modifier_Flag_Passthrough = (1 << 10),
 };
 
 void CreateHotkeyFromCGEvent(CGEventRef Event, hotkey *Hotkey);

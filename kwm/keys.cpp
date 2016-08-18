@@ -391,8 +391,9 @@ KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Pas
     }
 
     DetermineHotkeyState(Hotkey, Command);
-    Hotkey->Passthrough = Passthrough;
     Hotkey->Command = Command;
+    if(Passthrough)
+        AddFlags(Hotkey, Hotkey_Modifier_Flag_Passthrough);
 
     CGKeyCode Keycode;
     bool Result = false;
