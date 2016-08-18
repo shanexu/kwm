@@ -84,23 +84,6 @@ TileWindow(ax_display *Display, ax_window *Window)
 }
 
 internal inline void
-SyncFocusedApplication(ax_display *Display)
-{
-    FocusedApplication = AXLibGetFocusedApplication();
-    if(FocusedApplication)
-    {
-        FocusedApplication->Focus = AXLibGetFocusedWindow(FocusedApplication);
-        if((FocusedApplication->Focus) &&
-           (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
-        {
-            DrawFocusedBorder(Display);
-            MoveCursorToCenterOfWindow(FocusedApplication->Focus);
-            Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
-        }
-    }
-}
-
-internal inline void
 ClearBorderIfFullscreenSpace(ax_display *Display)
 {
     if(Display->Space->Type != kCGSSpaceUser)
@@ -129,7 +112,7 @@ ResizeDisplay(ax_display *Display)
         if(Space == Display->Space)
             UpdateSpaceOfDisplay(Display, SpaceInfo);
         else
-            SpaceInfo->NeedsUpdate = true;
+            SpaceInfo->ResolutionChanged = true;
     }
 }
 
@@ -162,30 +145,10 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayChanged)
     DEBUG("AXEvent_DisplayChanged: " << FocusedDisplay->ArrangementID);
 
     AXLibRunningApplications();
-    RebalanceNodeTree(FocusedDisplay);
     CreateWindowNodeTree(FocusedDisplay);
+    RebalanceNodeTree(FocusedDisplay);
 
     ClearBorderIfFullscreenSpace(FocusedDisplay);
-}
-
-internal void
-AddMinimizedWindowsToTree(ax_display *Display)
-{
-    std::vector<ax_window *> Windows = AXLibGetAllVisibleWindows();
-    for(std::size_t Index = 0; Index < Windows.size(); ++Index)
-    {
-        ax_window *Window = Windows[Index];
-        if(AXLibHasFlags(Window, AXWindow_Minimized))
-        {
-            AXLibClearFlags(Window, AXWindow_Minimized);
-            if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
-               (!AXLibHasFlags(Window, AXWindow_Floating)) &&
-               (!AXLibStickyWindow(Window)))
-            {
-                AddWindowToNodeTree(Display, Window->ID);
-            }
-        }
-    }
 }
 
 /* NOTE(koekeishiya): Event context is a pointer to the display whos space was changed. */
@@ -198,42 +161,31 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
     ClearMarkedWindow();
 
     FocusedDisplay = Display;
-    ax_space *PrevSpace = Display->PrevSpace;
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
 
     AXLibRunningApplications();
-    RebalanceNodeTree(Display);
-    if(SpaceInfo->NeedsUpdate)
-        UpdateSpaceOfDisplay(Display, SpaceInfo);
-
-    /* NOTE(koekeishiya): This space transition was invoked through deminiaturizing a window.
-                          We have no way of passing the actual window in question, to this callback,
-                          so we have marked the window through AXWindow_Minimized. We iterate through
-                          all visible windows to locate the window we need. */
-    if(AXLibHasFlags(PrevSpace, AXSpace_DeminimizedTransition))
-    {
-        AXLibClearFlags(PrevSpace, AXSpace_DeminimizedTransition);
-        AddMinimizedWindowsToTree(Display);
-    }
-
-    /* NOTE(koekeishiya): This space transition was invoked after a window was moved to this space.
-                          We have marked the window through AXWindow_Minimized. We iterate through
-                          all visible windows to locate the window we need. */
-    if(SpaceInfo->Initialized &&
-       AXLibHasFlags(Display->Space, AXSpace_NeedsUpdate))
-    {
-        AXLibClearFlags(Display->Space, AXSpace_NeedsUpdate);
-        AddMinimizedWindowsToTree(Display);
-    }
-
     CreateWindowNodeTree(Display);
+    RebalanceNodeTree(Display);
+    if(SpaceInfo->ResolutionChanged)
+        UpdateSpaceOfDisplay(Display, SpaceInfo);
 
     /* NOTE(koekeishiya): If we trigger a space changed event through cmd+tab, we receive the 'didApplicationActivate'
                           notification before the 'didActiveSpaceChange' notification. If a space has not been visited
                           before, this will cause us to end up on that space with an unsynchronized focused application state.
 
                           Always update state of focused application and its window after a space transition. */
-    SyncFocusedApplication(Display);
+    FocusedApplication = AXLibGetFocusedApplication();
+    if(FocusedApplication)
+    {
+        FocusedApplication->Focus = AXLibGetFocusedWindow(FocusedApplication);
+        if((FocusedApplication->Focus) &&
+           (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
+        {
+            DrawFocusedBorder(Display);
+            MoveCursorToCenterOfWindow(FocusedApplication->Focus);
+            Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
+        }
+    }
 
     /* NOTE(koekeishiya): This space transition was triggered through AXLibSpaceTransition(..) and OSX does not
                           update our focus in this case. We manually try to activate the appropriate window. */
@@ -1165,6 +1117,9 @@ RebalanceMonocleTree(ax_display *Display)
     }
 }
 
+/* NOTE(koekeishiya): Remove any window that should not be in the window-tree, caused by
+ * any for of action done to the window that could not be detected through notifications.
+ * Also attempt to tile any untiled window that is not marked as  floating. */
 void RebalanceNodeTree(ax_display *Display)
 {
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];

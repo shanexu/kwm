@@ -27,9 +27,7 @@ typedef int CGSSpaceType;
 struct ax_window;
 enum ax_space_flags
 {
-    AXSpace_DeminimizedTransition = (1 << 0),
-    AXSpace_NeedsUpdate = (1 << 1),
-    AXSpace_FastTransition = (1 << 2),
+    AXSpace_FastTransition = (1 << 0),
 };
 
 struct ax_space

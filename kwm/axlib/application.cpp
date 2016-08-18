@@ -203,8 +203,8 @@ OBSERVER_CALLBACK(AXApplicationCallback)
 
             /* NOTE(koekeishiya): kAXWindowDeminiaturized is sent before didActiveSpaceChange, when a deminimized
                                   window pulls you to the space of that window. If the active space of the display
-                                  is not equal to the space of the window, we should ignore this event and schedule
-                                  a new one to happen after the next space changed event. */
+                                  is not equal to the space of the window, we should ignore this event and let the
+                                  next space changed event handle it. */
 
             ax_display *Display = AXLibWindowDisplay(Window);
             if(AXLibSpaceHasWindow(Window, Display->Space->ID))
@@ -215,7 +215,7 @@ OBSERVER_CALLBACK(AXApplicationCallback)
             }
             else
             {
-                AXLibAddFlags(Display->Space, AXSpace_DeminimizedTransition);
+                AXLibClearFlags(Window, AXWindow_Minimized);
             }
         }
     }

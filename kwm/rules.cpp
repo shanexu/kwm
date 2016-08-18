@@ -279,8 +279,6 @@ bool ApplyWindowRules(ax_window *Window)
                     int DestinationCGSSpaceID = AXLibCGSSpaceIDFromDesktopID(DestinationDisplay, Rule->Properties.Space);
                     if(!AXLibSpaceHasWindow(Window, DestinationCGSSpaceID))
                     {
-                        AXLibAddFlags(Window, AXWindow_Minimized);
-                        AXLibAddFlags(&DestinationDisplay->Spaces[DestinationCGSSpaceID], AXSpace_NeedsUpdate);
                         AXLibSpaceAddWindow(DestinationCGSSpaceID, Window->ID);
                         AXLibSpaceRemoveWindow(SourceCGSSpaceID, Window->ID);
                         Skip = true;

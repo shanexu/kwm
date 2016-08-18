@@ -155,7 +155,7 @@ void UpdateSpaceOfDisplay(ax_display *Display, space_info *Space)
         }
 
         ApplyTreeNodeContainer(Space->RootNode);
-        Space->NeedsUpdate = false;
+        Space->ResolutionChanged = false;
     }
 }
 

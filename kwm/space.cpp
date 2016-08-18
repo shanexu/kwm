@@ -173,9 +173,6 @@ void MoveWindowBetweenSpaces(ax_display *Display, int SourceSpaceID, int Destina
     int SourceCGSpaceID = AXLibCGSSpaceIDFromDesktopID(Display, SourceSpaceID);
     int DestinationCGSpaceID = AXLibCGSSpaceIDFromDesktopID(Display, DestinationSpaceID);
     RemoveWindowFromNodeTree(Display, Window->ID);
-    AXLibAddFlags(Window, AXWindow_Minimized);
-    ax_space *Space = &Display->Spaces[DestinationCGSpaceID];
-    AXLibAddFlags(Space, AXSpace_NeedsUpdate);
     AXLibSpaceRemoveWindow(SourceCGSpaceID, Window->ID);
     AXLibSpaceAddWindow(DestinationCGSpaceID, Window->ID);
 }
