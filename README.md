@@ -1,6 +1,6 @@
 ## Brief Description [![Build Status](https://travis-ci.org/koekeishiya/kwm.svg?branch=master)](https://travis-ci.org/koekeishiya/kwm)
 
-**WARNING:** The master branch is considered bleeding edge and changes may break configurations at any time! Check the latest release for a stable version.
+**NOTE:** The master branch is considered stable and can be used instead of the latest release version by people who wish to do so.
 
 [**Kwm**](https://koekeishiya.github.io/kwm) started as a simple project to get true focus-follows-mouse support on OSX through event tapping.
 It is now a tiling window manager that represents windows as the leaves of a binary tree.
