@@ -452,13 +452,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDeminimized)
         {
             AddWindowToNodeTree(Display, Window->ID);
         }
-
-        Window->Application->Focus = Window;
-        AXLibClearFlags(Window, AXWindow_Minimized);
-
-        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-        *ApplicationPID = Window->Application->PID;
-        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
     }
 }
 

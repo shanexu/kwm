@@ -206,16 +206,17 @@ OBSERVER_CALLBACK(AXApplicationCallback)
                                   is not equal to the space of the window, we should ignore this event and let the
                                   next space changed event handle it. */
 
+            AXLibClearFlags(Window, AXWindow_Minimized);
             ax_display *Display = AXLibWindowDisplay(Window);
             if(AXLibSpaceHasWindow(Window, Display->Space->ID))
             {
                 uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
                 *WindowID = Window->ID;
                 AXLibConstructEvent(AXEvent_WindowDeminimized, WindowID, false);
-            }
-            else
-            {
-                AXLibClearFlags(Window, AXWindow_Minimized);
+
+                WindowID = (uint32_t *) malloc(sizeof(uint32_t));
+                *WindowID = Window->ID;
+                AXLibConstructEvent(AXEvent_WindowFocused, WindowID, false);
             }
         }
     }
