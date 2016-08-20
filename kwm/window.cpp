@@ -489,7 +489,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowFocused)
     }
 }
 
-
 /* NOTE(koekeishiya): Event context is a pointer to the CGWindowID of the moved window. */
 EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
 {
@@ -920,36 +919,12 @@ RemoveWindowFromMonocleTree(ax_display *Display, uint32_t WindowID)
 }
 
 internal void
-CreateAndInitializeSpaceInfoWithWindowTree(ax_display *Display, space_info *SpaceInfo, std::vector<uint32_t> *Windows)
-{
-    SpaceInfo->Initialized = true;
-    LoadSpaceSettings(Display, SpaceInfo);
-    if((SpaceInfo->Settings.Mode == SpaceModeFloating) ||
-       (Display->Space->Type != kCGSSpaceUser))
-        return;
-
-    if(SpaceInfo->Settings.Mode == SpaceModeBSP && !SpaceInfo->Settings.Layout.empty())
-    {
-        LoadBSPTreeFromFile(Display, SpaceInfo, SpaceInfo->Settings.Layout);
-        FillDeserializedTree(SpaceInfo->RootNode, Display, Windows);
-    }
-    else
-    {
-        SpaceInfo->RootNode = CreateTreeFromWindowIDList(Display, Windows);
-    }
-
-    if(SpaceInfo->RootNode)
-        ApplyTreeNodeContainer(SpaceInfo->RootNode);
-}
-
-internal void
 CreateSpaceInfoWithWindowTree(ax_display *Display, space_info *SpaceInfo, std::vector<uint32_t> *Windows)
 {
     if((SpaceInfo->Settings.Mode == SpaceModeFloating) ||
        (Display->Space->Type != kCGSSpaceUser))
         return;
 
-    /* NOTE(koekeishiya): If a space has been initialized, but the node-tree was destroyed. */
     if(SpaceInfo->Settings.Mode == SpaceModeBSP && !SpaceInfo->Settings.Layout.empty())
     {
         LoadBSPTreeFromFile(Display, SpaceInfo, SpaceInfo->Settings.Layout);
@@ -960,27 +935,8 @@ CreateSpaceInfoWithWindowTree(ax_display *Display, space_info *SpaceInfo, std::v
         SpaceInfo->RootNode = CreateTreeFromWindowIDList(Display, Windows);
     }
 
-    /* NOTE(koekeishiya): Is this something that we really need to do (?) */
     if(SpaceInfo->RootNode)
-    {
-        if(SpaceInfo->Settings.Mode == SpaceModeBSP)
-        {
-            SetRootNodeContainer(Display, SpaceInfo->RootNode);
-            CreateNodeContainers(Display, SpaceInfo->RootNode, true);
-        }
-        else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
-        {
-            SetRootNodeContainer(Display, SpaceInfo->RootNode);
-            link_node *Link = SpaceInfo->RootNode->List;
-            while(Link)
-            {
-                SetLinkNodeContainer(Display, Link);
-                Link = Link->Next;
-            }
-        }
-
         ApplyTreeNodeContainer(SpaceInfo->RootNode);
-    }
 }
 
 void CreateWindowNodeTree(ax_display *Display)
@@ -995,8 +951,10 @@ void CreateWindowNodeTree(ax_display *Display)
             ApplyWindowRules(Window);
         }
 
+        SpaceInfo->Initialized = true;
+        LoadSpaceSettings(Display, SpaceInfo);
         std::vector<uint32_t> Windows = GetAllWindowIDSOnDisplay(Display);
-        CreateAndInitializeSpaceInfoWithWindowTree(Display, SpaceInfo, &Windows);
+        CreateSpaceInfoWithWindowTree(Display, SpaceInfo, &Windows);
     }
     else if(SpaceInfo->Initialized && !SpaceInfo->RootNode)
     {
@@ -1126,13 +1084,14 @@ void RebalanceNodeTree(ax_display *Display)
         RebalanceMonocleTree(Display);
 }
 
-
 void CreateInactiveWindowNodeTree(ax_display *Display, std::vector<uint32_t> *Windows)
 {
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(!SpaceInfo->Initialized && !SpaceInfo->RootNode)
     {
-        CreateAndInitializeSpaceInfoWithWindowTree(Display, SpaceInfo, Windows);
+        SpaceInfo->Initialized = true;
+        LoadSpaceSettings(Display, SpaceInfo);
+        CreateSpaceInfoWithWindowTree(Display, SpaceInfo, Windows);
     }
     else if(SpaceInfo->Initialized && !SpaceInfo->RootNode)
     {
@@ -1216,8 +1175,6 @@ void ToggleFocusedWindowFloating()
 
 void ToggleFocusedWindowParentContainer()
 {
-    /* TODO(koekeishiya): Should this function be able to assume that the focused window is valid (?) */
-
     ax_window *Window = FocusedApplication->Focus;
     if(!Window)
         return;
@@ -1253,11 +1210,6 @@ void ToggleFocusedWindowParentContainer()
 
 void ToggleFocusedWindowFullscreen()
 {
-    /* NOTE(koekeishiya): The following code works and was added due to frustration of using a pre-alpha
-                          window manager during development.  */
-
-    /* TODO(koekeishiya): Should this function be able to assume that the focused window is valid (?) */
-
     ax_window *Window = FocusedApplication->Focus;
     if(!Window)
         return;
