@@ -4,7 +4,6 @@
 #include "axlib.h"
 
 #define internal static
-#define local_persist static
 
 @interface WorkspaceWatcher : NSObject {
 }
@@ -208,12 +207,10 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
     }
 }
 
-/* NOTE(koekeishiya): This notification is skipped by many applications and so we use the Carbon event system instead.
-                      Make sure that the Carbon event system actually triggers for 64-bit applications (?) */
+/* NOTE(koekeishiya): This notification is skipped by many applications and so we use the Carbon event system instead. */
 - (void)didLaunchApplication:(NSNotification *)notification { }
 
-/* NOTE(koekeishiya): This notification is skipped by many applications and so we use the Carbon event system instead.
-                      Make sure that the Carbon event system actually triggers for 64-bit applications (?) */
+/* NOTE(koekeishiya): This notification is skipped by many applications and so we use the Carbon event system instead. */
 - (void)didTerminateApplication:(NSNotification *)notification { }
 
 @end
