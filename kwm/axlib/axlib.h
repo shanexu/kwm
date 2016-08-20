@@ -30,8 +30,8 @@
  *        through the 'kAXWindowCreatedNotification'.
  *
  *        To be able to correctly monitor windows for multiple spaces, we assume that
- *        a call to 'AXLibRunningApplications()' followed by 'AXLibGetVisibleWindows()'
- *        should happen every time a space transition occurs on the active monitor.
+ *        a call to 'AXLibRunningApplications()' should happen every time a space
+ *        transition occurs on the active monitor.
  * */
 
 struct ax_state
@@ -42,7 +42,6 @@ struct ax_state
 };
 
 ax_application *AXLibGetApplicationByPID(pid_t PID);
-
 ax_application *AXLibGetFocusedApplication();
 ax_window *AXLibGetFocusedWindow(ax_application *Application);
 void AXLibSetFocusedWindow(ax_window *Window);
