@@ -3,7 +3,6 @@
 
 #include "display.h"
 #include <Carbon/Carbon.h>
-#include <string>
 
 enum ax_window_flags
 {
