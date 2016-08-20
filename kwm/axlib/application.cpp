@@ -228,9 +228,10 @@ OBSERVER_CALLBACK(AXApplicationCallback)
         {
             Window->Position = AXLibGetWindowPosition(Window->Ref);
 
+            bool Intrinsic = AXLibHasFlags(Window, AXWindow_MoveIntrinsic);
             uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
             *WindowID = Window->ID;
-            bool Intrinsic = AXLibHasFlags(Window, AXWindow_MoveIntrinsic);
+
             AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
             AXLibConstructEvent(AXEvent_WindowMoved, WindowID, Intrinsic);
         }
@@ -244,9 +245,10 @@ OBSERVER_CALLBACK(AXApplicationCallback)
             Window->Position = AXLibGetWindowPosition(Window->Ref);
             Window->Size = AXLibGetWindowSize(Window->Ref);
 
+            bool Intrinsic = AXLibHasFlags(Window, AXWindow_SizeIntrinsic);
             uint32_t *WindowID = (uint32_t *) malloc(sizeof(uint32_t));
             *WindowID = Window->ID;
-            bool Intrinsic = AXLibHasFlags(Window, AXWindow_SizeIntrinsic);
+
             AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
             AXLibConstructEvent(AXEvent_WindowResized, WindowID, Intrinsic);
         }
