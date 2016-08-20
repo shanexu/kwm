@@ -29,8 +29,6 @@ void AXLibRemoveObserverNotification(ax_observer *Observer, AXUIElementRef Ref, 
 
 void AXLibStopObserver(ax_observer *Observer)
 {
-    /* NOTE(koekeishiya): CFRunLoopSourceInvalidate removes the source from all run-loops, ignoring run-loops that no longer exist.
-                          Replaces CFRunLoopRemoveSource(CFRunLoopGetCurrent(), AXObserverGetRunLoopSource(Observer->Ref), kCFRunLoopDefaultMode); */
     CFRunLoopSourceInvalidate(AXObserverGetRunLoopSource(Observer->Ref));
 }
 
