@@ -34,7 +34,8 @@ IsWindowBelowCursor(ax_window *Window)
 
 void MoveCursorToCenterOfWindow(ax_window *Window)
 {
-    if(HasFlags(&KWMSettings, Settings_MouseFollowsFocus))
+    if((HasFlags(&KWMSettings, Settings_MouseFollowsFocus)) &&
+       (!IsWindowBelowCursor(Window)))
     {
         CGWarpMouseCursorPosition(CGPointMake(Window->Position.x + Window->Size.width / 2,
                                               Window->Position.y + Window->Size.height / 2));
@@ -43,9 +44,7 @@ void MoveCursorToCenterOfWindow(ax_window *Window)
 
 void MoveCursorToCenterOfFocusedWindow()
 {
-    if(HasFlags(&KWMSettings, Settings_MouseFollowsFocus) &&
-       FocusedApplication &&
-       FocusedApplication->Focus)
+    if(FocusedApplication && FocusedApplication->Focus)
         MoveCursorToCenterOfWindow(FocusedApplication->Focus);
 }
 
