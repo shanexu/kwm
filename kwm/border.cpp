@@ -8,33 +8,25 @@ extern kwm_border FocusedBorder;
 extern kwm_border MarkedBorder;
 extern kwm_hotkeys KWMHotkeys;
 
-void UpdateBorder(border_type Type)
+void UpdateBorder(kwm_border *Border, ax_window *Window)
 {
-    kwm_border *Border = NULL;
-    ax_window *Window = NULL;
-
-    if(Type == BORDER_FOCUSED)
+    if(Border)
     {
-        Border = &FocusedBorder;
-        ax_application *Application = AXLibGetFocusedApplication();
-        if(Application)
-            Window = Application->Focus;
+        if(Window)
+        {
+            if((Border->Type == BORDER_FOCUSED) &&
+               (!KWMHotkeys.ActiveMode->Color.Format.empty()))
+                Border->Color = KWMHotkeys.ActiveMode->Color;
 
-        if(!KWMHotkeys.ActiveMode->Color.Format.empty())
-            Border->Color = KWMHotkeys.ActiveMode->Color;
+            OpenBorder(Border);
+            if(!Border->Enabled)
+                CloseBorder(Border);
+
+            RefreshBorder(Border, Window);
+        }
+        else
+        {
+            ClearBorder(Border);
+        }
     }
-    else if(Type == BORDER_MARKED)
-    {
-        Window = MarkedWindow;
-        Border = &MarkedBorder;
-    }
-
-    OpenBorder(Border);
-    if(!Border->Enabled)
-        CloseBorder(Border);
-
-    if(!Window)
-        ClearBorder(Border);
-    else if(Border->Enabled)
-        RefreshBorder(Border, Window);
 }

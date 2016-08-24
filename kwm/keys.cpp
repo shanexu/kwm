@@ -11,6 +11,7 @@
 
 extern ax_application *FocusedApplication;
 extern kwm_hotkeys KWMHotkeys;
+extern kwm_border FocusedBorder;
 
 internal inline bool
 HasFlags(hotkey *Hotkey, uint32_t Flag)
@@ -460,7 +461,7 @@ void KwmActivateBindingMode(std::string Mode)
         BindingMode = GetBindingMode("default");
 
     KWMHotkeys.ActiveMode = BindingMode;
-    UpdateBorder(BORDER_FOCUSED);
+    UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
     if(BindingMode->Prefix)
     {
         BindingMode->Time = std::chrono::steady_clock::now();

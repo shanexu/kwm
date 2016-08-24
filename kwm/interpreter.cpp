@@ -47,7 +47,7 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
             {
                 FocusedBorder.Enabled = true;
                 if(!FocusedBorder.Color.Format.empty())
-                    UpdateBorder(BORDER_FOCUSED);
+                    UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
             }
             else if(Tokens[3] == "off")
             {

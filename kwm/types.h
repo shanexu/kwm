@@ -110,6 +110,12 @@ enum node_type
     NodeTypeLink
 };
 
+enum border_type
+{
+    BORDER_FOCUSED,
+    BORDER_MARKED,
+};
+
 enum hotkey_state
 {
     HotkeyStateNone,
@@ -292,6 +298,7 @@ struct kwm_border
 {
     bool Enabled;
     FILE *Handle;
+    border_type Type;
 
     double Radius;
     color Color;

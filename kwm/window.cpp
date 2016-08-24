@@ -28,12 +28,16 @@ extern kwm_border MarkedBorder;
 extern kwm_border FocusedBorder;
 
 internal void
-DrawFocusedBorder(ax_display *Display)
+DrawFocusedBorder(ax_display *Display, ax_window *Window)
 {
     if((Display) &&
        (Display->Space->Type == kCGSSpaceUser))
     {
-        UpdateBorder(BORDER_FOCUSED);
+        UpdateBorder(&FocusedBorder, Window);
+    }
+    else
+    {
+        ClearBorder(&FocusedBorder);
     }
 }
 
@@ -183,7 +187,7 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
         {
             DEBUG("FastTransition: Found window");
             AXLibSetFocusedWindow(Window);
-            DrawFocusedBorder(Display);
+            DrawFocusedBorder(Display, Window);
             MoveCursorToCenterOfWindow(Window);
         }
         else
@@ -202,7 +206,7 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
             if((FocusedApplication->Focus) &&
                (AXLibSpaceHasWindow(FocusedApplication->Focus, Display->Space->ID)))
             {
-                DrawFocusedBorder(Display);
+                DrawFocusedBorder(Display, FocusedApplication->Focus);
                 MoveCursorToCenterOfWindow(FocusedApplication->Focus);
                 Display->Space->FocusedWindow = FocusedApplication->Focus->ID;
             }
@@ -330,8 +334,8 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationActivated)
                 if(AXLibSpaceHasWindow(Application->Focus, Display->Space->ID))
                 {
                     StandbyOnFloat(Application->Focus);
+                    DrawFocusedBorder(Display, Application->Focus);
                     Display->Space->FocusedWindow = Application->Focus->ID;
-                    DrawFocusedBorder(Display);
                 }
             }
         }
@@ -395,7 +399,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
                 Display->Space->FocusedWindow = 0;
 
             StandbyOnFloat(FocusedApplication->Focus);
-            DrawFocusedBorder(Display);
+            DrawFocusedBorder(Display, FocusedApplication->Focus);
         }
 
         if(MarkedWindow == Window)
@@ -481,7 +485,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowFocused)
                 if(Display)
                 {
                     StandbyOnFloat(Window);
-                    DrawFocusedBorder(Display);
+                    DrawFocusedBorder(Display, Window);
                     Display->Space->FocusedWindow = Window->ID;
                 }
             }
@@ -510,11 +514,12 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
         if(!Display)
             Display = AXLibMainDisplay();
 
-        if(FocusedApplication == Window->Application)
-            DrawFocusedBorder(Display);
+        if((FocusedApplication == Window->Application) &&
+           (FocusedApplication->Focus == Window))
+            DrawFocusedBorder(Display, Window);
 
         if(MarkedWindow == Window)
-            UpdateBorder(BORDER_MARKED);
+            UpdateBorder(&MarkedBorder, Window);
     }
 }
 
@@ -539,11 +544,12 @@ EVENT_CALLBACK(Callback_AXEvent_WindowResized)
         if(!Display)
             Display = AXLibMainDisplay();
 
-        if(FocusedApplication == Window->Application)
-            DrawFocusedBorder(Display);
+        if((FocusedApplication == Window->Application) &&
+           (FocusedApplication->Focus == Window))
+            DrawFocusedBorder(Display, Window);
 
         if(MarkedWindow == Window)
-            UpdateBorder(BORDER_MARKED);
+            UpdateBorder(&MarkedBorder, Window);
     }
 }
 
@@ -1326,7 +1332,7 @@ void DetachAndReinsertWindow(unsigned int WindowID, int Degrees)
             ToggleWindowFloating(WindowID, false);
             MoveCursorToCenterOfFocusedWindow();
             MarkedWindow = PrevMarkedWindow;
-            UpdateBorder(BORDER_MARKED);
+            UpdateBorder(&MarkedBorder, MarkedWindow);
         }
     }
 }
@@ -1763,7 +1769,7 @@ void MarkWindowContainer(ax_window *Window)
         {
             DEBUG("MarkWindowContainer() Marked " << Window->Name);
             MarkedWindow = Window;
-            UpdateBorder(BORDER_MARKED);
+            UpdateBorder(&MarkedBorder, MarkedWindow);
         }
     }
 }

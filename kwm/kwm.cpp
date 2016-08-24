@@ -193,7 +193,9 @@ KwmInit()
     KWMSettings.Cycle = CycleModeScreen;
 
     FocusedBorder.Radius = -1;
+    FocusedBorder.Type = BORDER_FOCUSED;
     MarkedBorder.Radius = -1;
+    MarkedBorder.Type = BORDER_MARKED;
 
     char *HomeP = std::getenv("HOME");
     if(HomeP)
@@ -308,7 +310,7 @@ int main(int argc, char **argv)
     KwmExecuteInitScript();
 
     CreateWindowNodeTree(MainDisplay);
-    UpdateBorder(BORDER_FOCUSED);
+    UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
 
     if(CGSIsSecureEventInputSet())
         fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");

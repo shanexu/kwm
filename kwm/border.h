@@ -8,12 +8,6 @@
 #define local_persist static
 extern kwm_path KWMPath;
 
-enum border_type
-{
-    BORDER_FOCUSED,
-    BORDER_MARKED,
-};
-
 inline void
 OpenBorder(kwm_border *Border)
 {
@@ -67,6 +61,6 @@ RefreshBorder(kwm_border *Border, ax_window *Window)
     fflush(Border->Handle);
 }
 
-void UpdateBorder(border_type Type);
+void UpdateBorder(kwm_border *Border, ax_window *Window);
 
 #endif
