@@ -1,11 +1,6 @@
 #include "border.h"
-#include "window.h"
-#include "keys.h"
 #include "axlib/axlib.h"
 
-extern ax_window *MarkedWindow;
-extern kwm_border FocusedBorder;
-extern kwm_border MarkedBorder;
 extern kwm_hotkeys KWMHotkeys;
 
 void UpdateBorder(kwm_border *Border, ax_window *Window)
