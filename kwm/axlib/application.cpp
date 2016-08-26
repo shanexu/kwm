@@ -8,6 +8,7 @@
 #define internal static
 #define local_persist static
 
+#define AX_APPLICATION_RETRIES 10
 enum ax_application_notifications
 {
     AXApplication_Notification_WindowCreated,
@@ -273,24 +274,43 @@ ax_application AXLibConstructApplication(pid_t PID, std::string Name)
     return Application;
 }
 
-void AXLibInitializeApplication(ax_application *Application)
+bool AXLibInitializeApplication(std::map<pid_t, ax_application> *Applications, ax_application *Application)
 {
-    AXLibAddApplicationObserver(Application);
-    AXLibAddApplicationWindows(Application);
-    Application->Focus = AXLibGetFocusedWindow(Application);
-}
+    bool Result = AXLibAddApplicationObserver(Application);
+    if(Result)
+    {
+        AXLibAddApplicationWindows(Application);
+        Application->Focus = AXLibGetFocusedWindow(Application);
+    }
+    else
+    {
+        AXLibRemoveApplicationObserver(Application);
+        if(++Application->Retries < AX_APPLICATION_RETRIES)
+        {
+#ifdef DEBUG_BUILD
+            printf("AX: %s - Not responding, retry %d\n", Application->Name.c_str(), Application->Retries);
+#endif
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(),
+            ^{
+                if(AXLibInitializeApplication(Applications, Application))
+                {
+                    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+                    *ApplicationPID = Application->PID;
+                    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+                }
+            });
+        }
+        else
+        {
+#ifdef DEBUG_BUILD
+            printf("AX: %s did not respond, remove application reference\n", Application->Name.c_str());
+#endif
+            CFRelease(Application->Ref);
+            Applications->erase(Application->PID);
+        }
+    }
 
-/* NOTE(koekeishiya): This function will try to reinitialize the application that failed during creation. */
-void AXLibAddApplicationObserverNotificationFallback(ax_application *Application)
-{
-    AXLibRemoveApplicationWindows(Application);
-    AXLibRemoveApplicationObserver(Application);
-    Application->Focus = NULL;
-    AXLibInitializeApplication(Application);
-
-    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-    *ApplicationPID = Application->PID;
-    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+    return Result;
 }
 
 bool AXLibHasApplicationObserverNotification(ax_application *Application)
@@ -308,7 +328,7 @@ bool AXLibHasApplicationObserverNotification(ax_application *Application)
     return true;
 }
 
-void AXLibAddApplicationObserver(ax_application *Application)
+bool AXLibAddApplicationObserver(ax_application *Application)
 {
     AXLibConstructObserver(Application, AXApplicationCallback);
     if(Application->Observer.Valid)
@@ -317,24 +337,18 @@ void AXLibAddApplicationObserver(ax_application *Application)
                 Notification < AXApplication_Notification_Count;
                 ++Notification)
         {
-            int Attempts = 10;
-            while((--Attempts > 0) &&
-                  (AXLibAddObserverNotification(&Application->Observer, Application->Ref, AXNotificationFromEnum(Notification), Application) != kAXErrorSuccess))
-            {
-                /* NOTE(koekeishiya): Could not add notification because the application has not finishied initializing yet.
-                                      Sleep for a short while and try again. We limit the number of tries to prevent a deadlock. */
-                usleep(10000);
-            }
-
             /* NOTE(koekeishiya): Mark the notification as successful. */
-            if(Attempts != 0)
+            if(AXLibAddObserverNotification(&Application->Observer, Application->Ref, AXNotificationFromEnum(Notification), Application) == kAXErrorSuccess)
             {
                 Application->Notifications |= (1 << Notification);
             }
         }
 
         AXLibStartObserver(&Application->Observer);
+        return AXLibHasApplicationObserverNotification(Application);
     }
+
+    return false;
 }
 
 void AXLibRemoveApplicationObserver(ax_application *Application)

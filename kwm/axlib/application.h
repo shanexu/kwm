@@ -29,6 +29,7 @@ struct ax_application
     ax_observer Observer;
     uint32_t Flags;
     uint32_t Notifications;
+    unsigned int Retries;
 
     ax_window *Focus;
     std::map<uint32_t, ax_window *> Windows;
@@ -55,7 +56,7 @@ AXLibClearFlags(ax_application *Application, uint32_t Flag)
 }
 
 ax_application AXLibConstructApplication(pid_t PID, std::string Name);
-void AXLibInitializeApplication(ax_application *Application);
+bool AXLibInitializeApplication(std::map<pid_t, ax_application> *Applications, ax_application *Application);
 void AXLibDestroyApplication(ax_application *Application);
 
 void AXLibAddApplicationWindows(ax_application *Application);
@@ -65,9 +66,8 @@ ax_window *AXLibFindApplicationWindow(ax_application *Application, uint32_t WID)
 void AXLibAddApplicationWindow(ax_application *Application, ax_window *Window);
 void AXLibRemoveApplicationWindow(ax_application *Application, uint32_t WID);
 
-void AXLibAddApplicationObserver(ax_application *Application);
+bool AXLibAddApplicationObserver(ax_application *Application);
 void AXLibRemoveApplicationObserver(ax_application *Application);
-void AXLibAddApplicationObserverNotificationFallback(ax_application *Application);
 bool AXLibHasApplicationObserverNotification(ax_application *Application);
 
 void AXLibActivateApplication(ax_application *Application);

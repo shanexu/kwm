@@ -77,22 +77,11 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
     */
 
     (*Applications)[PID] = AXLibConstructApplication(PID, Name);
-    AXLibInitializeApplication(&(*Applications)[PID]);
-
-    /* NOTE(koekeishiya): Some applications fail to properly create notifications upon launch.
-                          Retry after a specific amount of time has passed. */
-    if(AXLibHasApplicationObserverNotification(&(*Applications)[PID]))
+    if(AXLibInitializeApplication(Applications, &(*Applications)[PID]))
     {
         pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
         *ApplicationPID = PID;
         AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
-    }
-    else
-    {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(),
-        ^{
-            AXLibAddApplicationObserverNotificationFallback(&(*Applications)[PID]);
-        });
     }
 }
 
