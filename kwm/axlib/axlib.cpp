@@ -271,7 +271,7 @@ void AXLibRunningApplications()
         {
             std::string Name = It->second;
             (*AXApplications)[PID] = AXLibConstructApplication(PID, Name);
-            AXLibInitializeApplication(AXApplications, &(*AXApplications)[PID]);
+            AXLibInitializeApplication(PID);
         }
         else
         {
