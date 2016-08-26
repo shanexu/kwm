@@ -56,7 +56,8 @@ AXLibClearFlags(ax_application *Application, uint32_t Flag)
 }
 
 ax_application AXLibConstructApplication(pid_t PID, std::string Name);
-bool AXLibInitializeApplication(std::map<pid_t, ax_application> *Applications, ax_application *Application);
+bool AXLibInitializeApplication(pid_t PID);
+void AXLibInitializedApplication(ax_application *Application);
 void AXLibDestroyApplication(ax_application *Application);
 
 void AXLibAddApplicationWindows(ax_application *Application);

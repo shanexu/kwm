@@ -278,55 +278,67 @@ ax_application AXLibConstructApplication(pid_t PID, std::string Name)
     return Application;
 }
 
-bool AXLibInitializeApplication(std::map<pid_t, ax_application> *Applications, ax_application *Application)
+void AXLibInitializedApplication(ax_application *Application)
 {
-    bool Result = AXLibAddApplicationObserver(Application);
-    if(Result)
+    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+    *ApplicationPID = Application->PID;
+    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+
+    if((!Application->Focus) ||
+       (AXLibHasFlags(Application->Focus, AXWindow_Minimized)))
     {
-        AXLibAddApplicationWindows(Application);
-        Application->Focus = AXLibGetFocusedWindow(Application);
+        AXLibAddFlags(Application, AXApplication_Activate);
     }
     else
     {
-        AXLibRemoveApplicationObserver(Application);
-        if(++Application->Retries < AX_APPLICATION_RETRIES)
-        {
-#ifdef DEBUG_BUILD
-            printf("AX: %s - Not responding, retry %d\n", Application->Name.c_str(), Application->Retries);
-#endif
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(),
-            ^{
-                if(AXLibInitializeApplication(Applications, Application))
-                {
-                    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-                    *ApplicationPID = Application->PID;
-                    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+        *ApplicationPID = Application->PID;
+        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+    }
+}
 
-                    if((!Application->Focus) ||
-                       (AXLibHasFlags(Application->Focus, AXWindow_Minimized)))
-                    {
-                        AXLibAddFlags(Application, AXApplication_Activate);
-                    }
-                    else
-                    {
-                        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-                        *ApplicationPID = Application->PID;
-                        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
-                    }
-                }
-            });
+bool AXLibInitializeApplication(pid_t PID)
+{
+    ax_application *Application = AXLibGetApplicationByPID(PID);
+    if(Application)
+    {
+        bool Result = AXLibAddApplicationObserver(Application);
+        if(Result)
+        {
+            AXLibAddApplicationWindows(Application);
+            Application->Focus = AXLibGetFocusedWindow(Application);
         }
         else
         {
+            AXLibRemoveApplicationObserver(Application);
+            if(++Application->Retries < AX_APPLICATION_RETRIES)
+            {
 #ifdef DEBUG_BUILD
-            printf("AX: %s did not respond, remove application reference\n", Application->Name.c_str());
+                printf("AX: %s - Not responding, retry %d\n", Application->Name.c_str(), Application->Retries);
 #endif
-            CFRelease(Application->Ref);
-            Applications->erase(Application->PID);
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(),
+                ^{
+                    if(AXLibInitializeApplication(PID))
+                    {
+                        AXLibInitializedApplication(Application);
+                    }
+                });
+            }
+            else
+            {
+#ifdef DEBUG_BUILD
+                printf("AX: %s did not respond, remove application reference\n", Application->Name.c_str());
+#endif
+                pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+                *ApplicationPID = Application->PID;
+                AXLibConstructEvent(AXEvent_ApplicationTerminated, ApplicationPID, false);
+            }
         }
+
+        return Result;
     }
 
-    return Result;
+    return false;
 }
 
 bool AXLibHasApplicationObserverNotification(ax_application *Application)
