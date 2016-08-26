@@ -215,6 +215,10 @@ OBSERVER_CALLBACK(AXApplicationCallback)
                 *WindowID = Window->ID;
                 AXLibConstructEvent(AXEvent_WindowDeminimized, WindowID, false);
 
+                pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+                *ApplicationPID = Window->Application->PID;
+                AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+
                 WindowID = (uint32_t *) malloc(sizeof(uint32_t));
                 *WindowID = Window->ID;
                 AXLibConstructEvent(AXEvent_WindowFocused, WindowID, false);
@@ -297,6 +301,18 @@ bool AXLibInitializeApplication(std::map<pid_t, ax_application> *Applications, a
                     pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
                     *ApplicationPID = Application->PID;
                     AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+
+                    if((!Application->Focus) ||
+                       (AXLibHasFlags(Application->Focus, AXWindow_Minimized)))
+                    {
+                        AXLibAddFlags(Application, AXApplication_Activate);
+                    }
+                    else
+                    {
+                        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+                        *ApplicationPID = Application->PID;
+                        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+                    }
                 }
             });
         }

@@ -77,11 +77,25 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
     */
 
     (*Applications)[PID] = AXLibConstructApplication(PID, Name);
-    if(AXLibInitializeApplication(Applications, &(*Applications)[PID]))
+    ax_application *Application = &(*Applications)[PID];
+
+    if(AXLibInitializeApplication(Applications, Application))
     {
         pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
         *ApplicationPID = PID;
         AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+
+        if((!Application->Focus) ||
+           (AXLibHasFlags(Application->Focus, AXWindow_Minimized)))
+        {
+            AXLibAddFlags(Application, AXApplication_Activate);
+        }
+        else
+        {
+            pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+            *ApplicationPID = Application->PID;
+            AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
+        }
     }
 }
 
