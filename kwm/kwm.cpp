@@ -165,6 +165,7 @@ KwmInit()
     else
         Fatal("Error: Could not start daemon!");
 
+    signal(SIGCHLD, SIG_IGN);
 #ifndef DEBUG_BUILD
     signal(SIGSEGV, SignalHandler);
     signal(SIGABRT, SignalHandler);
