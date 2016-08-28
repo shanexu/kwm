@@ -134,7 +134,7 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
         if(!SpaceSettings)
         {
             space_identifier Lookup = { ScreenID, DesktopID };
-            space_settings NULLSpaceSettings = { KWMSettings.DefaultOffset, SpaceModeDefault, "", ""};
+            space_settings NULLSpaceSettings = { KWMSettings.DefaultOffset, SpaceModeDefault, {0, 0}, "", ""};
 
             space_settings *ScreenSettings = GetSpaceSettingsForDisplay(ScreenID);
             if(ScreenSettings)
@@ -180,7 +180,7 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
         space_settings *DisplaySettings = GetSpaceSettingsForDisplay(ScreenID);
         if(!DisplaySettings)
         {
-            space_settings NULLSpaceSettings = { KWMSettings.DefaultOffset, SpaceModeDefault, "", "" };
+            space_settings NULLSpaceSettings = { KWMSettings.DefaultOffset, SpaceModeDefault, {0, 0}, "", "" };
             KWMSettings.DisplaySettings[ScreenID] = NULLSpaceSettings;
             DisplaySettings = &KWMSettings.DisplaySettings[ScreenID];
         }
@@ -205,6 +205,11 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
         {
             DisplaySettings->Offset.VerticalGap = ConvertStringToDouble(Tokens[4]);
             DisplaySettings->Offset.HorizontalGap = ConvertStringToDouble(Tokens[5]);
+        }
+        else if(Tokens[3] == "float-dim")
+        {
+            DisplaySettings->FloatDim.width = ConvertStringToDouble(Tokens[4]);
+            DisplaySettings->FloatDim.height = ConvertStringToDouble(Tokens[5]);
         }
     }
     else if(Tokens[1] == "focus-follows-mouse")

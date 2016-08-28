@@ -668,6 +668,45 @@ KwmParseConfigOptionDisplay(tokenizer *Tokenizer)
                     " " + std::string(TokenHorizontal.Text, TokenHorizontal.TextLength), 0);
         }
     }
+    else if(TokenEquals(Token, "float"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "dim"))
+            {
+                bool IsValid = true;
+                token TokenWidth = GetToken(Tokenizer);
+                token TokenHeight = GetToken(Tokenizer);
+
+                if(TokenWidth.Type != Token_Digit)
+                {
+                    ReportInvalidCommand("Unknown float-dim width value '" + std::string(TokenWidth.Text, TokenWidth.TextLength) + "'");
+                    IsValid = false;
+                }
+                if(TokenHeight.Type != Token_Digit)
+                {
+                    ReportInvalidCommand("Unknown float-dim height value '" + std::string(TokenHeight.Text, TokenHeight.TextLength) + "'");
+                    IsValid = false;
+                }
+
+                if(IsValid)
+                {
+                    KwmInterpretCommand("config display " + Display +
+                            " float-dim " + std::string(TokenWidth.Text, TokenWidth.TextLength) +
+                            " " + std::string(TokenHeight.Text, TokenHeight.TextLength), 0);
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'config display " + Display + " float-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'config display " + Display + " float'");
+        }
+    }
     else
     {
         ReportInvalidCommand("Unknown command 'config display " + Display + " " + std::string(Token.Text, Token.TextLength) + "'");

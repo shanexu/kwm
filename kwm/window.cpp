@@ -1861,11 +1861,28 @@ void SetWindowDimensions(ax_window *Window, int X, int Y, int Width, int Height)
 
 void CenterWindow(ax_display *Display, ax_window *Window)
 {
-    int NewX = Display->Frame.origin.x + Display->Frame.size.width / 4;
-    int NewY = Display->Frame.origin.y + Display->Frame.size.height / 4;
-    int NewWidth = Display->Frame.size.width / 2;
-    int NewHeight = Display->Frame.size.height / 2;
-    SetWindowDimensions(Window, NewX, NewY, NewWidth, NewHeight);
+    space_settings *SpaceSettings = GetSpaceSettingsForDisplay(Display->ArrangementID);
+    CGRect Dimension = {};
+
+    if((SpaceSettings) &&
+       (SpaceSettings->FloatDim.width != 0) &&
+       (SpaceSettings->FloatDim.height != 0))
+    {
+        Dimension.size.width = SpaceSettings->FloatDim.width;
+        Dimension.size.height = SpaceSettings->FloatDim.height;
+        Dimension.origin.x = Display->Frame.origin.x + ((Display->Frame.size.width / 2) - (Dimension.size.width / 2));
+        Dimension.origin.y = Display->Frame.origin.y + ((Display->Frame.size.height / 2) - (Dimension.size.height / 2));
+    }
+    else
+    {
+        Dimension.origin.x = Display->Frame.origin.x + Display->Frame.size.width / 4;
+        Dimension.origin.y = Display->Frame.origin.y + Display->Frame.size.height / 4;
+        Dimension.size.width = Display->Frame.size.width / 2;
+        Dimension.size.height = Display->Frame.size.height / 2;
+    }
+
+    SetWindowDimensions(Window, Dimension.origin.x, Dimension.origin.y,
+                        Dimension.size.width, Dimension.size.height);
 }
 
 ax_window *GetWindowByID(uint32_t WindowID)

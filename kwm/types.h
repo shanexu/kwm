@@ -274,6 +274,7 @@ struct space_settings
 {
     container_offset Offset;
     space_tiling_option Mode;
+    CGSize FloatDim;
     std::string Layout;
     std::string Name;
 };
