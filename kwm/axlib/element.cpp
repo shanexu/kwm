@@ -1,8 +1,5 @@
 #include "element.h"
 
-#define internal static
-#define local_persist static
-
 char *CopyCFStringToC(CFStringRef String, bool UTF8)
 {
     char *Result = NULL;

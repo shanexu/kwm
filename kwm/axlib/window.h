@@ -1,7 +1,6 @@
 #ifndef AXLIB_WINDOW_H
 #define AXLIB_WINDOW_H
 
-#include "display.h"
 #include <Carbon/Carbon.h>
 
 enum ax_window_flags

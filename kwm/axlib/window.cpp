@@ -1,9 +1,5 @@
 #include "window.h"
 #include "element.h"
-#include "display.h"
-
-#define internal static
-#define local_persist static
 
 ax_window *AXLibConstructWindow(ax_application *Application, AXUIElementRef WindowRef)
 {

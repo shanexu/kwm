@@ -6,9 +6,8 @@
 #include "axlib.h"
 
 #define internal static
-#define local_persist static
-
 #define AX_APPLICATION_RETRIES 10
+
 enum ax_application_notifications
 {
     AXApplication_Notification_WindowCreated,

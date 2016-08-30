@@ -1,8 +1,6 @@
 #include "carbon.h"
 #include "event.h"
 #include "application.h"
-
-#include <string>
 #include <unordered_set>
 
 #define internal static

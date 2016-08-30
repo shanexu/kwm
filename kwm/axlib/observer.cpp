@@ -1,9 +1,6 @@
 #include "observer.h"
 #include "application.h"
 
-#define internal static
-#define local_persist static
-
 void AXLibConstructObserver(ax_application *Application, ObserverCallback Callback)
 {
     AXError Result = AXObserverCreate(Application->PID, Callback, &Application->Observer.Ref);

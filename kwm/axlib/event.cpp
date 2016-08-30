@@ -1,7 +1,6 @@
 #include "event.h"
-#include <unistd.h>
-#include <stdlib.h>
 #include "display.h"
+#include <stdio.h>
 
 #define internal static
 internal ax_event_loop EventLoop = {};

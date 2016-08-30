@@ -2,8 +2,8 @@
 #include "event.h"
 #include "window.h"
 #include "element.h"
-#include <stdlib.h>
 #include <Cocoa/Cocoa.h>
+#include <stdio.h>
 
 #define internal static
 #define CGSDefaultConnection _CGSDefaultConnection()
