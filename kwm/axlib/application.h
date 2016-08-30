@@ -67,10 +67,6 @@ ax_window *AXLibFindApplicationWindow(ax_application *Application, uint32_t WID)
 void AXLibAddApplicationWindow(ax_application *Application, ax_window *Window);
 void AXLibRemoveApplicationWindow(ax_application *Application, uint32_t WID);
 
-bool AXLibAddApplicationObserver(ax_application *Application);
-void AXLibRemoveApplicationObserver(ax_application *Application);
-bool AXLibHasApplicationObserverNotification(ax_application *Application);
-
 void AXLibActivateApplication(ax_application *Application);
 bool AXLibIsApplicationActive(ax_application *Application);
 bool AXLibIsApplicationHidden(ax_application *Application);

@@ -63,7 +63,7 @@ AXLibDestroyInvalidWindow(ax_window *Window)
     AXLibDestroyWindow(Window);
 }
 
-OBSERVER_CALLBACK(AXApplicationCallback)
+internal OBSERVER_CALLBACK(AXApplicationCallback)
 {
     ax_application *Application = (ax_application *) Reference;
 
@@ -266,6 +266,64 @@ OBSERVER_CALLBACK(AXApplicationCallback)
     }
 }
 
+internal inline bool
+AXLibHasApplicationObserverNotification(ax_application *Application)
+{
+    for(int Notification = AXApplication_Notification_WindowCreated;
+            Notification < AXApplication_Notification_Count;
+            ++Notification)
+    {
+        if(!(Application->Notifications & (1 << Notification)))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+internal bool
+AXLibAddApplicationObserver(ax_application *Application)
+{
+    AXLibConstructObserver(Application, AXApplicationCallback);
+    if(Application->Observer.Valid)
+    {
+        for(int Notification = AXApplication_Notification_WindowCreated;
+                Notification < AXApplication_Notification_Count;
+                ++Notification)
+        {
+            /* NOTE(koekeishiya): Mark the notification as successful. */
+            if(AXLibAddObserverNotification(&Application->Observer, Application->Ref, AXNotificationFromEnum(Notification), Application) == kAXErrorSuccess)
+            {
+                Application->Notifications |= (1 << Notification);
+            }
+        }
+
+        AXLibStartObserver(&Application->Observer);
+        return AXLibHasApplicationObserverNotification(Application);
+    }
+
+    return false;
+}
+
+internal void
+AXLibRemoveApplicationObserver(ax_application *Application)
+{
+    if(Application->Observer.Valid)
+    {
+        AXLibStopObserver(&Application->Observer);
+
+        for(int Notification = AXApplication_Notification_WindowCreated;
+                Notification < AXApplication_Notification_Count;
+                ++Notification)
+        {
+            AXLibRemoveObserverNotification(&Application->Observer, Application->Ref, AXNotificationFromEnum(Notification));
+        }
+
+        AXLibDestroyObserver(&Application->Observer);
+    }
+}
+
 ax_application AXLibConstructApplication(pid_t PID, std::string Name)
 {
     ax_application Application = {};
@@ -276,25 +334,6 @@ ax_application AXLibConstructApplication(pid_t PID, std::string Name)
     Application.PID = PID;
 
     return Application;
-}
-
-void AXLibInitializedApplication(ax_application *Application)
-{
-    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-    *ApplicationPID = Application->PID;
-    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
-
-    if((!Application->Focus) ||
-       (AXLibHasFlags(Application->Focus, AXWindow_Minimized)))
-    {
-        AXLibAddFlags(Application, AXApplication_Activate);
-    }
-    else
-    {
-        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
-        *ApplicationPID = Application->PID;
-        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
-    }
 }
 
 bool AXLibInitializeApplication(pid_t PID)
@@ -341,58 +380,22 @@ bool AXLibInitializeApplication(pid_t PID)
     return false;
 }
 
-bool AXLibHasApplicationObserverNotification(ax_application *Application)
+void AXLibInitializedApplication(ax_application *Application)
 {
-    for(int Notification = AXApplication_Notification_WindowCreated;
-            Notification < AXApplication_Notification_Count;
-            ++Notification)
+    pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+    *ApplicationPID = Application->PID;
+    AXLibConstructEvent(AXEvent_ApplicationLaunched, ApplicationPID, false);
+
+    if((!Application->Focus) ||
+       (AXLibHasFlags(Application->Focus, AXWindow_Minimized)))
     {
-        if(!(Application->Notifications & (1 << Notification)))
-        {
-            return false;
-        }
+        AXLibAddFlags(Application, AXApplication_Activate);
     }
-
-    return true;
-}
-
-bool AXLibAddApplicationObserver(ax_application *Application)
-{
-    AXLibConstructObserver(Application, AXApplicationCallback);
-    if(Application->Observer.Valid)
+    else
     {
-        for(int Notification = AXApplication_Notification_WindowCreated;
-                Notification < AXApplication_Notification_Count;
-                ++Notification)
-        {
-            /* NOTE(koekeishiya): Mark the notification as successful. */
-            if(AXLibAddObserverNotification(&Application->Observer, Application->Ref, AXNotificationFromEnum(Notification), Application) == kAXErrorSuccess)
-            {
-                Application->Notifications |= (1 << Notification);
-            }
-        }
-
-        AXLibStartObserver(&Application->Observer);
-        return AXLibHasApplicationObserverNotification(Application);
-    }
-
-    return false;
-}
-
-void AXLibRemoveApplicationObserver(ax_application *Application)
-{
-    if(Application->Observer.Valid)
-    {
-        AXLibStopObserver(&Application->Observer);
-
-        for(int Notification = AXApplication_Notification_WindowCreated;
-                Notification < AXApplication_Notification_Count;
-                ++Notification)
-        {
-            AXLibRemoveObserverNotification(&Application->Observer, Application->Ref, AXNotificationFromEnum(Notification));
-        }
-
-        AXLibDestroyObserver(&Application->Observer);
+        pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
+        *ApplicationPID = Application->PID;
+        AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
     }
 }
 
