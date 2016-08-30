@@ -46,7 +46,6 @@ struct kwm_border;
 struct kwm_hotkeys;
 struct kwm_path;
 struct kwm_settings;
-struct kwm_thread;
 
 #ifdef DEBUG_BUILD
     #define DEBUG(x) std::cout << x << std::endl
@@ -323,11 +322,6 @@ struct kwm_path
     std::string Home;
     std::string Include;
     std::string Layouts;
-};
-
-struct kwm_thread
-{
-    pthread_t Daemon;
 };
 
 struct kwm_settings
