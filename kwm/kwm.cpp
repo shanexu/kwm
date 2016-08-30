@@ -25,7 +25,6 @@ ax_window *MarkedWindow = NULL;
 kwm_mach KWMMach = {};
 kwm_path KWMPath = {};
 kwm_settings KWMSettings = {};
-kwm_thread KWMThread = {};
 kwm_hotkeys KWMHotkeys = {};
 kwm_border FocusedBorder = {};
 kwm_border MarkedBorder = {};
@@ -159,9 +158,7 @@ KwmInit()
     if(!CheckPrivileges())
         Fatal("Error: Could not access OSX Accessibility!");
 
-    if(KwmStartDaemon())
-        pthread_create(&KWMThread.Daemon, NULL, &KwmDaemonHandleConnectionBG, NULL);
-    else
+    if(!KwmStartDaemon())
         Fatal("Error: Could not start daemon!");
 
     signal(SIGCHLD, SIG_IGN);

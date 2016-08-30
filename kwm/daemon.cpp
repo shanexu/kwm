@@ -1,8 +1,12 @@
 #include "daemon.h"
+#include "interpreter.h"
 
-int KwmSockFD;
-bool KwmDaemonIsRunning;
-int KwmDaemonPort = 3020;
+#define internal static
+
+internal int KwmSockFD;
+internal bool KwmDaemonIsRunning;
+internal int KwmDaemonPort = 3020;
+internal pthread_t KwmDaemonThread;
 
 std::string KwmReadFromSocket(int ClientSockFD)
 {
@@ -24,15 +28,8 @@ void KwmWriteToSocket(std::string Msg, int ClientSockFD)
     close(ClientSockFD);
 }
 
-void * KwmDaemonHandleConnectionBG(void *)
-{
-    while(KwmDaemonIsRunning)
-        KwmDaemonHandleConnection();
-
-    return NULL;
-}
-
-void KwmDaemonHandleConnection()
+internal void
+KwmDaemonHandleConnection()
 {
     int ClientSockFD;
     struct sockaddr_in ClientAddr;
@@ -44,6 +41,15 @@ void KwmDaemonHandleConnection()
         std::string Message = KwmReadFromSocket(ClientSockFD);
         KwmInterpretCommand(Message, ClientSockFD);
     }
+}
+
+internal void *
+KwmDaemonHandleConnectionBG(void *)
+{
+    while(KwmDaemonIsRunning)
+        KwmDaemonHandleConnection();
+
+    return NULL;
 }
 
 void KwmTerminateDaemon()
@@ -61,12 +67,12 @@ bool KwmStartDaemon()
         return false;
 
     if(setsockopt(KwmSockFD, SOL_SOCKET, SO_REUSEADDR, &_True, sizeof(int)) == -1)
-        std::cout << "Could not set socket option: SO_REUSEADDR!" << std::endl;
+        printf("Could not set socket option: SO_REUSEADDR!\n");
 
     SrvAddr.sin_family = AF_INET;
     SrvAddr.sin_port = htons(KwmDaemonPort);
     SrvAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    std::memset(&SrvAddr.sin_zero, '\0', 8);
+    memset(&SrvAddr.sin_zero, '\0', 8);
 
     if(bind(KwmSockFD, (struct sockaddr*)&SrvAddr, sizeof(struct sockaddr)) == -1)
         return false;
@@ -75,6 +81,6 @@ bool KwmStartDaemon()
         return false;
 
     KwmDaemonIsRunning = true;
-    DEBUG("Local Daemon is now running..");
+    pthread_create(&KwmDaemonThread, NULL, &KwmDaemonHandleConnectionBG, NULL);
     return true;
 }
