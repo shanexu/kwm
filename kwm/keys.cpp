@@ -633,7 +633,8 @@ void KwmExecuteSystemCommand(std::string Command)
     {
         DEBUG("Exec: FORK SUCCESS");
         std::vector<std::string> Tokens = SplitString(Command, ' ');
-        const char **ExecArgs = new const char*[Tokens.size()+1];
+
+        const char *ExecArgs[Tokens.size()+1];
         for(int Index = 0; Index < Tokens.size(); ++Index)
         {
             ExecArgs[Index] = Tokens[Index].c_str();

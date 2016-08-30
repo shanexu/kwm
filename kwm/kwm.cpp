@@ -48,8 +48,7 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
                                   we should eat the CGEventRef or not (?) */
             if(HasFlags(&KWMSettings, Settings_BuiltinHotkeys))
             {
-                hotkey Eventkey = {}, *Hotkey = NULL;
-                Hotkey = new hotkey;
+                hotkey Eventkey = {}, *Hotkey = new(std::nothrow) hotkey;
                 if(Hotkey)
                 {
                     CreateHotkeyFromCGEvent(Event, &Eventkey);
