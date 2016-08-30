@@ -72,25 +72,29 @@ AXLibClearFlags(ax_space *Space, uint32_t Flag)
 
 
 void AXLibInitializeDisplays(std::map<CGDirectDisplayID, ax_display> *AXDisplays);
-ax_space *AXLibGetActiveSpace(ax_display *Display);
-bool AXLibIsSpaceTransitionInProgress();
-bool AXLibDisplayHasSeparateSpaces();
 
 ax_display *AXLibMainDisplay();
 ax_display *AXLibCursorDisplay();
 ax_display *AXLibWindowDisplay(ax_window *Window);
 ax_display *AXLibSpaceDisplay(CGSSpaceID SpaceID);
+
 ax_display *AXLibNextDisplay(ax_display *Display);
 ax_display *AXLibPreviousDisplay(ax_display *Display);
 ax_display *AXLibArrangementDisplay(unsigned int ArrangementID);
 
+ax_space *AXLibGetActiveSpace(ax_display *Display);
+void AXLibSpaceTransition(ax_display *Display, CGSSpaceID SpaceID);
+
+bool AXLibIsSpaceTransitionInProgress();
+bool AXLibDisplayHasSeparateSpaces();
+
 unsigned int AXLibDisplaySpacesCount(ax_display *Display);
 unsigned int AXLibDesktopIDFromCGSSpaceID(ax_display *Display, CGSSpaceID SpaceID);
 CGSSpaceID AXLibCGSSpaceIDFromDesktopID(ax_display *Display, unsigned int DesktopID);
-void AXLibSpaceTransition(ax_display *Display, CGSSpaceID SpaceID);
+
+bool AXLibStickyWindow(ax_window *Window);
 bool AXLibSpaceHasWindow(ax_window *Window, CGSSpaceID SpaceID);
 void AXLibSpaceAddWindow(CGSSpaceID SpaceID, uint32_t WindowID);
 void AXLibSpaceRemoveWindow(CGSSpaceID SpaceID, uint32_t WindowID);
-bool AXLibStickyWindow(ax_window *Window);
 
 #endif

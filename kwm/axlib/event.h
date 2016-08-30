@@ -86,8 +86,10 @@ struct ax_event_loop
 
 bool AXLibStartEventLoop();
 void AXLibStopEventLoop();
+
 void AXLibPauseEventLoop();
 void AXLibResumeEventLoop();
+
 void AXLibAddEvent(ax_event Event);
 
 /* NOTE(koekeishiya): Construct an ax_event with the appropriate callback through macro expansion. */

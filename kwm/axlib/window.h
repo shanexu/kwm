@@ -57,10 +57,12 @@ AXLibClearFlags(ax_window *Window, uint32_t Flag)
 }
 
 ax_window *AXLibConstructWindow(ax_application *Application, AXUIElementRef WindowRef);
+void AXLibDestroyWindow(ax_window *Window);
+
 bool AXLibIsWindowStandard(ax_window *Window);
 bool AXLibIsWindowCustom(ax_window *Window);
+
 bool AXLibWindowHasRole(ax_window *Window, CFTypeRef Role);
 bool AXLibWindowHasCustomRole(ax_window *Window, CFTypeRef Role);
-void AXLibDestroyWindow(ax_window *Window);
 
 #endif
