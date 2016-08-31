@@ -90,6 +90,7 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
     <li><a href="#window-query">Windows</a></li>
     <li><a href="#tiling-query">Tiling</a></li>
     <li><a href="#spaces-query">Spaces</a></li>
+    <li><a href="#scratchpad-query">Scratchpad</a></li>
   </ul>
 </li>
 </ul>
@@ -591,9 +592,6 @@ kwmc window -c expand {amount} {direction}
 <p>Remove the focused window from the scratchpad</p>
 <pre><code>kwmc scratchpad remove</code></pre>
 
-<p>List all occupied scratchpad slots and their associated window</p>
-<pre><code>kwmc scratchpad list</code></pre>
-
 <p>Toggle visibility of the window associated with the provided slot</p>
 <pre><code>kwmc scratchpad toggle {visibility}
     {visibility}: number</code></pre>
@@ -686,6 +684,12 @@ kwmc window -c expand {amount} {direction}
 
 <p>Get list of all spaces on focused display</p>
 <pre><code>kwmc query space list</code></pre>
+</section>
+
+<h4 id="scratchpad-query">Scratchpad</h4>
+<section class="code-examples-compact">
+<p>List all occupied scratchpad slots and their associated window</p>
+<pre><code>kwmc query scratchpad list</code></pre>
 </section>
 
       </section>
