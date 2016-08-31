@@ -1,6 +1,6 @@
 #include "interpreter.h"
-#include "helpers.h"
 #include "kwm.h"
+#include "helpers.h"
 #include "daemon.h"
 #include "display.h"
 #include "space.h"
@@ -11,11 +11,11 @@
 #include "keys.h"
 #include "border.h"
 #include "serializer.h"
-#include "helpers.h"
 #include "rules.h"
 #include "scratchpad.h"
 #include "cursor.h"
 #include "event.h"
+#include "config.h"
 #include "axlib/axlib.h"
 
 #define internal static
@@ -369,6 +369,13 @@ KwmQueryCommand(std::vector<std::string> &Tokens, int ClientSockFD)
         else if(Tokens[2] == "list")
         {
             KwmConstructEvent(KWMEvent_QueryWindowList, KwmCreateContext(ClientSockFD));
+        }
+    }
+    else if(Tokens[1] == "scratchpad")
+    {
+        if(Tokens[2] == "list")
+        {
+            KwmConstructEvent(KWMEvent_QueryScratchpad, KwmCreateContext(ClientSockFD));
         }
     }
     else if(Tokens[1] == "space")
@@ -820,10 +827,6 @@ KwmScratchpadCommand(std::vector<std::string> &Tokens, int ClientSockFD)
         ax_application *Application = AXLibGetFocusedApplication();
         if(Application && Application->Focus)
             RemoveWindowFromScratchpad(Application->Focus);
-    }
-    else if(Tokens[1] == "list")
-    {
-        KwmConstructEvent(KWMEvent_QueryScratchpad, KwmCreateContext(ClientSockFD));
     }
 }
 

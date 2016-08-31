@@ -20,10 +20,9 @@ void GetTagForMonocleSpace(space_info *Space, std::string &Tag)
 
     if(Node)
     {
-        ax_application *Application = AXLibGetFocusedApplication();
-        if(Application)
+        if(FocusedApplication)
         {
-            ax_window *Window = Application->Focus;
+            ax_window *Window = FocusedApplication->Focus;
             if(Window)
             {
                 link_node *Link = Node->List;

@@ -7,6 +7,5 @@ extern "C" bool CGSIsSecureEventInputSet(void);
 extern "C" void NSApplicationLoad(void);
 
 void KwmQuit();
-void KwmReloadConfig();
 
 #endif

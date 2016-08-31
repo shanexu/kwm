@@ -45,7 +45,7 @@ enum hotkey_modifier_flag
     Hotkey_Modifier_Flag_Passthrough = (1 << 10),
 };
 
-void CreateHotkeyFromCGEvent(CGEventRef Event, hotkey *Hotkey);
+bool HotkeyForCGEvent(CGEventRef Event, hotkey *Hotkey);
 
 void KwmAddHotkey(std::string KeySym, std::string Command, bool Passthrough, bool KeycodeInHex);
 void KwmRemoveHotkey(std::string KeySym, bool KeycodeInHex);

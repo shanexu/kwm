@@ -4,10 +4,12 @@
 #include "window.h"
 #include "axlib/axlib.h"
 
+#define internal static
 extern kwm_settings KWMSettings;
 extern scratchpad Scratchpad;
 
-bool IsScratchpadSlotValid(int Index)
+internal inline bool
+IsScratchpadSlotTaken(int Index)
 {
     std::map<int, ax_window*>::iterator It = Scratchpad.Windows.find(Index);
     return It != Scratchpad.Windows.end();
@@ -34,20 +36,21 @@ int GetScratchpadSlotOfWindow(ax_window *Window)
     return Slot;
 }
 
-bool IsWindowOnScratchpad(ax_window *Window)
+internal inline bool
+IsWindowOnScratchpad(ax_window *Window)
 {
     return GetScratchpadSlotOfWindow(Window) != -1;
 }
 
-int GetFirstAvailableScratchpadSlot()
+internal inline int
+GetFirstAvailableScratchpadSlot()
 {
     int Slot = 0;
 
     if(!Scratchpad.Windows.empty())
     {
-        std::map<int, ax_window*>::iterator It = Scratchpad.Windows.find(Slot);
-        while(It != Scratchpad.Windows.end())
-            It = Scratchpad.Windows.find(++Slot);
+        while(IsScratchpadSlotTaken(Slot))
+            ++Slot;
     }
 
     return Slot;
@@ -92,7 +95,7 @@ void RemoveWindowFromScratchpad(ax_window *Window)
 void ToggleScratchpadWindow(int Index)
 {
     if(!AXLibIsSpaceTransitionInProgress() &&
-       IsScratchpadSlotValid(Index))
+       IsScratchpadSlotTaken(Index))
     {
         ax_window *Window = Scratchpad.Windows[Index];
         ax_display *Display = AXLibWindowDisplay(Window);
@@ -109,7 +112,7 @@ void ToggleScratchpadWindow(int Index)
 void HideScratchpadWindow(int Index)
 {
     if(!AXLibIsSpaceTransitionInProgress() &&
-       IsScratchpadSlotValid(Index))
+       IsScratchpadSlotTaken(Index))
     {
         ax_window *Window = Scratchpad.Windows[Index];
         ax_display *Display = AXLibWindowDisplay(Window);
@@ -132,7 +135,7 @@ void HideScratchpadWindow(int Index)
 void ShowScratchpadWindow(int Index)
 {
     if(!AXLibIsSpaceTransitionInProgress() &&
-       IsScratchpadSlotValid(Index))
+       IsScratchpadSlotTaken(Index))
     {
         ax_application *Application = AXLibGetFocusedApplication();
         if(!Application)

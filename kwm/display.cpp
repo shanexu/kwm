@@ -3,7 +3,6 @@
 #include "container.h"
 #include "tree.h"
 #include "window.h"
-#include "helpers.h"
 #include "cursor.h"
 
 extern std::map<std::string, space_info> WindowTree;
@@ -120,12 +119,6 @@ void MoveWindowToDisplay(ax_window *Window, int Shift, bool Relative)
     }
 }
 
-container_offset CreateDefaultScreenOffset()
-{
-    container_offset Offset = { 40, 20, 20, 20, 10, 10 };
-    return Offset;
-}
-
 space_settings *GetSpaceSettingsForDisplay(unsigned int ScreenID)
 {
     std::map<unsigned int, space_settings>::iterator It = KWMSettings.DisplaySettings.find(ScreenID);
@@ -201,4 +194,10 @@ void FocusDisplay(ax_display *Display)
             CGWarpMouseCursorPosition(CGPointMake(X, Y));
         }
     }
+}
+
+container_offset CreateDefaultDisplayOffset()
+{
+    container_offset Result = { 40, 20, 20, 20, 10, 10 };
+    return Result;
 }

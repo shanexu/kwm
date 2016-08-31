@@ -118,7 +118,7 @@ ConvertHexRGBAToColor(unsigned int Color)
     return Result;
 }
 
-inline char*
+inline char *
 ReadFile(std::string File)
 {
     char *Contents = NULL;

@@ -1,20 +1,16 @@
 #include "kwm.h"
-#include "helpers.h"
 #include "daemon.h"
 #include "display.h"
-#include "space.h"
 #include "window.h"
 #include "keys.h"
-#include "interpreter.h"
 #include "scratchpad.h"
 #include "border.h"
 #include "config.h"
-#include "cursor.h"
 #include "axlib/axlib.h"
 #include <getopt.h>
 
 #define internal static
-const std::string KwmCurrentVersion = "Kwm Version 3.0.7";
+const char *KwmVersion = "Kwm Version 3.0.7";
 std::map<std::string, space_info> WindowTree;
 
 ax_state AXState = {};
@@ -43,15 +39,12 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         } break;
         case kCGEventKeyDown:
         {
-            /* TODO(koekeishiya): Is there a better way to decide whether
-                                  we should eat the CGEventRef or not (?) */
             if(HasFlags(&KWMSettings, Settings_BuiltinHotkeys))
             {
-                hotkey Eventkey = {}, *Hotkey = new(std::nothrow) hotkey;
+                hotkey *Hotkey = new(std::nothrow) hotkey;
                 if(Hotkey)
                 {
-                    CreateHotkeyFromCGEvent(Event, &Eventkey);
-                    if(HotkeyExists(Eventkey.Flags, Eventkey.Key, Hotkey, KWMHotkeys.ActiveMode->Name))
+                    if(HotkeyForCGEvent(Event, Hotkey))
                     {
                         AXLibConstructEvent(AXEvent_HotkeyPressed, Hotkey, false);
                         if(!(Hotkey->Flags & Hotkey_Modifier_Flag_Passthrough))
@@ -75,12 +68,12 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
     return Event;
 }
 
-internal bool
+internal inline bool
 CheckPrivileges()
 {
     bool Result = false;
-    const void * Keys[] = { kAXTrustedCheckOptionPrompt };
-    const void * Values[] = { kCFBooleanTrue };
+    const void *Keys[] = { kAXTrustedCheckOptionPrompt };
+    const void *Values[] = { kCFBooleanTrue };
 
     CFDictionaryRef Options;
     Options = CFDictionaryCreate(kCFAllocatorDefault,
@@ -100,11 +93,11 @@ GetKwmFilePath()
     bool Result = false;
     char PathBuf[PROC_PIDPATHINFO_MAXSIZE];
     pid_t Pid = getpid();
+
     int Ret = proc_pidpath(Pid, PathBuf, sizeof(PathBuf));
-    if (Ret > 0)
+    if(Ret > 0)
     {
         KWMPath.FilePath = PathBuf;
-
         std::size_t Split = KWMPath.FilePath.find_last_of("/\\");
         KWMPath.FilePath = KWMPath.FilePath.substr(0, Split);
         Result = true;
@@ -113,17 +106,7 @@ GetKwmFilePath()
     return Result;
 }
 
-internal void
-KwmClearSettings()
-{
-    KWMHotkeys.Modes.clear();
-    KWMSettings.WindowRules.clear();
-    KWMSettings.SpaceSettings.clear();
-    KWMSettings.DisplaySettings.clear();
-    KWMHotkeys.ActiveMode = GetBindingMode("default");
-}
-
-internal void
+internal inline void
 KwmExecuteInitScript()
 {
     if(KWMPath.Init.empty())
@@ -145,10 +128,10 @@ SignalHandler(int Signum)
     exit(Signum);
 }
 
-internal void
-Fatal(const std::string &Err)
+internal inline void
+Fatal(const char *Err)
 {
-    std::cout << Err << std::endl;
+    printf("%s\n", Err);
     exit(1);
 }
 
@@ -157,9 +140,6 @@ KwmInit()
 {
     if(!CheckPrivileges())
         Fatal("Error: Could not access OSX Accessibility!");
-
-    if(!KwmStartDaemon())
-        Fatal("Error: Could not start daemon!");
 
     signal(SIGCHLD, SIG_IGN);
 #ifndef DEBUG_BUILD
@@ -175,7 +155,7 @@ KwmInit()
 
     KWMSettings.SplitRatio = 0.5;
     KWMSettings.SplitMode = SPLIT_OPTIMAL;
-    KWMSettings.DefaultOffset = CreateDefaultScreenOffset();
+    KWMSettings.DefaultOffset = CreateDefaultDisplayOffset();
     KWMSettings.OptimalRatio = 1.618;
 
     AddFlags(&KWMSettings,
@@ -223,14 +203,8 @@ void KwmQuit()
     exit(0);
 }
 
-void KwmReloadConfig()
-{
-    KwmClearSettings();
-    KwmParseConfig(KWMPath.Config);
-}
-
 /* NOTE(koekeishiya): Returns true for operations that cause Kwm to exit. */
-internal bool
+internal inline bool
 ParseArguments(int argc, char **argv)
 {
     int Option;
@@ -248,7 +222,7 @@ ParseArguments(int argc, char **argv)
         {
             case 'v':
             {
-                printf("%s\n", KwmCurrentVersion.c_str());
+                printf("%s\n", KwmVersion);
                 return true;
             } break;
             case 'c':
@@ -288,6 +262,8 @@ int main(int argc, char **argv)
 
     AXLibInit(&AXState);
     AXLibStartEventLoop();
+    if(!KwmStartDaemon())
+        Fatal("Error: Could not start daemon!");
 
     ax_display *MainDisplay = AXLibMainDisplay();
     ax_display *Display = MainDisplay;

@@ -8,8 +8,10 @@
 #define internal static
 
 extern kwm_path KWMPath;
+extern kwm_settings KWMSettings;
+extern kwm_hotkeys KWMHotkeys;
 
-internal void
+internal inline void
 ReportInvalidCommand(std::string Command)
 {
     std::cerr << "Parse error: " << Command << std::endl;
@@ -820,7 +822,6 @@ KwmParseConfigOption(tokenizer *Tokenizer)
         default:
         {
             ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
-            //printf("%d: %.*s\n", Token.Type, Token.TextLength, Token.Text);
         } break;
     }
 }
@@ -846,7 +847,6 @@ KwmParseModeOption(tokenizer *Tokenizer)
         default:
         {
             ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
-            //printf("%d: %.*s\n", Token.Type, Token.TextLength, Token.Text);
         } break;
     }
 }
@@ -881,7 +881,6 @@ KwmParseKwmc(tokenizer *Tokenizer)
         default:
         {
             ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
-            // printf("%d: %.*s\n", Token.Type, Token.TextLength, Token.Text);
         } break;
     }
 }
@@ -1001,9 +1000,24 @@ void KwmParseConfig(std::string File)
                 default:
                 {
                     ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
-                    // printf("%d: %.*s\n", Token.Type, Token.TextLength, Token.Text);
                 } break;
             }
         }
     }
+}
+
+internal void
+KwmClearSettings()
+{
+    KWMHotkeys.Modes.clear();
+    KWMSettings.WindowRules.clear();
+    KWMSettings.SpaceSettings.clear();
+    KWMSettings.DisplaySettings.clear();
+    KWMHotkeys.ActiveMode = GetBindingMode("default");
+}
+
+void KwmReloadConfig()
+{
+    KwmClearSettings();
+    KwmParseConfig(KWMPath.Config);
 }

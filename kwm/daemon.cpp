@@ -28,26 +28,22 @@ void KwmWriteToSocket(std::string Msg, int ClientSockFD)
     close(ClientSockFD);
 }
 
-internal void
-KwmDaemonHandleConnection()
-{
-    int ClientSockFD;
-    struct sockaddr_in ClientAddr;
-    socklen_t SinSize = sizeof(struct sockaddr);
-
-    ClientSockFD = accept(KwmSockFD, (struct sockaddr*)&ClientAddr, &SinSize);
-    if(ClientSockFD != -1)
-    {
-        std::string Message = KwmReadFromSocket(ClientSockFD);
-        KwmInterpretCommand(Message, ClientSockFD);
-    }
-}
-
 internal void *
 KwmDaemonHandleConnectionBG(void *)
 {
     while(KwmDaemonIsRunning)
-        KwmDaemonHandleConnection();
+    {
+        int ClientSockFD;
+        struct sockaddr_in ClientAddr;
+        socklen_t SinSize = sizeof(struct sockaddr);
+
+        ClientSockFD = accept(KwmSockFD, (struct sockaddr*)&ClientAddr, &SinSize);
+        if(ClientSockFD != -1)
+        {
+            std::string Message = KwmReadFromSocket(ClientSockFD);
+            KwmInterpretCommand(Message, ClientSockFD);
+        }
+    }
 
     return NULL;
 }

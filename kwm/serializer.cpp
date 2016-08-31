@@ -10,7 +10,6 @@
 #define internal static
 
 internal void SerializeParentNode(tree_node *Parent, std::string Role, std::vector<std::string> &Serialized);
-
 internal tree_node * DeserializeNodeTree(std::vector<std::string> &Serialized, ax_display *Display);
 internal unsigned int DeserializeParentNode(tree_node *Parent, ax_display *Display, std::vector<std::string> &Serialized, unsigned int Index);
 internal unsigned int DeserializeChildNode(tree_node *Parent, ax_display *Display, std::vector<std::string> &Serialized, unsigned int Index);

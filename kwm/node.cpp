@@ -3,7 +3,6 @@
 #include "tree.h"
 #include "space.h"
 #include "window.h"
-
 #include "axlib/axlib.h"
 
 extern std::map<std::string, space_info> WindowTree;
@@ -354,11 +353,10 @@ void ResizeWindowToContainerSize()
 
 void ModifyContainerSplitRatio(double Offset)
 {
-    ax_application *Application = AXLibGetFocusedApplication();
-    if(!Application)
+    if(!FocusedApplication)
         return;
 
-    ax_window *Window = Application->Focus;
+    ax_window *Window = FocusedApplication->Focus;
     if(!Window)
         return;
 
@@ -386,11 +384,10 @@ void ModifyContainerSplitRatio(double Offset)
 
 void ModifyContainerSplitRatio(double Offset, int Degrees)
 {
-    ax_application *Application = AXLibGetFocusedApplication();
-    if(!Application)
+    if(!FocusedApplication)
         return;
 
-    ax_window *Window = Application->Focus;
+    ax_window *Window = FocusedApplication->Focus;
     if(!Window)
         return;
 

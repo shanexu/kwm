@@ -9,15 +9,13 @@
 #include <regex>
 
 #define internal static
-
 extern kwm_settings KWMSettings;
 
 internal inline void
-ReportInvalidRule(std::string Command)
+ReportInvalidRule(const std::string &Command)
 {
-    std::cerr << "  Rule Parse error: " << Command << std::endl;
+    std::cerr << "Error (Parse Rule): " << Command << std::endl;
 }
-
 
 internal bool
 ParseIdentifier(tokenizer *Tokenizer, std::string *Member)

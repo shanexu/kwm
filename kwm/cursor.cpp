@@ -3,13 +3,16 @@
 #include "space.h"
 
 #define internal static
-#define local_persist static
-
 extern ax_state AXState;
 extern ax_application *FocusedApplication;
 extern kwm_settings KWMSettings;
 
-internal CGPoint
+EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
+{
+    FocusWindowBelowCursor();
+}
+
+internal inline CGPoint
 GetCursorPos()
 {
     CGEventRef Event = CGEventCreate(NULL);
@@ -19,7 +22,7 @@ GetCursorPos()
     return Cursor;
 }
 
-internal bool
+internal inline bool
 IsWindowBelowCursor(ax_window *Window)
 {
     CGPoint Cursor = GetCursorPos();
@@ -48,14 +51,12 @@ void MoveCursorToCenterOfFocusedWindow()
         MoveCursorToCenterOfWindow(FocusedApplication->Focus);
 }
 
-
 void FocusWindowBelowCursor()
 {
-    ax_application *Application = AXLibGetFocusedApplication();
     ax_window *FocusedWindow = NULL;
-    if(Application)
+    if(FocusedApplication)
     {
-        FocusedWindow = Application->Focus;
+        FocusedWindow = FocusedApplication->Focus;
         if(FocusedWindow && IsWindowBelowCursor(FocusedWindow))
             return;
     }
@@ -64,7 +65,7 @@ void FocusWindowBelowCursor()
     if(WindowID == 0)
         return;
 
-   std::map<pid_t, ax_application>::iterator It;
+    std::map<pid_t, ax_application>::iterator It;
     for(It = AXState.Applications.begin(); It != AXState.Applications.end(); ++It)
     {
         ax_application *Application = &It->second;
@@ -88,10 +89,3 @@ void FocusWindowBelowCursor()
         }
     }
 }
-
-EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
-{
-    if(!AXLibIsSpaceTransitionInProgress())
-        FocusWindowBelowCursor();
-}
-

@@ -10,6 +10,7 @@
 #define internal static
 
 extern std::map<std::string, space_info> WindowTree;
+extern ax_application *FocusedApplication;
 extern ax_window *MarkedWindow;
 
 extern kwm_settings KWMSettings;
@@ -233,11 +234,10 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryCurrentSpaceTag)
     std::string Output;
     GetTagForCurrentSpace(Output);
 
-    ax_application *Application = AXLibGetFocusedApplication();
-    if(Application)
+    if(FocusedApplication)
     {
-        Output += " " + Application->Name;
-        ax_window *Window = Application->Focus;
+        Output += " " + FocusedApplication->Name;
+        ax_window *Window = FocusedApplication->Focus;
         if(Window && Window->Name)
             Output += " - " + std::string(Window->Name);
     }
@@ -294,8 +294,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryFocusedWindowId)
 {
     int *SockFD = (int *) Event->Context;
 
-    ax_application *Application = AXLibGetFocusedApplication();
-    std::string Output = Application && Application->Focus ? std::to_string(Application->Focus->ID) : "-1";
+    std::string Output = FocusedApplication && FocusedApplication->Focus ? std::to_string(FocusedApplication->Focus->ID) : "-1";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -304,8 +303,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryFocusedWindowName)
 {
     int *SockFD = (int *) Event->Context;
 
-    ax_application *Application = AXLibGetFocusedApplication();
-    std::string Output = Application && Application->Focus ? Application->Focus->Name : "";
+    std::string Output = FocusedApplication && FocusedApplication->Focus ? FocusedApplication->Focus->Name : "";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -314,8 +312,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryFocusedWindowSplit)
 {
     int *SockFD = (int *) Event->Context;
 
-    ax_application *Application = AXLibGetFocusedApplication();
-    std::string Output = Application ? GetSplitModeOfWindow(Application->Focus) : "";
+    std::string Output = FocusedApplication ? GetSplitModeOfWindow(FocusedApplication->Focus) : "";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -324,8 +321,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryFocusedWindowFloat)
 {
     int *SockFD = (int *) Event->Context;
 
-    ax_application *Application = AXLibGetFocusedApplication();
-    std::string Output = Application && Application->Focus ? (AXLibHasFlags(Application->Focus, AXWindow_Floating) ? "true" : "false") : "false";
+    std::string Output = FocusedApplication && FocusedApplication->Focus ? (AXLibHasFlags(FocusedApplication->Focus, AXWindow_Floating) ? "true" : "false") : "false";
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }

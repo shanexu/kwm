@@ -4,5 +4,6 @@
 #include <string>
 
 void KwmParseConfig(std::string File);
+void KwmReloadConfig();
 
 #endif
