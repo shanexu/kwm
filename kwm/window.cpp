@@ -227,14 +227,15 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
     {
         DEBUG("AXEvent_ApplicationLaunched: " << Application->Name);
 
-        std::map<uint32_t, ax_window *>::iterator It;
-        for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+        ax_display *Display = AXLibCursorDisplay();
+        for(std::map<uint32_t, ax_window *>::iterator It = Application->Windows.begin();
+            It != Application->Windows.end();
+            ++It)
         {
             ax_window *Window = It->second;
             if(ApplyWindowRules(Window))
                 continue;
 
-            ax_display *Display = AXLibCursorDisplay();
             if(!Display)
                 Display = AXLibWindowDisplay(Window);
 
@@ -359,9 +360,9 @@ EVENT_CALLBACK(Callback_AXEvent_WindowCreated)
         if(ApplyWindowRules(Window))
             return;
 
-        ax_display *Display = AXLibWindowDisplay(Window);
+        ax_display *Display = AXLibCursorDisplay();
         if(!Display)
-            Display = AXLibMainDisplay();
+            Display = AXLibWindowDisplay(Window);
 
         if(Display)
         {
