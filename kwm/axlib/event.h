@@ -37,6 +37,10 @@ extern EVENT_CALLBACK(Callback_AXEvent_SpaceChanged);
 extern EVENT_CALLBACK(Callback_AXEvent_HotkeyPressed);
 extern EVENT_CALLBACK(Callback_AXEvent_MouseMoved);
 
+extern EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged);
+extern EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown);
+extern EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp);
+
 enum ax_event_type
 {
     AXEvent_ApplicationLaunched,
@@ -65,6 +69,10 @@ enum ax_event_type
 
     AXEvent_HotkeyPressed,
     AXEvent_MouseMoved,
+
+    AXEvent_LeftMouseDragged,
+    AXEvent_LeftMouseDown,
+    AXEvent_LeftMouseUp,
 };
 
 struct ax_event
