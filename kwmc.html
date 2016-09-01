@@ -356,6 +356,14 @@ kwmc rule owner="Finder" role="AXDialog" properties={float="true"}
 <pre><code>kwmc config mouse-follows-focus {enabled}
     {enabled}: on | off</code></pre>
 
+<p>Allow windows to be moved by dragging with mod+left_mouse</p>
+<pre><code>kwmc config mouse-drag {enabled}
+    {enabled}: on | off</code></pre>
+
+<p>Specify modifier keys to be used for initiating mouse-drag</p>
+<pre><code>kwmc config mouse-drag mod {modifiers}
+    {modifiers}: mod+mod+mod</code></pre>
+
 <p>Enable hotkeys registered using `bindsym` and `bindcode`</p>
 <pre><code>kwmc config hotkeys {enabled}
     {enabled}: on | off</code></pre>
