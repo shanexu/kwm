@@ -39,6 +39,18 @@ IsWindowBelowCursor(ax_window *Window)
     return false;
 }
 
+internal bool
+IsCursorInsideWindow(ax_window *Window, CGPoint Cursor)
+{
+    if(Cursor.x >= Window->Position.x &&
+       Cursor.x <= Window->Position.x + Window->Size.width &&
+       Cursor.y >= Window->Position.y &&
+       Cursor.y <= Window->Position.y + Window->Size.height)
+        return true;
+
+    return false;
+}
+
 EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
 {
     FocusWindowBelowCursor();
@@ -64,7 +76,7 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
         DragMoveWindow = false;
 
         ax_window *FocusedWindow = FocusedApplication->Focus;
-        if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
+        if(!FocusedWindow || !MarkedWindow)
         {
             ClearMarkedWindow();
             return;
@@ -99,19 +111,27 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
 
     if(DragMoveWindow)
     {
-        uint32_t WindowID = AXLibGetWindowBelowCursor();
-        if(WindowID != 0)
+        ax_window *FocusedWindow = NULL;
+        if(FocusedApplication)
+            FocusedWindow = FocusedApplication->Focus;
+
+        if((FocusedWindow) &&
+           (IsCursorInsideWindow(FocusedWindow, *Cursor)))
         {
-            ax_window *Window = GetWindowByID(WindowID);
-            if(Window)
+            if(AXLibHasFlags(FocusedWindow, AXWindow_Floating))
             {
-                if(AXLibHasFlags(Window, AXWindow_Floating))
-                {
-                    double X = Cursor->x - Window->Size.width / 2;
-                    double Y = Cursor->y - Window->Size.height / 2;
-                    AXLibSetWindowPosition(Window->Ref, X, Y);
-                }
-                else
+                double X = Cursor->x - FocusedWindow->Size.width / 2;
+                double Y = Cursor->y - FocusedWindow->Size.height / 2;
+                AXLibSetWindowPosition(FocusedWindow->Ref, X, Y);
+            }
+        }
+        else
+        {
+            uint32_t WindowID = AXLibGetWindowBelowCursor();
+            if(WindowID != 0)
+            {
+                ax_window *Window = GetWindowByID(WindowID);
+                if(Window)
                 {
                     MarkedWindow = Window;
                     UpdateBorder(&MarkedBorder, MarkedWindow);
