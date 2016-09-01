@@ -116,7 +116,6 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         default: {} break;
     }
 
-    printf("Return event.\n");
     return Event;
 }
 
