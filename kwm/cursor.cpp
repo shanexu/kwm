@@ -39,18 +39,6 @@ IsWindowBelowCursor(ax_window *Window)
     return false;
 }
 
-internal bool
-IsCursorInsideWindow(ax_window *Window, CGPoint Cursor)
-{
-    if(Cursor.x >= Window->Position.x &&
-       Cursor.x <= Window->Position.x + Window->Size.width &&
-       Cursor.y >= Window->Position.y &&
-       Cursor.y <= Window->Position.y + Window->Size.height)
-        return true;
-
-    return false;
-}
-
 EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
 {
     FocusWindowBelowCursor();
@@ -76,7 +64,7 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
         DragMoveWindow = false;
 
         ax_window *FocusedWindow = FocusedApplication->Focus;
-        if(!FocusedWindow || !MarkedWindow)
+        if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
         {
             ClearMarkedWindow();
             return;
@@ -116,14 +104,11 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
             FocusedWindow = FocusedApplication->Focus;
 
         if((FocusedWindow) &&
-           (IsCursorInsideWindow(FocusedWindow, *Cursor)))
+           (AXLibHasFlags(FocusedWindow, AXWindow_Floating)))
         {
-            if(AXLibHasFlags(FocusedWindow, AXWindow_Floating))
-            {
-                double X = Cursor->x - FocusedWindow->Size.width / 2;
-                double Y = Cursor->y - FocusedWindow->Size.height / 2;
-                AXLibSetWindowPosition(FocusedWindow->Ref, X, Y);
-            }
+            double X = Cursor->x - FocusedWindow->Size.width / 2;
+            double Y = Cursor->y - FocusedWindow->Size.height / 2;
+            AXLibSetWindowPosition(FocusedWindow->Ref, X, Y);
         }
         else
         {
