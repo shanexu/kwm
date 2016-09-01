@@ -7,6 +7,8 @@
 #include "border.h"
 #include "config.h"
 #include "axlib/axlib.h"
+#include "node.h"
+#include "tree.h"
 #include <getopt.h>
 
 #define internal static
@@ -25,6 +27,8 @@ kwm_hotkeys KWMHotkeys = {};
 kwm_border FocusedBorder = {};
 kwm_border MarkedBorder = {};
 scratchpad Scratchpad = {};
+
+internal bool DragMoveWindow = false;
 
 internal CGEventRef
 CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void *Refcon)
@@ -62,9 +66,57 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
             if(KWMSettings.Focus == FocusModeAutoraise)
                 AXLibConstructEvent(AXEvent_MouseMoved, NULL, false);
         } break;
+        case kCGEventLeftMouseDown:
+        {
+            /* TODO(koekeishiya): This is only proof of concept code for
+             * use of mouse-drag to swap windows. */
+
+            /* TODO(koekeishiya): Allow customizatino of modifier instead of hardcoding Shift. */
+            CGEventFlags Flags = CGEventGetFlags(Event);
+            if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
+            {
+
+                DragMoveWindow = true;
+                return NULL;
+            }
+        }
+        case kCGEventLeftMouseUp:
+        {
+            /* TODO(koekeishiya): This is only proof of concept code for
+             * use of mouse-drag to swap windows. */
+            if(DragMoveWindow)
+            {
+                DragMoveWindow = false;
+                uint32_t WindowID = AXLibGetWindowBelowCursor();
+                if(WindowID == 0)
+                    return NULL;
+
+                ax_window *FocusedWindow = FocusedApplication->Focus;
+                if(!FocusedWindow)
+                    return NULL;
+
+                ax_display *Display = AXLibWindowDisplay(FocusedWindow);
+                if(!Display)
+                    return NULL;
+
+                space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+                tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
+                if(TreeNode)
+                {
+                    tree_node *NewFocusNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, WindowID);
+                    if(NewFocusNode)
+                    {
+                        SwapNodeWindowIDs(TreeNode, NewFocusNode);
+                    }
+                }
+
+                return NULL;
+            }
+        }
         default: {} break;
     }
 
+    printf("Return event.\n");
     return Event;
 }
 
@@ -240,7 +292,9 @@ internal inline void
 ConfigureRunLoop()
 {
     KWMMach.EventMask = ((1 << kCGEventKeyDown) |
-                         (1 << kCGEventMouseMoved));
+                         (1 << kCGEventMouseMoved) |
+                         (1 << kCGEventLeftMouseDown) |
+                         (1 << kCGEventLeftMouseUp));
 
     KWMMach.EventTap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionDefault, KWMMach.EventMask, CGEventCallback, NULL);
     if(!KWMMach.EventTap || !CGEventTapIsEnabled(KWMMach.EventTap))
