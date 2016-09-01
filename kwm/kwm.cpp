@@ -91,12 +91,9 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
             if(DragMoveWindow)
             {
                 DragMoveWindow = false;
-                uint32_t WindowID = AXLibGetWindowBelowCursor();
-                if(WindowID == 0)
-                    return NULL;
 
                 ax_window *FocusedWindow = FocusedApplication->Focus;
-                if(!FocusedWindow)
+                if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
                     return NULL;
 
                 ax_display *Display = AXLibWindowDisplay(FocusedWindow);
@@ -107,14 +104,33 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
                 tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
                 if(TreeNode)
                 {
-                    tree_node *NewFocusNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, WindowID);
+                    tree_node *NewFocusNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, MarkedWindow->ID);
                     if(NewFocusNode)
                     {
                         SwapNodeWindowIDs(TreeNode, NewFocusNode);
                     }
                 }
 
+                ClearMarkedWindow();
                 return NULL;
+            }
+        } break;
+        case kCGEventLeftMouseDragged:
+        {
+            /* TODO(koekeishiya): This is only proof of concept code for
+             * use of mouse-drag to swap windows. */
+            if(DragMoveWindow)
+            {
+                uint32_t WindowID = AXLibGetWindowBelowCursor();
+                if(WindowID != 0)
+                {
+                    ax_window *Window = GetWindowByID(WindowID);
+                    if(Window)
+                    {
+                        MarkedWindow = Window;
+                        UpdateBorder(&MarkedBorder, MarkedWindow);
+                    }
+                }
             }
         } break;
         default: {} break;
@@ -296,6 +312,7 @@ ConfigureRunLoop()
 {
     KWMMach.EventMask = ((1 << kCGEventKeyDown) |
                          (1 << kCGEventMouseMoved) |
+                         (1 << kCGEventLeftMouseDragged) |
                          (1 << kCGEventLeftMouseDown) |
                          (1 << kCGEventLeftMouseUp));
 
