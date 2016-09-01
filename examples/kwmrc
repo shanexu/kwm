@@ -80,6 +80,13 @@ kwmc config center-on-float on
    of the focused window */
 kwmc config mouse-follows-focus on
 
+/* Allows a window to be moved by dragging,
+   when a modifier key and left-click is held down. */
+kwmc config mouse-drag off
+
+/* The modifier keys to be held down to initiate mouse-drag */
+kwmc config mouse-drag mod shift+ctrl
+
 // Allow window focus to wrap-around
 kwmc config cycle-focus on
 
