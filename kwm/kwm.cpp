@@ -133,8 +133,18 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
                     ax_window *Window = GetWindowByID(WindowID);
                     if(Window)
                     {
-                        MarkedWindow = Window;
-                        UpdateBorder(&MarkedBorder, MarkedWindow);
+                        if(AXLibHasFlags(Window, AXWindow_Floating))
+                        {
+                            CGPoint Cursor = CGEventGetLocation(Event);
+                            double X = Cursor.x - Window->Size.width / 2;
+                            double Y = Cursor.y - Window->Size.height / 2;
+                            AXLibSetWindowPosition(Window->Ref, X, Y);
+                        }
+                        else
+                        {
+                            MarkedWindow = Window;
+                            UpdateBorder(&MarkedBorder, MarkedWindow);
+                        }
                     }
                 }
             }
