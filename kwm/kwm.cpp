@@ -83,7 +83,7 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
                     return NULL;
                 }
             }
-        }
+        } break;
         case kCGEventLeftMouseUp:
         {
             /* TODO(koekeishiya): This is only proof of concept code for
@@ -116,7 +116,7 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
 
                 return NULL;
             }
-        }
+        } break;
         default: {} break;
     }
 
