@@ -1,16 +1,20 @@
 #include "cursor.h"
-#include "axlib/axlib.h"
+#include "window.h"
+#include "node.h"
+#include "tree.h"
 #include "space.h"
+#include "border.h"
+#include "axlib/axlib.h"
 
 #define internal static
+extern std::map<std::string, space_info> WindowTree;
 extern ax_state AXState;
 extern ax_application *FocusedApplication;
+extern ax_window *MarkedWindow;
 extern kwm_settings KWMSettings;
+extern kwm_border MarkedBorder;
 
-EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
-{
-    FocusWindowBelowCursor();
-}
+internal bool DragMoveWindow = false;
 
 internal inline CGPoint
 GetCursorPos()
@@ -22,7 +26,8 @@ GetCursorPos()
     return Cursor;
 }
 
-bool IsWindowBelowCursor(ax_window *Window)
+internal bool
+IsWindowBelowCursor(ax_window *Window)
 {
     CGPoint Cursor = GetCursorPos();
     if(Cursor.x >= Window->Position.x &&
@@ -32,6 +37,90 @@ bool IsWindowBelowCursor(ax_window *Window)
         return true;
 
     return false;
+}
+
+EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
+{
+    FocusWindowBelowCursor();
+}
+
+EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown)
+{
+    DEBUG("AXEvent_LeftMouseDown");
+    if((FocusedApplication && FocusedApplication->Focus) &&
+        IsWindowBelowCursor(FocusedApplication->Focus))
+    {
+        DragMoveWindow = true;
+    }
+}
+
+EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
+{
+    /* TODO(koekeishiya): Can we simplify some of the error checking going on (?) */
+    DEBUG("AXEvent_LeftMouseUp");
+
+    if(DragMoveWindow)
+    {
+        DragMoveWindow = false;
+
+        ax_window *FocusedWindow = FocusedApplication->Focus;
+        if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
+        {
+            ClearMarkedWindow();
+            return;
+        }
+
+        ax_display *Display = AXLibWindowDisplay(FocusedWindow);
+        if(!Display)
+        {
+            ClearMarkedWindow();
+            return;
+        }
+
+        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+        tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
+        if(TreeNode)
+        {
+            tree_node *NewFocusNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, MarkedWindow->ID);
+            if(NewFocusNode)
+            {
+                SwapNodeWindowIDs(TreeNode, NewFocusNode);
+            }
+        }
+
+        ClearMarkedWindow();
+    }
+}
+
+EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
+{
+    DEBUG("AXEvent_LeftMouseDragged");
+    CGPoint *Cursor = (CGPoint *) Event->Context;
+
+    if(DragMoveWindow)
+    {
+        uint32_t WindowID = AXLibGetWindowBelowCursor();
+        if(WindowID != 0)
+        {
+            ax_window *Window = GetWindowByID(WindowID);
+            if(Window)
+            {
+                if(AXLibHasFlags(Window, AXWindow_Floating))
+                {
+                    double X = Cursor->x - Window->Size.width / 2;
+                    double Y = Cursor->y - Window->Size.height / 2;
+                    AXLibSetWindowPosition(Window->Ref, X, Y);
+                }
+                else
+                {
+                    MarkedWindow = Window;
+                    UpdateBorder(&MarkedBorder, MarkedWindow);
+                }
+            }
+        }
+    }
+
+    free(Cursor);
 }
 
 void MoveCursorToCenterOfWindow(ax_window *Window)

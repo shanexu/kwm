@@ -7,9 +7,6 @@
 #include "border.h"
 #include "config.h"
 #include "axlib/axlib.h"
-#include "node.h"
-#include "tree.h"
-#include "cursor.h"
 #include <getopt.h>
 
 #define internal static
@@ -28,8 +25,6 @@ kwm_hotkeys KWMHotkeys = {};
 kwm_border FocusedBorder = {};
 kwm_border MarkedBorder = {};
 scratchpad Scratchpad = {};
-
-internal bool DragMoveWindow = false;
 
 internal CGEventRef
 CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void *Refcon)
@@ -69,85 +64,23 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         } break;
         case kCGEventLeftMouseDown:
         {
-            /* TODO(koekeishiya): This is only proof of concept code for
-             * use of mouse-drag to swap windows. */
-
-            /* TODO(koekeishiya): Allow customizatino of modifier instead of hardcoding Shift. */
+            /* TODO(koekeishiya): Allow customization of modifier instead of hardcoding Shift. */
             CGEventFlags Flags = CGEventGetFlags(Event);
             if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
             {
-                if((FocusedApplication && FocusedApplication->Focus) &&
-                    IsWindowBelowCursor(FocusedApplication->Focus))
-                {
-                    DragMoveWindow = true;
-                    return NULL;
-                }
+                AXLibConstructEvent(AXEvent_LeftMouseDown, NULL, false);
+                return NULL;
             }
         } break;
         case kCGEventLeftMouseUp:
         {
-            /* TODO(koekeishiya): This is only proof of concept code for
-             * use of mouse-drag to swap windows. */
-            if(DragMoveWindow)
-            {
-                DragMoveWindow = false;
-
-                ax_window *FocusedWindow = FocusedApplication->Focus;
-                if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
-                {
-                    ClearMarkedWindow();
-                    return NULL;
-                }
-
-                ax_display *Display = AXLibWindowDisplay(FocusedWindow);
-                if(!Display)
-                {
-                    ClearMarkedWindow();
-                    return NULL;
-                }
-
-                space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
-                tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
-                if(TreeNode)
-                {
-                    tree_node *NewFocusNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, MarkedWindow->ID);
-                    if(NewFocusNode)
-                    {
-                        SwapNodeWindowIDs(TreeNode, NewFocusNode);
-                    }
-                }
-
-                ClearMarkedWindow();
-                return NULL;
-            }
+            AXLibConstructEvent(AXEvent_LeftMouseUp, NULL, false);
         } break;
         case kCGEventLeftMouseDragged:
         {
-            /* TODO(koekeishiya): This is only proof of concept code for
-             * use of mouse-drag to swap windows. */
-            if(DragMoveWindow)
-            {
-                uint32_t WindowID = AXLibGetWindowBelowCursor();
-                if(WindowID != 0)
-                {
-                    ax_window *Window = GetWindowByID(WindowID);
-                    if(Window)
-                    {
-                        if(AXLibHasFlags(Window, AXWindow_Floating))
-                        {
-                            CGPoint Cursor = CGEventGetLocation(Event);
-                            double X = Cursor.x - Window->Size.width / 2;
-                            double Y = Cursor.y - Window->Size.height / 2;
-                            AXLibSetWindowPosition(Window->Ref, X, Y);
-                        }
-                        else
-                        {
-                            MarkedWindow = Window;
-                            UpdateBorder(&MarkedBorder, MarkedWindow);
-                        }
-                    }
-                }
-            }
+            CGPoint *Cursor = (CGPoint *) malloc(sizeof(CGPoint));
+            *Cursor = CGEventGetLocation(Event);
+            AXLibConstructEvent(AXEvent_LeftMouseDragged, Cursor, false);
         } break;
         default: {} break;
     }
