@@ -22,8 +22,7 @@ GetCursorPos()
     return Cursor;
 }
 
-internal inline bool
-IsWindowBelowCursor(ax_window *Window)
+bool IsWindowBelowCursor(ax_window *Window)
 {
     CGPoint Cursor = GetCursorPos();
     if(Cursor.x >= Window->Position.x &&
