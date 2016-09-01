@@ -94,11 +94,17 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
 
                 ax_window *FocusedWindow = FocusedApplication->Focus;
                 if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
+                {
+                    ClearMarkedWindow();
                     return NULL;
+                }
 
                 ax_display *Display = AXLibWindowDisplay(FocusedWindow);
                 if(!Display)
+                {
+                    ClearMarkedWindow();
                     return NULL;
+                }
 
                 space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
                 tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
