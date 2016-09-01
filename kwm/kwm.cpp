@@ -9,6 +9,7 @@
 #include "axlib/axlib.h"
 #include "node.h"
 #include "tree.h"
+#include "cursor.h"
 #include <getopt.h>
 
 #define internal static
@@ -75,9 +76,12 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
             CGEventFlags Flags = CGEventGetFlags(Event);
             if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
             {
-
-                DragMoveWindow = true;
-                return NULL;
+                if((FocusedApplication && FocusedApplication->Focus) &&
+                    IsWindowBelowCursor(FocusedApplication->Focus))
+                {
+                    DragMoveWindow = true;
+                    return NULL;
+                }
             }
         }
         case kCGEventLeftMouseUp:
