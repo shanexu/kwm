@@ -46,12 +46,14 @@ enum hotkey_modifier_flag
 };
 
 bool HotkeyForCGEvent(CGEventRef Event, hotkey *Hotkey);
+bool MouseDragKeyMatchesCGEvent(CGEventRef Event);
 
 void KwmAddHotkey(std::string KeySym, std::string Command, bool Passthrough, bool KeycodeInHex);
 void KwmRemoveHotkey(std::string KeySym, bool KeycodeInHex);
 bool HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode);
 void KwmEmitKeystrokes(std::string Text);
 void KwmEmitKeystroke(std::string KeySym);
+void KwmSetMouseDragKey(std::string KeySym);
 
 mode *GetBindingMode(std::string Mode);
 void KwmActivateBindingMode(std::string Mode);

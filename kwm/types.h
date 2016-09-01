@@ -308,6 +308,7 @@ struct kwm_border
 struct kwm_hotkeys
 {
     std::map<std::string, mode> Modes;
+    hotkey MouseDragKey;
     mode *ActiveMode;
 };
 

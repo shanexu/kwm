@@ -354,15 +354,10 @@ DetermineHotkeyState(hotkey *Hotkey, std::string &Command)
         Hotkey->State = HotkeyStateNone;
 }
 
-internal bool
-KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Passthrough, bool KeycodeInHex)
+internal void
+KwmParseHotkeyModifiers(hotkey *Hotkey, std::string KeySym)
 {
-    std::vector<std::string> KeyTokens = SplitString(KeySym, '-');
-    if(KeyTokens.size() != 2)
-        return false;
-
-    Hotkey->Mode = "default";
-    std::vector<std::string> Modifiers = SplitString(KeyTokens[0], '+');
+    std::vector<std::string> Modifiers = SplitString(KeySym, '+');
     for(std::size_t ModIndex = 0; ModIndex < Modifiers.size(); ++ModIndex)
     {
         if(Modifiers[ModIndex] == "cmd")
@@ -388,7 +383,17 @@ KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Pas
         else
             Hotkey->Mode = Modifiers[ModIndex];
     }
+}
 
+internal bool
+KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Passthrough, bool KeycodeInHex)
+{
+    std::vector<std::string> KeyTokens = SplitString(KeySym, '-');
+    if(KeyTokens.size() != 2)
+        return false;
+
+    Hotkey->Mode = "default";
+    KwmParseHotkeyModifiers(Hotkey, KeyTokens[0]);
     DetermineHotkeyState(Hotkey, Command);
     Hotkey->Command = Command;
     if(Passthrough)
@@ -411,6 +416,11 @@ KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Pas
 
     Hotkey->Key = Keycode;
     return Result;
+}
+
+void KwmSetMouseDragKey(std::string KeySym)
+{
+    KwmParseHotkeyModifiers(&KWMHotkeys.MouseDragKey, KeySym);
 }
 
 void KwmAddHotkey(std::string KeySym, std::string Command, bool Passthrough, bool KeycodeInHex)
@@ -470,7 +480,8 @@ void KwmActivateBindingMode(std::string Mode)
     }
 }
 
-bool HotkeyForCGEvent(CGEventRef Event, hotkey *Hotkey)
+internal hotkey
+CreateHotkeyFromCGEvent(CGEventRef Event)
 {
     hotkey Eventkey = {};
     CGEventFlags Flags = CGEventGetFlags(Event);
@@ -509,7 +520,22 @@ bool HotkeyForCGEvent(CGEventRef Event, hotkey *Hotkey)
         AddFlags(&Eventkey, Hotkey_Modifier_Flag_Control);
 
     Eventkey.Key = (CGKeyCode)CGEventGetIntegerValueField(Event, kCGKeyboardEventKeycode);
+    return Eventkey;
+}
+
+bool HotkeyForCGEvent(CGEventRef Event, hotkey *Hotkey)
+{
+    hotkey Eventkey = CreateHotkeyFromCGEvent(Event);
     return HotkeyExists(Eventkey.Flags, Eventkey.Key, Hotkey, KWMHotkeys.ActiveMode->Name);
+}
+
+bool MouseDragKeyMatchesCGEvent(CGEventRef Event)
+{
+    hotkey Eventkey = CreateHotkeyFromCGEvent(Event);
+    return (CompareCmdKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
+            CompareShiftKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
+            CompareAltKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
+            CompareControlKey(&KWMHotkeys.MouseDragKey, &Eventkey));
 }
 
 bool HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode)

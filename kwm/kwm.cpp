@@ -64,11 +64,9 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         } break;
         case kCGEventLeftMouseDown:
         {
-            /* TODO(koekeishiya): Allow customization of modifier instead of hardcoding Shift. */
             if(HasFlags(&KWMSettings, Settings_MouseDrag))
             {
-                CGEventFlags Flags = CGEventGetFlags(Event);
-                if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
+                if(MouseDragKeyMatchesCGEvent(Event))
                 {
                     AXLibConstructEvent(AXEvent_LeftMouseDown, NULL, false);
                     return NULL;
@@ -190,8 +188,7 @@ KwmInit()
             Settings_BuiltinHotkeys |
             Settings_StandbyOnFloat |
             Settings_CenterOnFloat |
-            Settings_LockToContainer |
-            Settings_MouseDrag);
+            Settings_LockToContainer);
 
     KWMSettings.Space = SpaceModeBSP;
     KWMSettings.Focus = FocusModeAutoraise;

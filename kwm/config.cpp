@@ -175,6 +175,8 @@ KwmParseConfigOptionMouse(tokenizer *Tokenizer)
                 KwmInterpretCommand("config mouse-drag on", 0);
             else if(TokenEquals(Token, "off"))
                 KwmInterpretCommand("config mouse-drag off", 0);
+            else if(TokenEquals(Token, "mod"))
+                KwmInterpretCommand("config mouse-drag mod " + GetTextTilEndOfLine(Tokenizer), 0);
             else
                 ReportInvalidCommand("Unknown command 'config mouse-drag " + std::string(Token.Text, Token.TextLength) + "'");
         }

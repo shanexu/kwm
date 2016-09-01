@@ -239,6 +239,8 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
             ClearFlags(&KWMSettings, Settings_MouseDrag);
         else if(Tokens[2] == "on")
             AddFlags(&KWMSettings, Settings_MouseDrag);
+        else if(Tokens[2] == "mod")
+            KwmSetMouseDragKey(Tokens[3]);
     }
     else if(Tokens[1] == "standby-on-float")
     {
