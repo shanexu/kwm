@@ -233,6 +233,13 @@ KwmConfigCommand(std::vector<std::string> &Tokens)
         else if(Tokens[2] == "on")
             AddFlags(&KWMSettings, Settings_MouseFollowsFocus);
     }
+    else if(Tokens[1] == "mouse-drag")
+    {
+        if(Tokens[2] == "off")
+            ClearFlags(&KWMSettings, Settings_MouseDrag);
+        else if(Tokens[2] == "on")
+            AddFlags(&KWMSettings, Settings_MouseDrag);
+    }
     else if(Tokens[1] == "standby-on-float")
     {
         if(Tokens[2] == "off")

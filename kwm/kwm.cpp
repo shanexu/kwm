@@ -65,22 +65,29 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         case kCGEventLeftMouseDown:
         {
             /* TODO(koekeishiya): Allow customization of modifier instead of hardcoding Shift. */
-            CGEventFlags Flags = CGEventGetFlags(Event);
-            if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
+            if(HasFlags(&KWMSettings, Settings_MouseDrag))
             {
-                AXLibConstructEvent(AXEvent_LeftMouseDown, NULL, false);
-                return NULL;
+                CGEventFlags Flags = CGEventGetFlags(Event);
+                if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
+                {
+                    AXLibConstructEvent(AXEvent_LeftMouseDown, NULL, false);
+                    return NULL;
+                }
             }
         } break;
         case kCGEventLeftMouseUp:
         {
-            AXLibConstructEvent(AXEvent_LeftMouseUp, NULL, false);
+            if(HasFlags(&KWMSettings, Settings_MouseDrag))
+                AXLibConstructEvent(AXEvent_LeftMouseUp, NULL, false);
         } break;
         case kCGEventLeftMouseDragged:
         {
-            CGPoint *Cursor = (CGPoint *) malloc(sizeof(CGPoint));
-            *Cursor = CGEventGetLocation(Event);
-            AXLibConstructEvent(AXEvent_LeftMouseDragged, Cursor, false);
+            if(HasFlags(&KWMSettings, Settings_MouseDrag))
+            {
+                CGPoint *Cursor = (CGPoint *) malloc(sizeof(CGPoint));
+                *Cursor = CGEventGetLocation(Event);
+                AXLibConstructEvent(AXEvent_LeftMouseDragged, Cursor, false);
+            }
         } break;
         default: {} break;
     }
@@ -183,7 +190,8 @@ KwmInit()
             Settings_BuiltinHotkeys |
             Settings_StandbyOnFloat |
             Settings_CenterOnFloat |
-            Settings_LockToContainer);
+            Settings_LockToContainer |
+            Settings_MouseDrag);
 
     KWMSettings.Space = SpaceModeBSP;
     KWMSettings.Focus = FocusModeAutoraise;

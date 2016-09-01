@@ -144,7 +144,7 @@ KwmParseConfigOptionFocusFollowsMouse(tokenizer *Tokenizer)
 }
 
 internal void
-KwmParseConfigOptionMouseFollowsFocus(tokenizer *Tokenizer)
+KwmParseConfigOptionMouse(tokenizer *Tokenizer)
 {
     if(RequireToken(Tokenizer, Token_Dash))
     {
@@ -167,6 +167,16 @@ KwmParseConfigOptionMouseFollowsFocus(tokenizer *Tokenizer)
                 else
                     ReportInvalidCommand("Unknown command 'config mouse-follows-" + std::string(Token.Text, Token.TextLength) + "'");
             }
+        }
+        else if(TokenEquals(Token, "drag"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "on"))
+                KwmInterpretCommand("config mouse-drag on", 0);
+            else if(TokenEquals(Token, "off"))
+                KwmInterpretCommand("config mouse-drag off", 0);
+            else
+                ReportInvalidCommand("Unknown command 'config mouse-drag " + std::string(Token.Text, Token.TextLength) + "'");
         }
         else
         {
@@ -793,7 +803,7 @@ KwmParseConfigOption(tokenizer *Tokenizer)
             else if(TokenEquals(Token, "focus"))
                 KwmParseConfigOptionFocusFollowsMouse(Tokenizer);
             else if(TokenEquals(Token, "mouse"))
-                KwmParseConfigOptionMouseFollowsFocus(Tokenizer);
+                KwmParseConfigOptionMouse(Tokenizer);
             else if(TokenEquals(Token, "standby"))
                 KwmParseConfigOptionStandbyOnFloat(Tokenizer);
             else if(TokenEquals(Token, "center"))

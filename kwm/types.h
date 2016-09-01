@@ -350,6 +350,7 @@ enum kwm_toggleable
     Settings_SpawnAsLeftChild = (1 << 4),
     Settings_FloatNonResizable = (1 << 5),
     Settings_LockToContainer = (1 << 6),
+    Settings_MouseDrag = (1 << 7),
 };
 
 inline void
