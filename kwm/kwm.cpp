@@ -10,7 +10,7 @@
 #include <getopt.h>
 
 #define internal static
-const char *KwmVersion = "Kwm Version 3.0.7";
+const char *KwmVersion = "Kwm Version 3.1.0";
 std::map<std::string, space_info> WindowTree;
 
 ax_state AXState = {};
