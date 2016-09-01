@@ -234,16 +234,19 @@ uint32_t AXLibGetWindowBelowCursor()
             CFStringRef CFOwner = (CFStringRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowOwnerName"));
             CFStringRef CFName = (CFStringRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowName"));
 
-            if(((CFOwner && (CFStringCompare(CFOwner, CFSTR("Dock"), 0) == kCFCompareEqualTo)) &&
-                (CFName && (CFStringCompare(CFName, CFSTR("LPSpringboard"), 0) == kCFCompareEqualTo))) ||
-                (WindowLayer == CONTEXT_MENU_LAYER))
+            bool IsKwmOverlay = (CFOwner && CFStringCompare(CFOwner, CFSTR("kwm-overlay"), 0) == kCFCompareEqualTo);
+            bool IsDock = (CFOwner && CFStringCompare(CFOwner, CFSTR("Dock"), 0) == kCFCompareEqualTo);
+            bool IsLaunchpad = (CFName && CFStringCompare(CFName, CFSTR("LPSpringboard"), 0) == kCFCompareEqualTo);
+            bool IsDockBar = (CFName && CFStringCompare(CFName, CFSTR("Dock"), 0) == kCFCompareEqualTo);
+
+            if((IsDock && IsDockBar) || (IsKwmOverlay))
+                continue;
+
+            if((IsDock&& IsLaunchpad) || (WindowLayer == CONTEXT_MENU_LAYER))
             {
                 CFRelease(WindowList);
                 return 0;
             }
-
-            if(CFOwner && CFStringCompare(CFOwner, CFSTR("kwm-overlay"), 0) == kCFCompareEqualTo)
-                continue;
 
             if(IsElementBelowCursor(&WindowRect))
             {
