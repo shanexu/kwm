@@ -9,6 +9,7 @@
 #include "sharedworkspace.h"
 #include "event.h"
 #include "carbon.h"
+#include "dock.h"
 
 /*
  * NOTE(koekeishiya):
