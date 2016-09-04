@@ -1155,6 +1155,7 @@ void ToggleWindowFloating(uint32_t WindowID, bool Center)
     if(AXLibHasFlags(Window, AXWindow_Floating))
     {
         AXLibClearFlags(Window, AXWindow_Floating);
+        AXLibSetWindowLevel(Window->ID, kCGNormalWindowLevel);
         TileWindow(Display, Window);
         if((HasFlags(&KWMSettings, Settings_StandbyOnFloat)) &&
            (KWMSettings.Focus != FocusModeDisabled))
@@ -1164,6 +1165,7 @@ void ToggleWindowFloating(uint32_t WindowID, bool Center)
     {
         AXLibAddFlags(Window, AXWindow_Floating);
         RemoveWindowFromNodeTree(Display, Window->ID);
+        AXLibSetWindowLevel(Window->ID, kCGFloatingWindowLevel);
 
         if(Center && HasFlags(&KWMSettings, Settings_CenterOnFloat))
             CenterWindow(Display, Window);
