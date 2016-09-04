@@ -182,9 +182,7 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
                         /* NOTE(koekeishiya): If a window is minimized, the ArrayContains check should fail
                                               if(!AXLibIsWindowMinimized(Window->Ref)) */
 
-                        if((AXLibArrayContains(WindowList, WindowCount, Window->ID)) &&
-                           (AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
-                           (!AXLibHasFlags(Window, AXWindow_Floating)))
+                        if(AXLibArrayContains(WindowList, WindowCount, Window->ID))
                         {
                             Windows.push_back(Window);
                         }
