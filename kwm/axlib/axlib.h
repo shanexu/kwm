@@ -34,6 +34,13 @@
  *        transition occurs on the active monitor.
  * */
 
+
+typedef int CGSConnectionID;
+extern "C" CGSConnectionID _CGSDefaultConnection(void);
+#ifndef CGSDefaultConnection
+#define CGSDefaultConnection _CGSDefaultConnection()
+#endif
+
 struct ax_state
 {
     carbon_event_handler Carbon;
