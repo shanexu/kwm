@@ -146,15 +146,6 @@ void MoveCursorToCenterOfFocusedWindow()
 
 void FocusWindowBelowCursor()
 {
-    ax_application *Application = AXLibGetFocusedApplication();
-    ax_window *FocusedWindow = NULL;
-    if(Application)
-    {
-        FocusedWindow = Application->Focus;
-         if(FocusedWindow && IsWindowBelowCursor(FocusedWindow))
-             return;
-    }
-
     uint32_t WindowID = AXLibGetWindowBelowCursor();
     if(WindowID == 0)
         return;
@@ -171,7 +162,7 @@ void FocusWindowBelowCursor()
             {
                 if(Application == Window->Application)
                 {
-                    if(FocusedWindow != Window)
+                    if(FocusedApplication && FocusedApplication->Focus != Window)
                         AXLibSetFocusedWindow(Window);
                 }
                 else
