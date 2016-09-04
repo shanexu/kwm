@@ -875,6 +875,8 @@ void KwmInterpretCommand(std::string Message, int ClientSockFD)
         KwmScratchpadCommand(Tokens, ClientSockFD);
     else if(Tokens[0] == "whitelist")
         CarbonWhitelistProcess(CreateStringFromTokens(Tokens, 1));
+    else if(Tokens[0] == "alpha")
+        AXLibSetWindowAlpha(FocusedApplication->Focus->ID, ConvertStringToDouble(Tokens[1]));
 
     if(Tokens[0] != "query")
     {
