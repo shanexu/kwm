@@ -280,7 +280,6 @@ ConfigureRunLoop()
 }
 
 #include "axlib/dock.h"
-extern "C" CGError CGSSetWindowAlpha(CGSConnectionID cid, CGWindowID wid, float alpha);
 int main(int argc, char **argv)
 {
     if(ParseArguments(argc, argv))
@@ -319,7 +318,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");
 
     AXLibHijackUniversalOwner(CGSDefaultConnection);
-    CGSSetWindowAlpha(CGSDefaultConnection, FocusedApplication->Focus->ID, 0.5f);
+    AXLibSetWindowAlpha(FocusedApplication->Focus->ID, 0.5f);
+    AXLibSetWindowLevel(FocusedApplication->Focus->ID, kCGFloatingWindowLevel);
 
     ConfigureRunLoop();
     CFRunLoopRun();
