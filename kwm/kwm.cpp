@@ -26,6 +26,8 @@ kwm_border FocusedBorder = {};
 kwm_border MarkedBorder = {};
 scratchpad Scratchpad = {};
 
+internal bool HijackedUniversalOwner = false;
+
 internal CGEventRef
 CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void *Refcon)
 {
@@ -238,6 +240,7 @@ ParseArguments(int argc, char **argv)
     {
         {"version", no_argument, NULL, 'v'},
         {"config", required_argument, NULL, 'c'},
+        {"hijack", no_argument, NULL, 'h'},
         {NULL, 0, NULL, 0}
     };
 
@@ -254,6 +257,15 @@ ParseArguments(int argc, char **argv)
             {
                 DEBUG("Notice: Using config file " << optarg);
                 KWMPath.Config = optarg;
+            } break;
+            case 'h':
+            {
+                NSApplicationLoad();
+                HijackedUniversalOwner = true;
+                if(AXLibHijackUniversalOwner(CGSDefaultConnection))
+                    DEBUG("Hijack succeeded!");
+                else
+                    DEBUG("Hijack failed!\n");
             } break;
         }
     }
@@ -279,13 +291,14 @@ ConfigureRunLoop()
                        kCFRunLoopCommonModes);
 }
 
-#include "axlib/dock.h"
 int main(int argc, char **argv)
 {
     if(ParseArguments(argc, argv))
         return 0;
 
-    NSApplicationLoad();
+    if(!HijackedUniversalOwner)
+        NSApplicationLoad();
+
     if(!AXLibDisplayHasSeparateSpaces())
         Fatal("Error: 'Displays have separate spaces' must be enabled!");
 
@@ -316,10 +329,6 @@ int main(int argc, char **argv)
 
     if(CGSIsSecureEventInputSet())
         fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");
-
-    AXLibHijackUniversalOwner(CGSDefaultConnection);
-    AXLibSetWindowAlpha(FocusedApplication->Focus->ID, 0.5f);
-    AXLibSetWindowLevel(FocusedApplication->Focus->ID, kCGFloatingWindowLevel);
 
     ConfigureRunLoop();
     CFRunLoopRun();
