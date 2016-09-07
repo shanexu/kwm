@@ -421,6 +421,29 @@ KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Pas
     return Result;
 }
 
+internal bool
+HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode)
+{
+    hotkey TempHotkey = {};
+    TempHotkey.Flags = Flags;
+    TempHotkey.Key = Keycode;
+
+    mode *BindingMode = GetBindingMode(Mode);
+    for(std::size_t HotkeyIndex = 0; HotkeyIndex < BindingMode->Hotkeys.size(); ++HotkeyIndex)
+    {
+        hotkey *CheckHotkey = &BindingMode->Hotkeys[HotkeyIndex];
+        if(HotkeysAreEqual(CheckHotkey, &TempHotkey))
+        {
+            if(Hotkey)
+                *Hotkey = *CheckHotkey;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void KwmSetMouseDragKey(std::string KeySym)
 {
     KwmParseHotkeyModifiers(&KWMHotkeys.MouseDragKey, KeySym);
@@ -539,28 +562,6 @@ bool MouseDragKeyMatchesCGEvent(CGEventRef Event)
             CompareShiftKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
             CompareAltKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
             CompareControlKey(&KWMHotkeys.MouseDragKey, &Eventkey));
-}
-
-bool HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode)
-{
-    hotkey TempHotkey = {};
-    TempHotkey.Flags = Flags;
-    TempHotkey.Key = Keycode;
-
-    mode *BindingMode = GetBindingMode(Mode);
-    for(std::size_t HotkeyIndex = 0; HotkeyIndex < BindingMode->Hotkeys.size(); ++HotkeyIndex)
-    {
-        hotkey *CheckHotkey = &BindingMode->Hotkeys[HotkeyIndex];
-        if(HotkeysAreEqual(CheckHotkey, &TempHotkey))
-        {
-            if(Hotkey)
-                *Hotkey = *CheckHotkey;
-
-            return true;
-        }
-    }
-
-    return false;
 }
 
 EVENT_CALLBACK(Callback_AXEvent_HotkeyPressed)
