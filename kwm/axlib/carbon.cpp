@@ -31,7 +31,7 @@ CopyPascalStringToC(ConstStr255Param Source, char *Destination)
 internal void
 CarbonApplicationLaunched(ProcessSerialNumber PSN)
 {
-    Str255 ProcessName;
+    Str255 ProcessName = {};
     ProcessInfoRec ProcessInfo = {};
     ProcessInfo.processInfoLength = sizeof(ProcessInfoRec);
     ProcessInfo.processName = ProcessName;
