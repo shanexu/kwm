@@ -1,7 +1,44 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
-#include "types.h"
+#include <string>
+
+enum token_type
+{
+    Token_Colon,
+    Token_SemiColon,
+    Token_Equals,
+    Token_Dash,
+
+    Token_OpenParen,
+    Token_CloseParen,
+    Token_OpenBracket,
+    Token_CloseBracket,
+    Token_OpenBrace,
+    Token_CloseBrace,
+
+    Token_Identifier,
+    Token_String,
+    Token_Digit,
+    Token_Comment,
+    Token_Hex,
+
+    Token_EndOfStream,
+    Token_Unknown,
+};
+
+struct token
+{
+    token_type Type;
+
+    int TextLength;
+    char *Text;
+};
+
+struct tokenizer
+{
+    char *At;
+};
 
 inline bool
 IsDot(char C)
@@ -70,7 +107,6 @@ TokenEquals(token Token, const char *Match)
 
 std::string GetTextTilEndOfLine(tokenizer *Tokenizer);
 token GetToken(tokenizer *Tokenizer);
-void EatAllWhiteSpace(tokenizer *Tokenizer);
 bool RequireToken(tokenizer *Tokenizer, token_type DesiredType);
 
 #endif

@@ -25,8 +25,6 @@
 #include <sys/types.h>
 #include <time.h>
 
-struct token;
-struct tokenizer;
 struct space_identifier;
 struct color;
 struct mode;
@@ -120,43 +118,6 @@ enum hotkey_state
     HotkeyStateNone,
     HotkeyStateInclude,
     HotkeyStateExclude
-};
-
-enum token_type
-{
-    Token_Colon,
-    Token_SemiColon,
-    Token_Equals,
-    Token_Dash,
-
-    Token_OpenParen,
-    Token_CloseParen,
-    Token_OpenBracket,
-    Token_CloseBracket,
-    Token_OpenBrace,
-    Token_CloseBrace,
-
-    Token_Identifier,
-    Token_String,
-    Token_Digit,
-    Token_Comment,
-    Token_Hex,
-
-    Token_EndOfStream,
-    Token_Unknown,
-};
-
-struct token
-{
-    token_type Type;
-
-    int TextLength;
-    char *Text;
-};
-
-struct tokenizer
-{
-    char *At;
 };
 
 struct space_identifier

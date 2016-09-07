@@ -1,6 +1,9 @@
 #include "tokenizer.h"
 
-void EatAllWhiteSpace(tokenizer *Tokenizer)
+#define internal static
+
+internal inline void
+EatAllWhiteSpace(tokenizer *Tokenizer)
 {
     while(Tokenizer->At[0])
     {
