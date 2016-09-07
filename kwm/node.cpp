@@ -5,6 +5,8 @@
 #include "window.h"
 #include "axlib/axlib.h"
 
+#define internal static
+
 extern std::map<std::string, space_info> WindowTree;
 extern ax_application *FocusedApplication;
 extern kwm_settings KWMSettings;
@@ -382,6 +384,58 @@ void ModifyContainerSplitRatio(double Offset)
     }
 }
 
+internal inline bool
+IsLeftChildInSubTree(tree_node *Root, tree_node *Target)
+{
+    bool Result = ((Root->LeftChild == Target) ||
+                   (Root->RightChild == Target)) ||
+                   (Root->LeftChild && IsLeftChildInSubTree(Root->LeftChild, Target)) ||
+                   (Root->RightChild && IsLeftChildInSubTree(Root->RightChild, Target));
+
+    return Result;
+}
+
+internal tree_node *
+FindLowestCommonAncestor(tree_node *A, tree_node *B)
+{
+    if(!A || !B)
+        return NULL;
+
+    std::stack<tree_node*> PathToRootFromA;
+    std::stack<tree_node*> PathToRootFromB;
+
+    tree_node *PathA = A;
+    while(PathA->Parent)
+    {
+        PathToRootFromA.push(PathA->Parent);
+        PathA = PathA->Parent;
+    }
+
+    tree_node *PathB = B;
+    while(PathB->Parent)
+    {
+        PathToRootFromB.push(PathB->Parent);
+        PathB = PathB->Parent;
+    }
+
+    tree_node *LCA = NULL;
+    while(!PathToRootFromA.empty() && !PathToRootFromB.empty())
+    {
+        tree_node *RootA = PathToRootFromA.top();
+        PathToRootFromA.pop();
+
+        tree_node *RootB = PathToRootFromB.top();
+        PathToRootFromB.pop();
+
+        if(RootA == RootB)
+            LCA = RootA;
+        else
+            break;
+    }
+
+    return LCA;
+}
+
 void ModifyContainerSplitRatio(double Offset, int Degrees)
 {
     if(!FocusedApplication)
@@ -424,54 +478,4 @@ void ModifyContainerSplitRatio(double Offset, int Degrees)
             }
         }
     }
-}
-
-bool IsLeftChildInSubTree(tree_node *Root, tree_node *Target)
-{
-    bool Result = ((Root->LeftChild == Target) ||
-                   (Root->RightChild == Target)) ||
-                   (Root->LeftChild && IsLeftChildInSubTree(Root->LeftChild, Target)) ||
-                   (Root->RightChild && IsLeftChildInSubTree(Root->RightChild, Target));
-
-    return Result;
-}
-
-tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B)
-{
-    if(!A || !B)
-        return NULL;
-
-    std::stack<tree_node*> PathToRootFromA;
-    std::stack<tree_node*> PathToRootFromB;
-
-    tree_node *PathA = A;
-    while(PathA->Parent)
-    {
-        PathToRootFromA.push(PathA->Parent);
-        PathA = PathA->Parent;
-    }
-
-    tree_node *PathB = B;
-    while(PathB->Parent)
-    {
-        PathToRootFromB.push(PathB->Parent);
-        PathB = PathB->Parent;
-    }
-
-    tree_node *LCA = NULL;
-    while(!PathToRootFromA.empty() && !PathToRootFromB.empty())
-    {
-        tree_node *RootA = PathToRootFromA.top();
-        PathToRootFromA.pop();
-
-        tree_node *RootB = PathToRootFromB.top();
-        PathToRootFromB.pop();
-
-        if(RootA == RootB)
-            LCA = RootA;
-        else
-            break;
-    }
-
-    return LCA;
 }
