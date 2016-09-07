@@ -107,6 +107,7 @@ void MoveWindowToDisplay(ax_window *Window, int Shift, bool Relative)
 
     if(NewDisplay && NewDisplay != Display)
     {
+        space_info *TargetSpaceInfo = &WindowTree[NewDisplay->Space->Identifier];
         if(AXLibHasFlags(Window, AXWindow_Floating))
         {
             CenterWindow(NewDisplay, Window);
@@ -114,7 +115,10 @@ void MoveWindowToDisplay(ax_window *Window, int Shift, bool Relative)
         else
         {
             RemoveWindowFromNodeTree(Display, Window->ID);
-            AddWindowToInactiveNodeTree(NewDisplay, Window->ID);
+            if(TargetSpaceInfo->Settings.Mode == SpaceModeFloating)
+                CenterWindow(NewDisplay, Window);
+            else
+                AddWindowToInactiveNodeTree(NewDisplay, Window->ID);
         }
     }
 }
