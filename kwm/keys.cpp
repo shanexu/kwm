@@ -11,6 +11,9 @@ extern ax_application *FocusedApplication;
 extern kwm_hotkeys KWMHotkeys;
 extern kwm_border FocusedBorder;
 
+internal const char *Shell = "/bin/bash";
+internal const char *ShellArgs = "-c";
+
 internal inline bool
 HasFlags(hotkey *Hotkey, uint32_t Flag)
 {
@@ -658,17 +661,8 @@ void KwmExecuteSystemCommand(std::string Command)
     if(ChildPID == 0)
     {
         DEBUG("Exec: FORK SUCCESS");
-        std::vector<std::string> Tokens = SplitString(Command, ' ');
-
-        const char *ExecArgs[Tokens.size()+1];
-        for(int Index = 0; Index < Tokens.size(); ++Index)
-        {
-            ExecArgs[Index] = Tokens[Index].c_str();
-            DEBUG("Exec argument " << Index << ": " << ExecArgs[Index]);
-        }
-
-        ExecArgs[Tokens.size()] = NULL;
-        int StatusCode = execvp(ExecArgs[0], (char **)ExecArgs);
+        char *Exec[] = { (char *) Shell, (char *) ShellArgs, (char *) Command.c_str(), NULL};
+        int StatusCode = execvp(Exec[0], Exec);
         DEBUG("Exec failed with code: " << StatusCode);
         exit(StatusCode);
     }
