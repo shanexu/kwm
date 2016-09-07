@@ -26,7 +26,7 @@ all: $(BINS)
 
 # The 'install' target forces a rebuild from clean with the DEBUG_BUILD
 # variable clear so that we don't emit debug log messages.
-install: BUILD_FLAGS=-O2
+install: BUILD_FLAGS=-O2 -Wno-deprecated
 install: DEBUG_BUILD=
 install: clean $(BINS)
 
