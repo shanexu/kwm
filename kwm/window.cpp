@@ -695,29 +695,6 @@ IsWindowInTree(space_info *SpaceInfo, uint32_t WindowID)
     return std::find(WindowIDs.begin(), WindowIDs.end(), WindowID) != WindowIDs.end();
 }
 
-/* TODO(koekeishiya): Fix how these settings are stored. */
-internal void
-LoadSpaceSettings(ax_display *Display, space_info *SpaceInfo)
-{
-    int DesktopID = AXLibDesktopIDFromCGSSpaceID(Display, Display->Space->ID);
-
-    /* NOTE(koekeishiya): Load global default display settings. */
-    SpaceInfo->Settings.Offset = KWMSettings.DefaultOffset;
-    SpaceInfo->Settings.Mode = SpaceModeDefault;
-    SpaceInfo->Settings.Layout = "";
-    SpaceInfo->Settings.Name = "";
-
-    /* NOTE(koekeishiya): The space in question may have overloaded settings. */
-    space_settings *SpaceSettings = NULL;
-    if((SpaceSettings = GetSpaceSettingsForDesktopID(Display->ArrangementID, DesktopID)))
-        SpaceInfo->Settings = *SpaceSettings;
-    else if((SpaceSettings = GetSpaceSettingsForDisplay(Display->ArrangementID)))
-        SpaceInfo->Settings = *SpaceSettings;
-
-    if(SpaceInfo->Settings.Mode == SpaceModeDefault)
-        SpaceInfo->Settings.Mode = KWMSettings.Space;
-}
-
 internal void
 AddWindowToBSPTree(ax_display *Display, space_info *SpaceInfo, uint32_t WindowID)
 {

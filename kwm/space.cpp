@@ -105,6 +105,27 @@ space_settings *GetSpaceSettingsForDesktopID(int ScreenID, int DesktopID)
         return NULL;
 }
 
+void LoadSpaceSettings(ax_display *Display, space_info *SpaceInfo)
+{
+    int DesktopID = AXLibDesktopIDFromCGSSpaceID(Display, Display->Space->ID);
+
+    /* NOTE(koekeishiya): Load global default display settings. */
+    SpaceInfo->Settings.Offset = KWMSettings.DefaultOffset;
+    SpaceInfo->Settings.Mode = SpaceModeDefault;
+    SpaceInfo->Settings.Layout = "";
+    SpaceInfo->Settings.Name = "";
+
+    /* NOTE(koekeishiya): The space in question may have overloaded settings. */
+    space_settings *SpaceSettings = NULL;
+    if((SpaceSettings = GetSpaceSettingsForDesktopID(Display->ArrangementID, DesktopID)))
+        SpaceInfo->Settings = *SpaceSettings;
+    else if((SpaceSettings = GetSpaceSettingsForDisplay(Display->ArrangementID)))
+        SpaceInfo->Settings = *SpaceSettings;
+
+    if(SpaceInfo->Settings.Mode == SpaceModeDefault)
+        SpaceInfo->Settings.Mode = KWMSettings.Space;
+}
+
 int GetSpaceFromName(ax_display *Display, std::string Name)
 {
     std::map<CGSSpaceID, ax_space>::iterator It;

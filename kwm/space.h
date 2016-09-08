@@ -9,6 +9,7 @@ void GetTagForCurrentSpace(std::string &Tag);
 
 void GoToPreviousSpace(bool MoveFocusedWindow);
 space_settings *GetSpaceSettingsForDesktopID(int ScreenID, int DesktopID);
+void LoadSpaceSettings(ax_display *Display, space_info *SpaceInfo);
 int GetSpaceFromName(ax_display *Display, std::string Name);
 void SetNameOfActiveSpace(ax_display *Display, std::string Name);
 std::string GetNameOfSpace(ax_display *Display, ax_space *Space);
