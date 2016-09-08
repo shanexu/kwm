@@ -49,7 +49,13 @@ void GetTagForMonocleSpace(space_info *Space, std::string &Tag)
 
 void GetTagForCurrentSpace(std::string &Tag)
 {
-    ax_display *Display = AXLibMainDisplay();
+    ax_display *Display = NULL;
+    if(FocusedApplication && FocusedApplication->Focus)
+        Display = AXLibWindowDisplay(FocusedApplication->Focus);
+
+    if(!Display)
+        Display = AXLibMainDisplay();
+
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(SpaceInfo->Initialized)
     {
