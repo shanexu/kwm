@@ -311,7 +311,13 @@ int main(int argc, char **argv)
     KwmExecuteInitScript();
 
     CreateWindowNodeTree(MainDisplay);
-    UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
+
+    /* TODO(koekeishiya): Probably want to defer this to run at some point where we know that
+     * the focused application is set. This is usually the case as 'Finder' is always reported
+     * as the active application when nothing is running. The following behaviour requries
+     * refinement, because we will (sometimes ?) get NULL when started by launchd at login */
+    if(FocusedApplication && FocusedApplication->Focus)
+        UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
 
     if(CGSIsSecureEventInputSet())
         fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");
