@@ -27,13 +27,13 @@ GetCursorPos()
 }
 
 internal bool
-IsWindowBelowCursor(ax_window *Window)
+IsCursorInsideRect(double X, double Y, double Width, double Height)
 {
     CGPoint Cursor = GetCursorPos();
-    if(Cursor.x >= Window->Position.x &&
-       Cursor.x <= Window->Position.x + Window->Size.width &&
-       Cursor.y >= Window->Position.y &&
-       Cursor.y <= Window->Position.y + Window->Size.height)
+    if(Cursor.x >= X &&
+       Cursor.x <= X + Width &&
+       Cursor.y >= Y &&
+       Cursor.y <= Y + Height)
         return true;
 
     return false;
@@ -46,10 +46,13 @@ EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
 
 EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown)
 {
-    DEBUG("AXEvent_LeftMouseDown");
     if((FocusedApplication && FocusedApplication->Focus) &&
-        IsWindowBelowCursor(FocusedApplication->Focus))
+       (!IsCursorInsideRect(FocusedApplication->Focus->Position.x,
+                            FocusedApplication->Focus->Position.y,
+                            FocusedApplication->Focus->Size.width,
+                            FocusedApplication->Focus->Size.height)))
     {
+        DEBUG("AXEvent_LeftMouseDown");
         DragMoveWindow = true;
     }
 }
@@ -57,10 +60,9 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown)
 EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
 {
     /* TODO(koekeishiya): Can we simplify some of the error checking going on (?) */
-    DEBUG("AXEvent_LeftMouseUp");
-
     if(DragMoveWindow)
     {
+        DEBUG("AXEvent_LeftMouseUp");
         DragMoveWindow = false;
 
         ax_window *FocusedWindow = FocusedApplication->Focus;
@@ -94,11 +96,12 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
 
 EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
 {
-    DEBUG("AXEvent_LeftMouseDragged");
     CGPoint *Cursor = (CGPoint *) Event->Context;
 
     if(DragMoveWindow)
     {
+        DEBUG("AXEvent_LeftMouseDragged");
+
         ax_window *FocusedWindow = NULL;
         if(FocusedApplication)
             FocusedWindow = FocusedApplication->Focus;
@@ -128,10 +131,33 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
     free(Cursor);
 }
 
+void MoveCursorToCenterOfTreeNode(tree_node *Node)
+{
+    if((HasFlags(&KWMSettings, Settings_MouseFollowsFocus)) &&
+       (!IsCursorInsideRect(Node->Container.X, Node->Container.Y,
+                            Node->Container.Width, Node->Container.Height)))
+    {
+        CGWarpMouseCursorPosition(CGPointMake(Node->Container.X + Node->Container.Width / 2,
+                                              Node->Container.Y + Node->Container.Height / 2));
+    }
+}
+
+void MoveCursorToCenterOfLinkNode(link_node *Link)
+{
+    if((HasFlags(&KWMSettings, Settings_MouseFollowsFocus)) &&
+       (!IsCursorInsideRect(Link->Container.X, Link->Container.Y,
+                            Link->Container.Width, Link->Container.Height)))
+    {
+        CGWarpMouseCursorPosition(CGPointMake(Link->Container.X + Link->Container.Width / 2,
+                                              Link->Container.Y + Link->Container.Height / 2));
+    }
+}
+
 void MoveCursorToCenterOfWindow(ax_window *Window)
 {
     if((HasFlags(&KWMSettings, Settings_MouseFollowsFocus)) &&
-       (!IsWindowBelowCursor(Window)))
+       (!IsCursorInsideRect(Window->Position.x, Window->Position.y,
+                            Window->Size.width, Window->Size.height)))
     {
         CGWarpMouseCursorPosition(CGPointMake(Window->Position.x + Window->Size.width / 2,
                                               Window->Position.y + Window->Size.height / 2));
@@ -151,7 +177,8 @@ void FocusWindowBelowCursor()
     if(Application)
     {
         FocusedWindow = Application->Focus;
-         if(FocusedWindow && IsWindowBelowCursor(FocusedWindow))
+         if((FocusedWindow) && (IsCursorInsideRect(FocusedWindow->Position.x, FocusedWindow->Position.y,
+                                                   FocusedWindow->Size.width, FocusedWindow->Size.height)))
              return;
     }
 

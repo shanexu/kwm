@@ -6,6 +6,7 @@
 #include "space.h"
 #include "window.h"
 #include "border.h"
+#include "cursor.h"
 #include "axlib/axlib.h"
 
 #define internal static
@@ -288,11 +289,13 @@ void FocusFirstLeafNode(ax_display *Display)
             tree_node *Node = NULL;
             GetFirstLeafNode(SpaceInfo->RootNode, (void**)&Node);
             SetWindowFocusByNode(Node);
+            MoveCursorToCenterOfTreeNode(Node);
         }
         else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
         {
             link_node *Node = SpaceInfo->RootNode->List;
             SetWindowFocusByNode(Node);
+            MoveCursorToCenterOfLinkNode(Node);
         }
     }
 }
@@ -310,6 +313,7 @@ void FocusLastLeafNode(ax_display *Display)
             tree_node *Node = NULL;
             GetLastLeafNode(SpaceInfo->RootNode, (void **)&Node);
             SetWindowFocusByNode(Node);
+            MoveCursorToCenterOfTreeNode(Node);
         }
         else if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
         {
@@ -318,6 +322,7 @@ void FocusLastLeafNode(ax_display *Display)
                 Node = Node->Next;
 
             SetWindowFocusByNode(Node);
+            MoveCursorToCenterOfLinkNode(Node);
         }
     }
 }

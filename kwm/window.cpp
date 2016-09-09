@@ -1629,7 +1629,7 @@ void ShiftWindowFocus(int Shift)
             if(FocusNode)
             {
                 SetWindowFocusByNode(FocusNode);
-                MoveCursorToCenterOfFocusedWindow();
+                MoveCursorToCenterOfLinkNode(FocusNode);
             }
         }
     }
@@ -1668,7 +1668,7 @@ void ShiftWindowFocus(int Shift)
             }
 
             SetWindowFocusByNode(FocusNode);
-            MoveCursorToCenterOfFocusedWindow();
+            MoveCursorToCenterOfTreeNode(FocusNode);
         }
     }
 }
