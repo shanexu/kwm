@@ -47,7 +47,7 @@ EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
 EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown)
 {
     if((FocusedApplication && FocusedApplication->Focus) &&
-       (!IsCursorInsideRect(FocusedApplication->Focus->Position.x,
+       (IsCursorInsideRect(FocusedApplication->Focus->Position.x,
                             FocusedApplication->Focus->Position.y,
                             FocusedApplication->Focus->Size.width,
                             FocusedApplication->Focus->Size.height)))
