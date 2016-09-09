@@ -47,11 +47,11 @@ void GetTagForMonocleSpace(space_info *Space, std::string &Tag)
         Tag = "[" + std::to_string(NumberOfWindows) + "]";
 }
 
-void GetTagForCurrentSpace(std::string &Tag)
+void GetTagForCurrentSpace(std::string &Tag, ax_window *Window)
 {
     ax_display *Display = NULL;
-    if(FocusedApplication && FocusedApplication->Focus)
-        Display = AXLibWindowDisplay(FocusedApplication->Focus);
+    if(Window)
+        Display = AXLibWindowDisplay(Window);
 
     if(!Display)
         Display = AXLibMainDisplay();

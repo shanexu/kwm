@@ -221,7 +221,12 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryCurrentSpaceMode)
     int *SockFD = (int *) Event->Context;
 
     std::string Output;
-    GetTagForCurrentSpace(Output);
+    ax_window *Window = NULL;
+    ax_application *Application = AXLibGetFocusedApplication();
+    if(Application)
+        Window = Application->Focus;
+
+    GetTagForCurrentSpace(Output, Window);
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);
 }
@@ -231,16 +236,22 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryCurrentSpaceTag)
     int *SockFD = (int *) Event->Context;
 
     std::string Output;
-    GetTagForCurrentSpace(Output);
+    ax_window *Window = NULL;
 
     ax_application *Application = AXLibGetFocusedApplication();
     if(Application)
     {
-        Output += " " + Application->Name;
         ax_window *Window = Application->Focus;
+        GetTagForCurrentSpace(Output, Window);
+        Output += " " + Application->Name;
         if(Window && Window->Name)
             Output += " - " + std::string(Window->Name);
     }
+    else
+    {
+        GetTagForCurrentSpace(Output, NULL);
+    }
+
 
     KwmWriteToSocket(Output, *SockFD);
     free(SockFD);

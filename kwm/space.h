@@ -5,7 +5,7 @@
 #include "axlib/axlib.h"
 
 void GetTagForMonocleSpace(space_info *Space, std::string &Tag);
-void GetTagForCurrentSpace(std::string &Tag);
+void GetTagForCurrentSpace(std::string &Tag, ax_window *Window);
 
 void GoToPreviousSpace(bool MoveFocusedWindow);
 space_settings *GetSpaceSettingsForDesktopID(int ScreenID, int DesktopID);
