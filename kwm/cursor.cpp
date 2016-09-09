@@ -48,9 +48,9 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown)
 {
     if((FocusedApplication && FocusedApplication->Focus) &&
        (IsCursorInsideRect(FocusedApplication->Focus->Position.x,
-                            FocusedApplication->Focus->Position.y,
-                            FocusedApplication->Focus->Size.width,
-                            FocusedApplication->Focus->Size.height)))
+                           FocusedApplication->Focus->Position.y,
+                           FocusedApplication->Focus->Size.width,
+                           FocusedApplication->Focus->Size.height)))
     {
         DEBUG("AXEvent_LeftMouseDown");
         DragMoveWindow = true;
