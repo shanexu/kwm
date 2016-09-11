@@ -5,7 +5,31 @@
 #include "helpers.h"
 #include "keys.h"
 
+#include "daemon.h"
+#include "display.h"
+#include "space.h"
+#include "window.h"
+#include "container.h"
+#include "node.h"
+#include "tree.h"
+#include "border.h"
+#include "serializer.h"
+#include "scratchpad.h"
+#include "cursor.h"
+#include "event.h"
+#include "axlib/axlib.h"
+
 #define internal static
+#define INVALID_SOCKFD -1
+internal int ClientSockFD = INVALID_SOCKFD;
+
+extern std::map<std::string, space_info> WindowTree;
+extern ax_application *FocusedApplication;
+extern ax_window *MarkedWindow;
+
+extern kwm_settings KWMSettings;;
+extern kwm_border FocusedBorder;
+extern kwm_border MarkedBorder;
 
 extern kwm_path KWMPath;
 extern kwm_settings KWMSettings;
@@ -14,7 +38,10 @@ extern kwm_hotkeys KWMHotkeys;
 internal inline void
 ReportInvalidCommand(std::string Command)
 {
-    std::cerr << "Parse error: " << Command << std::endl;
+    if(ClientSockFD != INVALID_SOCKFD)
+        KwmWriteToSocket(Command, ClientSockFD);
+    else
+        std::cerr << "Parse error: " << Command << std::endl;
 }
 
 internal void
@@ -22,11 +49,11 @@ KwmParseConfigOptionTiling(tokenizer *Tokenizer)
 {
     token Token = GetToken(Tokenizer);
     if(TokenEquals(Token, "bsp"))
-        KwmInterpretCommand("config tiling bsp", 0);
+        KWMSettings.Space = SpaceModeBSP;
     else if(TokenEquals(Token, "monocle"))
-        KwmInterpretCommand("config tiling monocle", 0);
+        KWMSettings.Space = SpaceModeMonocle;
     else if(TokenEquals(Token, "float"))
-        KwmInterpretCommand("config tiling float", 0);
+        KWMSettings.Space = SpaceModeFloating;
     else
         ReportInvalidCommand("Unknown command 'config tiling " + std::string(Token.Text, Token.TextLength) + "'");
 }
@@ -36,9 +63,9 @@ KwmParseConfigOptionHotkeys(tokenizer *Tokenizer)
 {
     token Token = GetToken(Tokenizer);
     if(TokenEquals(Token, "on"))
-        KwmInterpretCommand("config hotkeys on", 0);
+        AddFlags(&KWMSettings, Settings_BuiltinHotkeys);
     else if(TokenEquals(Token, "off"))
-        KwmInterpretCommand("config hotkeys off", 0);
+        ClearFlags(&KWMSettings, Settings_BuiltinHotkeys);
     else
         ReportInvalidCommand("Unknown command 'config hotkeys " + std::string(Token.Text, Token.TextLength) + "'");
 }
@@ -75,10 +102,15 @@ KwmParseConfigOptionPadding(tokenizer *Tokenizer)
 
     if(IsValid)
     {
-        KwmInterpretCommand("config padding " + std::string(TokenTop.Text, TokenTop.TextLength) +
-                            " " + std::string(TokenBottom.Text, TokenBottom.TextLength) +
-                            " " + std::string(TokenLeft.Text, TokenLeft.TextLength) +
-                            " " + std::string(TokenRight.Text, TokenRight.TextLength), 0);
+        container_offset Offset = { ConvertStringToDouble(std::string(TokenTop.Text, TokenTop.TextLength)),
+                                    ConvertStringToDouble(std::string(TokenBottom.Text, TokenBottom.TextLength)),
+                                    ConvertStringToDouble(std::string(TokenLeft.Text, TokenLeft.TextLength)),
+                                    ConvertStringToDouble(std::string(TokenRight.Text, TokenRight.TextLength)),
+                                    0,
+                                    0
+                                  };
+
+        SetDefaultPaddingOfDisplay(Offset);
     }
 }
 
@@ -102,8 +134,15 @@ KwmParseConfigOptionGap(tokenizer *Tokenizer)
 
     if(IsValid)
     {
-        KwmInterpretCommand("config gap " + std::string(TokenVertical.Text, TokenVertical.TextLength) +
-                            " " + std::string(TokenHorizontal.Text, TokenHorizontal.TextLength), 0);
+        container_offset Offset = { 0,
+                                    0,
+                                    0,
+                                    0,
+                                    ConvertStringToDouble(std::string(TokenVertical.Text, TokenVertical.TextLength)),
+                                    ConvertStringToDouble(std::string(TokenHorizontal.Text, TokenHorizontal.TextLength))
+                                  };
+
+        SetDefaultGapOfDisplay(Offset);
     }
 }
 
@@ -122,15 +161,24 @@ KwmParseConfigOptionFocusFollowsMouse(tokenizer *Tokenizer)
                 {
                     token Token = GetToken(Tokenizer);
                     if(TokenEquals(Token, "on"))
-                        KwmInterpretCommand("config focus-follows-mouse on", 0);
+                        KWMSettings.Focus = FocusModeAutoraise;
                     else if(TokenEquals(Token, "off"))
-                        KwmInterpretCommand("config focus-follows-mouse off", 0);
+                        KWMSettings.Focus = FocusModeDisabled;
+                    else if(TokenEquals(Token, "toggle"))
+                    {
+                        if(KWMSettings.Focus == FocusModeDisabled)
+                            KWMSettings.Focus = FocusModeAutoraise;
+                        else if(KWMSettings.Focus == FocusModeAutoraise)
+                            KWMSettings.Focus = FocusModeDisabled;
+                    }
                     else
                         ReportInvalidCommand("Unknown command 'config focus-follows-mouse " + std::string(Token.Text, Token.TextLength) + "'");
                 }
                 else
                     ReportInvalidCommand("Unknown command 'config focus-follows-" + std::string(Token.Text, Token.TextLength) + "'");
             }
+            else
+                ReportInvalidCommand("Expected token '-' after 'config focus-follows'");
         }
         else
         {
@@ -158,25 +206,27 @@ KwmParseConfigOptionMouse(tokenizer *Tokenizer)
                 {
                     token Token = GetToken(Tokenizer);
                     if(TokenEquals(Token, "on"))
-                        KwmInterpretCommand("config mouse-follows-focus on", 0);
+                        AddFlags(&KWMSettings, Settings_MouseFollowsFocus);
                     else if(TokenEquals(Token, "off"))
-                        KwmInterpretCommand("config mouse-follows-focus off", 0);
+                        ClearFlags(&KWMSettings, Settings_MouseFollowsFocus);
                     else
                         ReportInvalidCommand("Unknown command 'config mouse-follows-focus " + std::string(Token.Text, Token.TextLength) + "'");
                 }
                 else
                     ReportInvalidCommand("Unknown command 'config mouse-follows-" + std::string(Token.Text, Token.TextLength) + "'");
             }
+            else
+                ReportInvalidCommand("Expected token '-' after 'config mouse-follows'");
         }
         else if(TokenEquals(Token, "drag"))
         {
             token Token = GetToken(Tokenizer);
             if(TokenEquals(Token, "on"))
-                KwmInterpretCommand("config mouse-drag on", 0);
+                AddFlags(&KWMSettings, Settings_MouseDrag);
             else if(TokenEquals(Token, "off"))
-                KwmInterpretCommand("config mouse-drag off", 0);
+                ClearFlags(&KWMSettings, Settings_MouseDrag);
             else if(TokenEquals(Token, "mod"))
-                KwmInterpretCommand("config mouse-drag mod " + GetTextTilEndOfLine(Tokenizer), 0);
+                KwmSetMouseDragKey(GetTextTilEndOfLine(Tokenizer));
             else
                 ReportInvalidCommand("Unknown command 'config mouse-drag " + std::string(Token.Text, Token.TextLength) + "'");
         }
@@ -206,9 +256,9 @@ KwmParseConfigOptionStandbyOnFloat(tokenizer *Tokenizer)
                 {
                     token Token = GetToken(Tokenizer);
                     if(TokenEquals(Token, "on"))
-                        KwmInterpretCommand("config standby-on-float on", 0);
+                        AddFlags(&KWMSettings, Settings_StandbyOnFloat);
                     else if(TokenEquals(Token, "off"))
-                        KwmInterpretCommand("config standby-on-float off", 0);
+                        ClearFlags(&KWMSettings, Settings_StandbyOnFloat);
                     else
                         ReportInvalidCommand("Unknown command 'config standby-on-float " + std::string(Token.Text, Token.TextLength) + "'");
                 }
@@ -242,9 +292,9 @@ KwmParseConfigOptionCenterOnFloat(tokenizer *Tokenizer)
                 {
                     token Token = GetToken(Tokenizer);
                     if(TokenEquals(Token, "on"))
-                        KwmInterpretCommand("config center-on-float on", 0);
+                        AddFlags(&KWMSettings, Settings_CenterOnFloat);
                     else if(TokenEquals(Token, "off"))
-                        KwmInterpretCommand("config center-on-float off", 0);
+                        ClearFlags(&KWMSettings, Settings_CenterOnFloat);
                     else
                         ReportInvalidCommand("Unknown command 'config center-on-float " + std::string(Token.Text, Token.TextLength) + "'");
                 }
@@ -278,9 +328,9 @@ KwmParseConfigOptionFloatNonResizable(tokenizer *Tokenizer)
                 {
                     token Token = GetToken(Tokenizer);
                     if(TokenEquals(Token, "on"))
-                        KwmInterpretCommand("config float-non-resizable on", 0);
+                        AddFlags(&KWMSettings, Settings_FloatNonResizable);
                     else if(TokenEquals(Token, "off"))
-                        KwmInterpretCommand("config float-non-resizable off", 0);
+                        ClearFlags(&KWMSettings, Settings_FloatNonResizable);
                     else
                         ReportInvalidCommand("Unknown command 'config float-non-resizable " + std::string(Token.Text, Token.TextLength) + "'");
                 }
@@ -314,9 +364,9 @@ KwmParseConfigOptionLockToContainer(tokenizer *Tokenizer)
                 {
                     token Token = GetToken(Tokenizer);
                     if(TokenEquals(Token, "on"))
-                        KwmInterpretCommand("config lock-to-container on", 0);
+                        AddFlags(&KWMSettings, Settings_LockToContainer);
                     else if(TokenEquals(Token, "off"))
-                        KwmInterpretCommand("config lock-to-container off", 0);
+                        ClearFlags(&KWMSettings, Settings_LockToContainer);
                     else
                         ReportInvalidCommand("Unknown command 'config lock-to-container " + std::string(Token.Text, Token.TextLength) + "'");
                 }
@@ -345,9 +395,9 @@ KwmParseConfigOptionCycleFocus(tokenizer *Tokenizer)
         {
             token Token = GetToken(Tokenizer);
             if(TokenEquals(Token, "on"))
-                KwmInterpretCommand("config cycle-focus on", 0);
+                KWMSettings.Cycle = CycleModeScreen;
             else if(TokenEquals(Token, "off"))
-                KwmInterpretCommand("config cycle-focus off", 0);
+                KWMSettings.Cycle = CycleModeDisabled;
             else
                 ReportInvalidCommand("Unknown command 'config cycle-focus " + std::string(Token.Text, Token.TextLength) + "'");
         }
@@ -373,7 +423,11 @@ KwmParseConfigOptionSplitRatio(tokenizer *Tokenizer)
             {
                 case Token_Digit:
                 {
-                    KwmInterpretCommand("config split-ratio " + std::string(Token.Text, Token.TextLength), 0);
+                    double Value = ConvertStringToDouble(std::string(Token.Text, Token.TextLength));
+                    if(Value > 0.0 && Value < 1.0)
+                    {
+                        KWMSettings.SplitRatio = Value;
+                    }
                 } break;
                 default:
                 {
@@ -403,7 +457,7 @@ KwmParseConfigOptionOptimalRatio(tokenizer *Tokenizer)
             {
                 case Token_Digit:
                 {
-                    KwmInterpretCommand("config optimal-ratio " + std::string(Token.Text, Token.TextLength), 0);
+                    KWMSettings.OptimalRatio = ConvertStringToDouble(std::string(Token.Text, Token.TextLength));
                 } break;
                 default:
                 {
@@ -425,9 +479,9 @@ KwmParseConfigOptionSpawn(tokenizer *Tokenizer)
 {
     token Token = GetToken(Tokenizer);
     if(TokenEquals(Token, "left"))
-        KwmInterpretCommand("config spawn left", 0);
+        AddFlags(&KWMSettings, Settings_SpawnAsLeftChild);
     else if(TokenEquals(Token, "right"))
-        KwmInterpretCommand("config spawn right", 0);
+        ClearFlags(&KWMSettings, Settings_SpawnAsLeftChild);
     else
         ReportInvalidCommand("Unknown command 'config spawn " + std::string(Token.Text, Token.TextLength) + "'");
 }
@@ -436,15 +490,20 @@ internal void
 KwmParseConfigOptionBorder(tokenizer *Tokenizer)
 {
     token TokenBorder = GetToken(Tokenizer);
-    if((TokenEquals(TokenBorder, "focused")) ||
-       (TokenEquals(TokenBorder, "marked")))
+    if(TokenEquals(TokenBorder, "focused"))
     {
-        std::string BorderType(TokenBorder.Text, TokenBorder.TextLength);
         token Token = GetToken(Tokenizer);
         if(TokenEquals(Token, "on"))
-            KwmInterpretCommand("config border " + BorderType + " on", 0);
+        {
+            FocusedBorder.Enabled = true;
+            if(!FocusedBorder.Color.Format.empty())
+                UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
+        }
         else if(TokenEquals(Token, "off"))
-            KwmInterpretCommand("config border " + BorderType + " off", 0);
+        {
+            FocusedBorder.Enabled = false;
+            CloseBorder(&FocusedBorder);
+        }
         else if(TokenEquals(Token, "size"))
         {
             token Token = GetToken(Tokenizer);
@@ -452,13 +511,12 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
             {
                 case Token_Digit:
                 {
-                    std::string BorderSize(Token.Text, Token.TextLength);
-                    KwmInterpretCommand("config border " + BorderType + " size " + BorderSize, 0);
+                    FocusedBorder.Width = ConvertStringToInt(std::string(Token.Text, Token.TextLength));
                 } break;
                 default:
                 {
                     std::string BorderSize(Token.Text, Token.TextLength);
-                    ReportInvalidCommand("Unknown command 'config border " + BorderType + " size " + BorderSize + "'");
+                    ReportInvalidCommand("Unknown command 'config border focused size " + BorderSize + "'");
                 } break;
             }
         }
@@ -469,13 +527,12 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
             {
                 case Token_Digit:
                 {
-                    std::string BorderSize(Token.Text, Token.TextLength);
-                    KwmInterpretCommand("config border " + BorderType + " radius " + BorderSize, 0);
+                    FocusedBorder.Radius = ConvertStringToDouble(std::string(Token.Text, Token.TextLength));
                 } break;
                 default:
                 {
                     std::string BorderSize(Token.Text, Token.TextLength);
-                    ReportInvalidCommand("Unknown command 'config border " + BorderType + " radius " + BorderSize + "'");
+                    ReportInvalidCommand("Unknown command 'config border focused radius " + BorderSize + "'");
                 } break;
             }
         }
@@ -483,7 +540,62 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
         {
             token Token = GetToken(Tokenizer);
             std::string BorderColor(Token.Text, Token.TextLength);
-            KwmInterpretCommand("config border " + BorderType + " color " + BorderColor, 0);
+            FocusedBorder.Color = ConvertHexRGBAToColor(ConvertHexStringToInt(BorderColor));
+            CreateColorFormat(&FocusedBorder.Color);
+            mode *BindingMode = GetBindingMode("default");
+            BindingMode->Color = FocusedBorder.Color;
+        }
+    }
+    else if(TokenEquals(TokenBorder, "marked"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "on"))
+        {
+            MarkedBorder.Enabled = true;
+        }
+        else if(TokenEquals(Token, "off"))
+        {
+            MarkedBorder.Enabled = false;
+            CloseBorder(&MarkedBorder);
+        }
+        else if(TokenEquals(Token, "size"))
+        {
+            token Token = GetToken(Tokenizer);
+            switch(Token.Type)
+            {
+                case Token_Digit:
+                {
+                    MarkedBorder.Width = ConvertStringToInt(std::string(Token.Text, Token.TextLength));
+                } break;
+                default:
+                {
+                    std::string BorderSize(Token.Text, Token.TextLength);
+                    ReportInvalidCommand("Unknown command 'config border marked size " + BorderSize + "'");
+                } break;
+            }
+        }
+        else if(TokenEquals(Token, "radius"))
+        {
+            token Token = GetToken(Tokenizer);
+            switch(Token.Type)
+            {
+                case Token_Digit:
+                {
+                    MarkedBorder.Radius = ConvertStringToDouble(std::string(Token.Text, Token.TextLength));
+                } break;
+                default:
+                {
+                    std::string BorderSize(Token.Text, Token.TextLength);
+                    ReportInvalidCommand("Unknown command 'config border marked radius " + BorderSize + "'");
+                } break;
+            }
+        }
+        else if(TokenEquals(Token, "color"))
+        {
+            token Token = GetToken(Tokenizer);
+            std::string BorderColor(Token.Text, Token.TextLength);
+            MarkedBorder.Color = ConvertHexRGBAToColor(ConvertHexStringToInt(BorderColor));
+            CreateColorFormat(&MarkedBorder.Color);
         }
     }
     else
@@ -511,13 +623,33 @@ KwmParseConfigOptionSpace(tokenizer *Tokenizer)
         return;
     }
 
+    int ScreenID = ConvertStringToInt(Display);
+    int DesktopID = ConvertStringToInt(Space);
+    space_settings *SpaceSettings = GetSpaceSettingsForDesktopID(ScreenID, DesktopID);
+    if(!SpaceSettings)
+    {
+        space_identifier Lookup = { ScreenID, DesktopID };
+        space_settings NULLSpaceSettings = { KWMSettings.DefaultOffset, SpaceModeDefault, {0, 0}, "", ""};
+
+        space_settings *ScreenSettings = GetSpaceSettingsForDisplay(ScreenID);
+        if(ScreenSettings)
+            NULLSpaceSettings = *ScreenSettings;
+
+        KWMSettings.SpaceSettings[Lookup] = NULLSpaceSettings;
+        SpaceSettings = &KWMSettings.SpaceSettings[Lookup];
+    }
+
     token Token = GetToken(Tokenizer);
     if(TokenEquals(Token, "mode"))
     {
         token Token = GetToken(Tokenizer);
         std::string Mode(Token.Text, Token.TextLength);
-        if((TokenEquals(Token, "bsp")) || (TokenEquals(Token, "monocle")) || (TokenEquals(Token, "float")))
-            KwmInterpretCommand("config space " + Display + " " + Space + " mode " + Mode, 0);
+        if(TokenEquals(Token, "bsp"))
+            SpaceSettings->Mode = SpaceModeBSP;
+        else if(TokenEquals(Token, "monocle"))
+            SpaceSettings->Mode = SpaceModeMonocle;
+        else if(TokenEquals(Token, "float"))
+            SpaceSettings->Mode = SpaceModeFloating;
         else
             ReportInvalidCommand("Unknown command 'config space " + Display + " " + Space + " mode " + Mode + "'");
     }
@@ -552,11 +684,10 @@ KwmParseConfigOptionSpace(tokenizer *Tokenizer)
 
         if(IsValid)
         {
-            KwmInterpretCommand("config space " + Display + " " + Space +
-                    " padding " + std::string(TokenTop.Text, TokenTop.TextLength) +
-                    " " + std::string(TokenBottom.Text, TokenBottom.TextLength) +
-                    " " + std::string(TokenLeft.Text, TokenLeft.TextLength) +
-                    " " + std::string(TokenRight.Text, TokenRight.TextLength), 0);
+            SpaceSettings->Offset.PaddingTop = ConvertStringToDouble(std::string(TokenTop.Text, TokenTop.TextLength));
+            SpaceSettings->Offset.PaddingBottom = ConvertStringToDouble(std::string(TokenBottom.Text, TokenBottom.TextLength));
+            SpaceSettings->Offset.PaddingLeft = ConvertStringToDouble(std::string(TokenLeft.Text, TokenLeft.TextLength));
+            SpaceSettings->Offset.PaddingRight = ConvertStringToDouble(std::string(TokenRight.Text, TokenRight.TextLength));
         }
     }
     else if(TokenEquals(Token, "gap"))
@@ -578,20 +709,19 @@ KwmParseConfigOptionSpace(tokenizer *Tokenizer)
 
         if(IsValid)
         {
-            KwmInterpretCommand("config space " + Display + " " + Space +
-                    " gap " + std::string(TokenVertical.Text, TokenVertical.TextLength) +
-                    " " + std::string(TokenHorizontal.Text, TokenHorizontal.TextLength), 0);
+            SpaceSettings->Offset.VerticalGap = ConvertStringToDouble(std::string(TokenVertical.Text, TokenVertical.TextLength));
+            SpaceSettings->Offset.HorizontalGap = ConvertStringToDouble(std::string(TokenHorizontal.Text, TokenHorizontal.TextLength));
         }
     }
     else if(TokenEquals(Token, "name"))
     {
         token Token = GetToken(Tokenizer);
-        KwmInterpretCommand("config space " + Display + " " + Space + " name " + std::string(Token.Text, Token.TextLength), 0);
+        SpaceSettings->Name = std::string(Token.Text, Token.TextLength);
     }
     else if(TokenEquals(Token, "tree"))
     {
         token Token = GetToken(Tokenizer);
-        KwmInterpretCommand("config space " + Display + " " + Space + " tree " + std::string(Token.Text, Token.TextLength), 0);
+        SpaceSettings->Layout = std::string(Token.Text, Token.TextLength);
     }
     else
     {
@@ -610,13 +740,26 @@ KwmParseConfigOptionDisplay(tokenizer *Tokenizer)
         return;
     }
 
+    int ScreenID = ConvertStringToInt(Display);
+    space_settings *DisplaySettings = GetSpaceSettingsForDisplay(ScreenID);
+    if(!DisplaySettings)
+    {
+        space_settings NULLSpaceSettings = { KWMSettings.DefaultOffset, SpaceModeDefault, {0, 0}, "", "" };
+        KWMSettings.DisplaySettings[ScreenID] = NULLSpaceSettings;
+        DisplaySettings = &KWMSettings.DisplaySettings[ScreenID];
+    }
+
     token Token = GetToken(Tokenizer);
     if(TokenEquals(Token, "mode"))
     {
         token Token = GetToken(Tokenizer);
         std::string Mode(Token.Text, Token.TextLength);
-        if((TokenEquals(Token, "bsp")) || (TokenEquals(Token, "monocle")) || (TokenEquals(Token, "float")))
-            KwmInterpretCommand("config display " + Display + " mode " + Mode, 0);
+        if(TokenEquals(Token, "bsp"))
+            DisplaySettings->Mode = SpaceModeBSP;
+        else if(TokenEquals(Token, "monocle"))
+            DisplaySettings->Mode = SpaceModeMonocle;
+        else if(TokenEquals(Token, "float"))
+            DisplaySettings->Mode = SpaceModeFloating;
         else
             ReportInvalidCommand("Unknown command 'config display " + Display + " mode " + Mode + "'");
     }
@@ -651,11 +794,10 @@ KwmParseConfigOptionDisplay(tokenizer *Tokenizer)
 
         if(IsValid)
         {
-            KwmInterpretCommand("config display " + Display +
-                    " padding " + std::string(TokenTop.Text, TokenTop.TextLength) +
-                    " " + std::string(TokenBottom.Text, TokenBottom.TextLength) +
-                    " " + std::string(TokenLeft.Text, TokenLeft.TextLength) +
-                    " " + std::string(TokenRight.Text, TokenRight.TextLength), 0);
+            DisplaySettings->Offset.PaddingTop = ConvertStringToDouble(std::string(TokenTop.Text, TokenTop.TextLength));
+            DisplaySettings->Offset.PaddingBottom = ConvertStringToDouble(std::string(TokenBottom.Text, TokenBottom.TextLength));
+            DisplaySettings->Offset.PaddingLeft = ConvertStringToDouble(std::string(TokenLeft.Text, TokenLeft.TextLength));
+            DisplaySettings->Offset.PaddingRight = ConvertStringToDouble(std::string(TokenRight.Text, TokenRight.TextLength));
         }
     }
     else if(TokenEquals(Token, "gap"))
@@ -677,9 +819,8 @@ KwmParseConfigOptionDisplay(tokenizer *Tokenizer)
 
         if(IsValid)
         {
-            KwmInterpretCommand("config display " + Display +
-                    " gap " + std::string(TokenVertical.Text, TokenVertical.TextLength) +
-                    " " + std::string(TokenHorizontal.Text, TokenHorizontal.TextLength), 0);
+            DisplaySettings->Offset.VerticalGap = ConvertStringToDouble(std::string(TokenVertical.Text, TokenVertical.TextLength));
+            DisplaySettings->Offset.HorizontalGap = ConvertStringToDouble(std::string(TokenHorizontal.Text, TokenHorizontal.TextLength));
         }
     }
     else if(TokenEquals(Token, "float"))
@@ -706,9 +847,8 @@ KwmParseConfigOptionDisplay(tokenizer *Tokenizer)
 
                 if(IsValid)
                 {
-                    KwmInterpretCommand("config display " + Display +
-                            " float-dim " + std::string(TokenWidth.Text, TokenWidth.TextLength) +
-                            " " + std::string(TokenHeight.Text, TokenHeight.TextLength), 0);
+                    DisplaySettings->FloatDim.width = ConvertStringToDouble(std::string(TokenWidth.Text, TokenWidth.TextLength));
+                    DisplaySettings->FloatDim.height = ConvertStringToDouble(std::string(TokenHeight.Text, TokenHeight.TextLength));
                 }
             }
             else
@@ -732,21 +872,24 @@ KwmParseModeOptionActivate(tokenizer *Tokenizer)
 {
     token TokenMode = GetToken(Tokenizer);
     std::string Mode(TokenMode.Text, TokenMode.TextLength);
-    KwmInterpretCommand("mode activate " + Mode, 0);
+    KwmActivateBindingMode(Mode);
 }
 
 internal void
 KwmParseModeOptionProperties(token *TokenMode, tokenizer *Tokenizer)
 {
     std::string Mode(TokenMode->Text, TokenMode->TextLength);
-    token Token = GetToken(Tokenizer);
+    mode *BindingMode = GetBindingMode(Mode);
 
+    token Token = GetToken(Tokenizer);
     if(TokenEquals(Token, "prefix"))
     {
         token Token = GetToken(Tokenizer);
         std::string Status(Token.Text, Token.TextLength);
-        if((TokenEquals(Token, "on")) || (TokenEquals(Token, "off")))
-            KwmInterpretCommand("mode " + Mode + " prefix " + Status, 0);
+        if(TokenEquals(Token, "on"))
+            BindingMode->Prefix = true;
+        else if(TokenEquals(Token, "off"))
+            BindingMode->Prefix = false;
         else
             ReportInvalidCommand("Unknown command 'mode " + Mode + " prefix " + Status + "'");
     }
@@ -757,8 +900,7 @@ KwmParseModeOptionProperties(token *TokenMode, tokenizer *Tokenizer)
         {
             case Token_Digit:
             {
-                std::string Timeout(Token.Text, Token.TextLength);
-                KwmInterpretCommand("mode " + Mode + " timeout " + Timeout, 0);
+                BindingMode->Timeout = ConvertStringToDouble(std::string(Token.Text, Token.TextLength));
             } break;
             default:
             {
@@ -771,13 +913,17 @@ KwmParseModeOptionProperties(token *TokenMode, tokenizer *Tokenizer)
     {
         token Token = GetToken(Tokenizer);
         std::string Color(Token.Text, Token.TextLength);
-        KwmInterpretCommand("mode " + Mode + " color " + Color, 0);
+        BindingMode->Color = ConvertHexRGBAToColor(ConvertHexStringToInt(Color));
+        CreateColorFormat(&BindingMode->Color);
     }
     else if(TokenEquals(Token, "restore"))
     {
         token Token = GetToken(Tokenizer);
-        std::string Restore(Token.Text, Token.TextLength);
-        KwmInterpretCommand("mode " + Mode + " restore " + Restore, 0);
+        BindingMode->Restore = std::string(Token.Text, Token.TextLength);
+    }
+    else
+    {
+        ReportInvalidCommand("Unknown command 'mode " + Mode + " " + std::string(Token.Text, Token.TextLength) + "'");
     }
 }
 
@@ -789,7 +935,7 @@ KwmParseConfigOption(tokenizer *Tokenizer)
     {
         case Token_EndOfStream:
         {
-            ReportInvalidCommand("Unexpected end of file!");
+            ReportInvalidCommand("Unexpected end of stream!");
             return;
         } break;
         case Token_Identifier:
@@ -828,6 +974,8 @@ KwmParseConfigOption(tokenizer *Tokenizer)
                 KwmParseConfigOptionSpace(Tokenizer);
             else if(TokenEquals(Token, "display"))
                 KwmParseConfigOptionDisplay(Tokenizer);
+            else if(TokenEquals(Token, "reload"))
+                KwmReloadConfig();
             else
                 ReportInvalidCommand("Unknown command 'config " + std::string(Token.Text, Token.TextLength) + "'");
         } break;
@@ -846,7 +994,7 @@ KwmParseModeOption(tokenizer *Tokenizer)
     {
         case Token_EndOfStream:
         {
-            ReportInvalidCommand("Unexpected end of file!");
+            ReportInvalidCommand("Unexpected end of stream!");
             return;
         } break;
         case Token_Identifier:
@@ -864,8 +1012,897 @@ KwmParseModeOption(tokenizer *Tokenizer)
 }
 
 internal void
-KwmParseKwmc(tokenizer *Tokenizer)
+KwmParseWindowOption(tokenizer *Tokenizer)
 {
+    if(RequireToken(Tokenizer, Token_Dash))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "f"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "north"))
+                ShiftWindowFocusDirected(0);
+            else if(TokenEquals(Selector, "east"))
+                ShiftWindowFocusDirected(90);
+            else if(TokenEquals(Selector, "south"))
+                ShiftWindowFocusDirected(180);
+            else if(TokenEquals(Selector, "west"))
+                ShiftWindowFocusDirected(270);
+            else if(TokenEquals(Selector, "prev"))
+                ShiftWindowFocus(-1);
+            else if(TokenEquals(Selector, "next"))
+                ShiftWindowFocus(1);
+            else if(TokenEquals(Selector, "curr"))
+                FocusWindowBelowCursor();
+            else if(Selector.Type == Token_Digit)
+                FocusWindowByID(ConvertStringToUint(std::string(Selector.Text, Selector.TextLength)));
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "fm"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "prev"))
+                ShiftSubTreeWindowFocus(-1);
+            else if(TokenEquals(Selector, "next"))
+                ShiftSubTreeWindowFocus(1);
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "s"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "north"))
+                SwapFocusedWindowDirected(0);
+            else if(TokenEquals(Selector, "east"))
+                SwapFocusedWindowDirected(90);
+            else if(TokenEquals(Selector, "south"))
+                SwapFocusedWindowDirected(180);
+            else if(TokenEquals(Selector, "west"))
+                SwapFocusedWindowDirected(270);
+            else if(TokenEquals(Selector, "prev"))
+                SwapFocusedWindowWithNearest(-1);
+            else if(TokenEquals(Selector, "next"))
+                SwapFocusedWindowWithNearest(1);
+            else if(TokenEquals(Selector, "mark"))
+                SwapFocusedWindowWithMarked();
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "z"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "fullscreen"))
+                ToggleFocusedWindowFullscreen();
+            else if(TokenEquals(Selector, "parent"))
+                ToggleFocusedWindowParentContainer();
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "t"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "focused"))
+                ToggleFocusedWindowFloating();
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "r"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "focused"))
+                ResizeWindowToContainerSize();
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "c"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "split"))
+            {
+                if(RequireToken(Tokenizer, Token_Dash))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "mode"))
+                    {
+                        token Token = GetToken(Tokenizer);
+                        if(TokenEquals(Token, "toggle"))
+                            ToggleFocusedNodeSplitMode();
+                        else
+                            ReportInvalidCommand("Unknown command 'window -c split-mode " + std::string(Token.Text, Token.TextLength) + "'");
+                    }
+                    else
+                    {
+                        ReportInvalidCommand("Unknown command 'window -c split-" + std::string(Token.Text, Token.TextLength) + "'");
+                    }
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token '-' after 'window -c split'");
+                }
+            }
+            else if(TokenEquals(Selector, "type"))
+            {
+                token Selector = GetToken(Tokenizer);
+                if(TokenEquals(Selector, "monocle"))
+                    ChangeTypeOfFocusedNode(NodeTypeLink);
+                else if(TokenEquals(Selector, "bsp"))
+                    ChangeTypeOfFocusedNode(NodeTypeTree);
+                else if(TokenEquals(Selector, "toggle"))
+                    ToggleTypeOfFocusedNode();
+                else
+                    ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+            }
+            else if(TokenEquals(Selector, "reduce") || TokenEquals(Selector, "expand"))
+            {
+                token Value = GetToken(Tokenizer);
+                if(Value.Type == Token_Digit)
+                {
+                    double Ratio = ConvertStringToDouble(std::string(Value.Text, Value.TextLength));
+                    Ratio = TokenEquals(Selector, "reduce") ? -Ratio : Ratio;
+
+                    token Direction = GetToken(Tokenizer);
+                    if(TokenEquals(Direction, "north"))
+                        ModifyContainerSplitRatio(Ratio, 0);
+                    else if(TokenEquals(Direction, "east"))
+                        ModifyContainerSplitRatio(Ratio, 90);
+                    else if(TokenEquals(Direction, "south"))
+                        ModifyContainerSplitRatio(Ratio, 180);
+                    else if(TokenEquals(Direction, "west"))
+                        ModifyContainerSplitRatio(Ratio, 270);
+                    else
+                        ReportInvalidCommand("Unknown selector '" + std::string(Direction.Text, Direction.TextLength) + "'");
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token of type 'Token_Digit' after '" + std::string(Selector.Text, Selector.TextLength) + "'");
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'window -c " + std::string(Selector.Text, Selector.TextLength) + "'");
+            }
+        }
+        else if(TokenEquals(Token, "m"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "space"))
+            {
+                token Token = GetToken(Tokenizer);
+                if(TokenEquals(Token, "previous"))
+                    GoToPreviousSpace(true);
+                else
+                    MoveFocusedWindowToSpace(std::string(Token.Text, Token.TextLength));
+            }
+            else if(TokenEquals(Selector, "display"))
+            {
+                ax_window *Window = FocusedApplication ? FocusedApplication->Focus : NULL;
+                if(Window)
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "prev"))
+                        MoveWindowToDisplay(Window, -1, true);
+                    else if(TokenEquals(Token, "next"))
+                        MoveWindowToDisplay(Window, 1, true);
+                    else
+                        MoveWindowToDisplay(Window, ConvertStringToInt(std::string(Token.Text, Token.TextLength)), false);
+                }
+            }
+            else if(TokenEquals(Selector, "north"))
+            {
+                ax_window *Window = FocusedApplication ? FocusedApplication->Focus : NULL;
+                if(Window)
+                    DetachAndReinsertWindow(Window->ID, 0);
+            }
+            else if(TokenEquals(Selector, "east"))
+            {
+                ax_window *Window = FocusedApplication ? FocusedApplication->Focus : NULL;
+                if(Window)
+                    DetachAndReinsertWindow(Window->ID, 90);
+            }
+            else if(TokenEquals(Selector, "south"))
+            {
+                ax_window *Window = FocusedApplication ? FocusedApplication->Focus : NULL;
+                if(Window)
+                    DetachAndReinsertWindow(Window->ID, 180);
+            }
+            else if(TokenEquals(Selector, "west"))
+            {
+                ax_window *Window = FocusedApplication ? FocusedApplication->Focus : NULL;
+                if(Window)
+                    DetachAndReinsertWindow(Window->ID, 270);
+            }
+            else if(TokenEquals(Selector, "mark"))
+            {
+                if(MarkedWindow)
+                    DetachAndReinsertWindow(MarkedWindow->ID, 0);
+            }
+            else
+            {
+                bool Valid = true;
+                token XToken = GetToken(Tokenizer);
+                token YToken = GetToken(Tokenizer);
+
+                if(XToken.Type != Token_Digit || YToken.Type != Token_Digit)
+                {
+                    Valid = false;
+                    ReportInvalidCommand("Expected token of type 'Token_Digit'");
+                }
+
+                if(Valid)
+                {
+                    int XOff = ConvertStringToInt(std::string(XToken.Text, XToken.TextLength));
+                    int YOff = ConvertStringToInt(std::string(YToken.Text, YToken.TextLength));
+                    MoveFloatingWindow(XOff, YOff);
+                }
+            }
+        }
+        else if(TokenEquals(Token, "mk"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "focused"))
+            {
+                MarkFocusedWindowContainer();
+            }
+            else if(TokenEquals(Selector, "north"))
+            {
+                ax_window *ClosestWindow = NULL;
+                token Token = GetToken(Tokenizer);
+                bool Wrap = TokenEquals(Token, "wrap") ? true : false;
+                if((FindClosestWindow(0, &ClosestWindow, Wrap)) && (ClosestWindow))
+                    MarkWindowContainer(ClosestWindow);
+            }
+            else if(TokenEquals(Selector, "east"))
+            {
+                ax_window *ClosestWindow = NULL;
+                token Token = GetToken(Tokenizer);
+                bool Wrap = TokenEquals(Token, "wrap") ? true : false;
+                if((FindClosestWindow(90, &ClosestWindow, Wrap)) && (ClosestWindow))
+                    MarkWindowContainer(ClosestWindow);
+            }
+            else if(TokenEquals(Selector, "south"))
+            {
+                ax_window *ClosestWindow = NULL;
+                token Token = GetToken(Tokenizer);
+                bool Wrap = TokenEquals(Token, "wrap") ? true : false;
+                if((FindClosestWindow(180, &ClosestWindow, Wrap)) && (ClosestWindow))
+                    MarkWindowContainer(ClosestWindow);
+            }
+            else if(TokenEquals(Selector, "west"))
+            {
+                ax_window *ClosestWindow = NULL;
+                token Token = GetToken(Tokenizer);
+                bool Wrap = TokenEquals(Token, "wrap") ? true : false;
+                if((FindClosestWindow(270, &ClosestWindow, Wrap)) && (ClosestWindow))
+                    MarkWindowContainer(ClosestWindow);
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'window -mk " + std::string(Selector.Text, Selector.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'window -" + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else
+    {
+        ReportInvalidCommand("Expected token '-' after 'window'");
+    }
+}
+
+internal void
+KwmParseTreeOption(tokenizer *Tokenizer)
+{
+    token Token = GetToken(Tokenizer);
+    if(Token.Type == Token_Dash)
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "pseudo"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "create"))
+                CreatePseudoNode();
+            else if(TokenEquals(Selector, "destroy"))
+                RemovePseudoNode();
+            else
+                ReportInvalidCommand("Unknown command 'tree -pseudo " + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'tree -" + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else if(TokenEquals(Token, "rotate"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "90") || TokenEquals(Token, "270") || TokenEquals(Token, "180"))
+            RotateBSPTree(ConvertStringToInt(std::string(Token.Text, Token.TextLength)));
+        else
+            ReportInvalidCommand("Unknown command 'tree rotate " + std::string(Token.Text, Token.TextLength) + "'");
+    }
+    else if(TokenEquals(Token, "save"))
+    {
+        ax_display *Display = AXLibMainDisplay();
+        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+        token Token = GetToken(Tokenizer);
+        if(Token.Type != Token_EndOfStream)
+            SaveBSPTreeToFile(Display, SpaceInfo, std::string(Token.Text, Token.TextLength));
+        else
+            ReportInvalidCommand("Invalid command 'tree save " + std::string(Token.Text, Token.TextLength) + "'");
+    }
+    else if(TokenEquals(Token, "load"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(Token.Type != Token_EndOfStream)
+            LoadWindowNodeTree(AXLibMainDisplay(), std::string(Token.Text, Token.TextLength));
+        else
+            ReportInvalidCommand("Invalid command 'tree load " + std::string(Token.Text, Token.TextLength) + "'");
+    }
+    else
+    {
+        ReportInvalidCommand("Unknown command 'tree " + std::string(Token.Text, Token.TextLength) + "'");
+    }
+}
+
+internal void
+KwmParseDisplayOption(tokenizer *Tokenizer)
+{
+    if(RequireToken(Tokenizer, Token_Dash))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "f"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "prev"))
+            {
+                ax_display *Display = AXLibMainDisplay();
+                if(Display)
+                    FocusDisplay(AXLibPreviousDisplay(Display));
+            }
+            else if(TokenEquals(Selector, "next"))
+            {
+                ax_display *Display = AXLibMainDisplay();
+                if(Display)
+                    FocusDisplay(AXLibNextDisplay(Display));
+            }
+            else if(Selector.Type == Token_Digit)
+            {
+                int DisplayID = ConvertStringToInt(std::string(Selector.Text, Selector.TextLength));
+                ax_display *Display = AXLibArrangementDisplay(DisplayID);
+                if(Display)
+                    FocusDisplay(Display);
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+            }
+        }
+        else if(TokenEquals(Token, "c"))
+        {
+            token Selector = GetToken(Tokenizer);
+            if(TokenEquals(Selector, "optimal"))
+                KWMSettings.SplitMode = SPLIT_OPTIMAL;
+            else if(TokenEquals(Selector, "vertical"))
+                KWMSettings.SplitMode = SPLIT_VERTICAL;
+            else if(TokenEquals(Selector, "horizontal"))
+                KWMSettings.SplitMode = SPLIT_HORIZONTAL;
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown selector '" + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else
+    {
+        ReportInvalidCommand("Expected token '-' after 'display'");
+    }
+}
+
+internal void
+KwmParseSpaceOption(tokenizer *Tokenizer)
+{
+    if(RequireToken(Tokenizer, Token_Dash))
+    {
+        token Selector = GetToken(Tokenizer);
+        if(TokenEquals(Selector, "fExperimental"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "previous"))
+                GoToPreviousSpace(false);
+            else if(Token.Type != Token_EndOfStream)
+                ActivateSpaceWithoutTransition(std::string(Token.Text, Token.TextLength));
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Token.Text, Token.TextLength) + "'");
+        }
+        else if(TokenEquals(Selector, "t"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "bsp"))
+                ResetWindowNodeTree(AXLibMainDisplay(), SpaceModeBSP);
+            else if(TokenEquals(Token, "monocle"))
+                ResetWindowNodeTree(AXLibMainDisplay(), SpaceModeMonocle);
+            else if(TokenEquals(Token, "float"))
+                ResetWindowNodeTree(AXLibMainDisplay(), SpaceModeFloating);
+            else
+                ReportInvalidCommand("Unknown selector '" + std::string(Token.Text, Token.TextLength) + "'");
+        }
+        else if(TokenEquals(Selector, "r"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "focused"))
+            {
+                ax_display *Display = AXLibMainDisplay();
+                if(Display)
+                {
+                    space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+                    ApplyTreeNodeContainer(SpaceInfo->RootNode);
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown selector '" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else if(TokenEquals(Selector, "p"))
+        {
+            token Token = GetToken(Tokenizer);
+            token Direction = GetToken(Tokenizer);
+            if(TokenEquals(Direction, "left") || TokenEquals(Direction, "right") ||
+               TokenEquals(Direction, "top") || TokenEquals(Direction, "bottom") ||
+               TokenEquals(Direction, "all"))
+            {
+                int Value = 0;
+                if(TokenEquals(Token, "increase"))
+                    Value = 10;
+                else if(TokenEquals(Token, "decrease"))
+                    Value = -10;
+
+                ChangePaddingOfDisplay(std::string(Direction.Text, Direction.TextLength), Value);
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown selector '" + std::string(Direction.Text, Direction.TextLength) + "'");
+            }
+        }
+        else if(TokenEquals(Selector, "g"))
+        {
+            token Token = GetToken(Tokenizer);
+            token Direction = GetToken(Tokenizer);
+            if(TokenEquals(Direction, "vertical") ||
+               TokenEquals(Direction, "horizontal") ||
+               TokenEquals(Direction, "all"))
+            {
+                int Value = 0;
+                if(TokenEquals(Token, "increase"))
+                    Value = 10;
+                else if(TokenEquals(Token, "decrease"))
+                    Value = -10;
+
+                ChangeGapOfDisplay(std::string(Direction.Text, Direction.TextLength), Value);
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown selector '" + std::string(Direction.Text, Direction.TextLength) + "'");
+            }
+        }
+        else if(TokenEquals(Selector, "n"))
+        {
+            ax_display *Display = AXLibMainDisplay();
+            if(Display)
+            {
+                token Token = GetToken(Tokenizer);
+                SetNameOfActiveSpace(Display, std::string(Token.Text, Token.TextLength));
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
+    }
+    else
+    {
+        ReportInvalidCommand("Expected token '-' after 'space'");
+    }
+}
+
+internal void
+KwmParseScratchpadOption(tokenizer *Tokenizer)
+{
+    token Token = GetToken(Tokenizer);
+    if(TokenEquals(Token, "show"))
+    {
+        token Value = GetToken(Tokenizer);
+        ShowScratchpadWindow(ConvertStringToInt(std::string(Value.Text, Value.TextLength)));
+    }
+    else if(TokenEquals(Token, "hide"))
+    {
+        token Value = GetToken(Tokenizer);
+        HideScratchpadWindow(ConvertStringToInt(std::string(Value.Text, Value.TextLength)));
+    }
+    else if(TokenEquals(Token, "toggle"))
+    {
+        token Value = GetToken(Tokenizer);
+        ToggleScratchpadWindow(ConvertStringToInt(std::string(Value.Text, Value.TextLength)));
+    }
+    else if(TokenEquals(Token, "add"))
+    {
+        ax_application *Application = AXLibGetFocusedApplication();
+        if(Application && Application->Focus)
+            AddWindowToScratchpad(Application->Focus);
+    }
+    else if(TokenEquals(Token, "remove"))
+    {
+        ax_application *Application = AXLibGetFocusedApplication();
+        if(Application && Application->Focus)
+            RemoveWindowFromScratchpad(Application->Focus);
+    }
+    else
+    {
+        ReportInvalidCommand("Unknown command 'scratchpad " + std::string(Token.Text, Token.TextLength) + "'");
+    }
+}
+
+internal void
+KwmParseQueryOption(tokenizer *Tokenizer)
+{
+    token Token = GetToken(Tokenizer);
+    if(TokenEquals(Token, "tiling"))
+    {
+        token Selector = GetToken(Tokenizer);
+        if(TokenEquals(Selector, "mode"))
+            KwmConstructEvent(KWMEvent_QueryTilingMode, KwmCreateContext(ClientSockFD));
+        else if(TokenEquals(Selector,"spawn"))
+            KwmConstructEvent(KWMEvent_QuerySpawnPosition, KwmCreateContext(ClientSockFD));
+        else if(TokenEquals(Selector, "split"))
+        {
+            if(RequireToken(Tokenizer, Token_Dash))
+            {
+                token Token = GetToken(Tokenizer);
+                if(TokenEquals(Token, "mode"))
+                    KwmConstructEvent(KWMEvent_QuerySplitMode, KwmCreateContext(ClientSockFD));
+                else if(TokenEquals(Token, "ratio"))
+                    KwmConstructEvent(KWMEvent_QuerySplitRatio, KwmCreateContext(ClientSockFD));
+                else
+                    ReportInvalidCommand("Unknown command 'query split-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+            else
+            {
+                ReportInvalidCommand("Expected token '-' after 'query split'");
+            }
+        }
+    }
+    else if(TokenEquals(Token, "window"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "focused"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "id"))
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowId, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "name"))
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowName, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "split"))
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowSplit, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "float"))
+                KwmConstructEvent(KWMEvent_QueryFocusedWindowFloat, KwmCreateContext(ClientSockFD));
+            else
+            {
+                int *Args = (int *) malloc(sizeof(int) * 2);
+                *Args = ClientSockFD;
+
+                if(TokenEquals(Token, "north"))
+                    *(Args + 1) = 0;
+                else if(TokenEquals(Token, "east"))
+                    *(Args + 1) = 90;
+                else if(TokenEquals(Token, "south"))
+                    *(Args + 1) = 180;
+                else if(TokenEquals(Token, "west"))
+                    *(Args + 1) = 270;
+                else
+                    *(Args + 1) = 0;
+
+                KwmConstructEvent(KWMEvent_QueryWindowIdInDirectionOfFocusedWindow, Args);
+            }
+        }
+        else if(TokenEquals(Token, "marked"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "id"))
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowId, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "name"))
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowName, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "split"))
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowSplit, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "float"))
+                KwmConstructEvent(KWMEvent_QueryMarkedWindowFloat, KwmCreateContext(ClientSockFD));
+            else
+                ReportInvalidCommand("Unknown command 'query window marked " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "parent"))
+        {
+            bool Valid = true;
+            token Token1 = GetToken(Tokenizer);
+            token Token2 = GetToken(Tokenizer);
+            if(Token1.Type != Token_Digit || Token2.Type != Token_Digit)
+            {
+                Valid = false;
+                ReportInvalidCommand("Expected token of type 'Token_Digit'");
+            }
+
+            if(Valid)
+            {
+                int *Args = (int *) malloc(sizeof(int) * 3);
+                *Args = ClientSockFD;
+                *(Args + 1) = ConvertStringToInt(std::string(Token1.Text, Token1.TextLength));
+                *(Args + 2) = ConvertStringToInt(std::string(Token2.Text, Token2.TextLength));
+                KwmConstructEvent(KWMEvent_QueryParentNodeState, Args);
+            }
+        }
+        else if(TokenEquals(Token, "child"))
+        {
+            bool Valid = true;
+            token Token = GetToken(Tokenizer);
+            if(Token.Type != Token_Digit)
+            {
+                Valid = false;
+                ReportInvalidCommand("Expected token of type 'Token_Digit'");
+            }
+
+            if(Valid)
+            {
+                int *Args = (int *) malloc(sizeof(int) * 2);
+                *Args = ClientSockFD;
+                *(Args + 1) = ConvertStringToInt(std::string(Token.Text, Token.TextLength));
+                KwmConstructEvent(KWMEvent_QueryNodePosition, Args);
+            }
+        }
+        else if(TokenEquals(Token, "list"))
+        {
+            KwmConstructEvent(KWMEvent_QueryWindowList, KwmCreateContext(ClientSockFD));
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'query window " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else if(TokenEquals(Token, "cycle"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "focus"))
+                KwmConstructEvent(KWMEvent_QueryCycleFocus, KwmCreateContext(ClientSockFD));
+            else
+                ReportInvalidCommand("Unknown command 'query cycle-focus " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'query cycle'");
+        }
+    }
+    else if(TokenEquals(Token, "float"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "non"))
+            {
+                if(RequireToken(Tokenizer, Token_Dash))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "resizable"))
+                        KwmConstructEvent(KWMEvent_QueryFloatNonResizable, KwmCreateContext(ClientSockFD));
+                    else
+                        ReportInvalidCommand("Unknown command 'query float-non-" + std::string(Token.Text, Token.TextLength) + "'");
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token '-' after 'query float-non'");
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'query float-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'query float'");
+        }
+    }
+    else if(TokenEquals(Token, "lock"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "to"))
+            {
+                if(RequireToken(Tokenizer, Token_Dash))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "container"))
+                        KwmConstructEvent(KWMEvent_QueryLockToContainer, KwmCreateContext(ClientSockFD));
+                    else
+                        ReportInvalidCommand("Unknown command 'query lock-to-" + std::string(Token.Text, Token.TextLength) + "'");
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token '-' after 'query lock-to'");
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'query lock-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'query lock'");
+        }
+    }
+    else if(TokenEquals(Token, "standby"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "on"))
+            {
+                if(RequireToken(Tokenizer, Token_Dash))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "float"))
+                        KwmConstructEvent(KWMEvent_QueryStandbyOnFloat, KwmCreateContext(ClientSockFD));
+                    else
+                        ReportInvalidCommand("Unknown command 'query standby-on-" + std::string(Token.Text, Token.TextLength) + "'");
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token '-' after 'query standby-on'");
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'query standby-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'query standby'");
+        }
+    }
+    else if(TokenEquals(Token, "focus"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "follows"))
+            {
+                if(RequireToken(Tokenizer, Token_Dash))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "mouse"))
+                        KwmConstructEvent(KWMEvent_QueryFocusFollowsMouse, KwmCreateContext(ClientSockFD));
+                    else
+                        ReportInvalidCommand("Unknown command 'query focus-follows-" + std::string(Token.Text, Token.TextLength) + "'");
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token '-' after 'query focus-follows'");
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'query focus-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'query focus'");
+        }
+    }
+    else if(TokenEquals(Token, "mouse"))
+    {
+        if(RequireToken(Tokenizer, Token_Dash))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "follows"))
+            {
+                if(RequireToken(Tokenizer, Token_Dash))
+                {
+                    token Token = GetToken(Tokenizer);
+                    if(TokenEquals(Token, "focus"))
+                        KwmConstructEvent(KWMEvent_QueryMouseFollowsFocus, KwmCreateContext(ClientSockFD));
+                    else
+                        ReportInvalidCommand("Unknown command 'query mouse-follows-" + std::string(Token.Text, Token.TextLength) + "'");
+                }
+                else
+                {
+                    ReportInvalidCommand("Expected token '-' after 'query mouse-follows'");
+                }
+            }
+            else
+            {
+                ReportInvalidCommand("Unknown command 'query mouse-" + std::string(Token.Text, Token.TextLength) + "'");
+            }
+        }
+        else
+        {
+            ReportInvalidCommand("Expected token '-' after 'query mouse'");
+        }
+    }
+    else if(TokenEquals(Token, "scratchpad"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "list"))
+        {
+            KwmConstructEvent(KWMEvent_QueryScratchpad, KwmCreateContext(ClientSockFD));
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'query scratchpad " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else if(TokenEquals(Token, "space"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "active"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "tag"))
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceTag, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "name"))
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceName, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "id"))
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceId, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "mode"))
+                KwmConstructEvent(KWMEvent_QueryCurrentSpaceMode, KwmCreateContext(ClientSockFD));
+            else
+                ReportInvalidCommand("Unknown command 'query space active " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "previous"))
+        {
+            token Token = GetToken(Tokenizer);
+            if(TokenEquals(Token, "name"))
+                KwmConstructEvent(KWMEvent_QueryPreviousSpaceName, KwmCreateContext(ClientSockFD));
+            else if(TokenEquals(Token, "id"))
+                KwmConstructEvent(KWMEvent_QueryPreviousSpaceId, KwmCreateContext(ClientSockFD));
+            else
+                ReportInvalidCommand("Unknown command 'query space previous " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+        else if(TokenEquals(Token, "list"))
+        {
+            KwmConstructEvent(KWMEvent_QuerySpaces, KwmCreateContext(ClientSockFD));
+        }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'query space " + std::string(Token.Text, Token.TextLength) + "'");
+        }
+    }
+    else if(TokenEquals(Token, "border"))
+    {
+        token Token = GetToken(Tokenizer);
+        if(TokenEquals(Token, "focused"))
+            KwmConstructEvent(KWMEvent_QueryFocusedBorder, KwmCreateContext(ClientSockFD));
+        else if(TokenEquals(Token, "marked"))
+            KwmConstructEvent(KWMEvent_QueryMarkedBorder, KwmCreateContext(ClientSockFD));
+        else
+            ReportInvalidCommand("Unknown command 'query border " + std::string(Token.Text, Token.TextLength) + "'");
+    }
+    else
+    {
+        ReportInvalidCommand("Unknown command 'query " + std::string(Token.Text, Token.TextLength) + "'");
+        shutdown(ClientSockFD, SHUT_RDWR);
+        close(ClientSockFD);
+    }
+}
+
+void KwmParseKwmc(tokenizer *Tokenizer, int SockFD)
+{
+    ClientSockFD = SockFD;
     token Token = GetToken(Tokenizer);
     switch(Token.Type)
     {
@@ -879,14 +1916,26 @@ KwmParseKwmc(tokenizer *Tokenizer)
                 KwmParseConfigOption(Tokenizer);
             else if(TokenEquals(Token, "mode"))
                 KwmParseModeOption(Tokenizer);
+            else if(TokenEquals(Token, "window"))
+                KwmParseWindowOption(Tokenizer);
+            else if(TokenEquals(Token, "tree"))
+                KwmParseTreeOption(Tokenizer);
+            else if(TokenEquals(Token, "display"))
+                KwmParseDisplayOption(Tokenizer);
+            else if(TokenEquals(Token, "space"))
+                KwmParseSpaceOption(Tokenizer);
+            else if(TokenEquals(Token, "scratchpad"))
+                KwmParseScratchpadOption(Tokenizer);
+            else if(TokenEquals(Token, "query"))
+                KwmParseQueryOption(Tokenizer);
             else if(TokenEquals(Token, "bindsym") ||
                     TokenEquals(Token, "bindcode") ||
                     TokenEquals(Token, "bindsym_passthrough") ||
                     TokenEquals(Token, "bindcode_passthrough") ||
                     TokenEquals(Token, "rule"))
-                KwmInterpretCommand(std::string(Token.Text, Token.TextLength) + " " + GetTextTilEndOfLine(Tokenizer), 0);
+                KwmInterpretCommand(std::string(Token.Text, Token.TextLength) + " " + GetTextTilEndOfLine(Tokenizer), INVALID_SOCKFD);
             else if(TokenEquals(Token, "whitelist"))
-                KwmInterpretCommand(std::string(Token.Text, Token.TextLength) + " " + GetTextTilEndOfLine(Tokenizer), 0);
+                KwmInterpretCommand(std::string(Token.Text, Token.TextLength) + " " + GetTextTilEndOfLine(Tokenizer), INVALID_SOCKFD);
             else
                 ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
         } break;
@@ -965,6 +2014,7 @@ KwmPreprocessConfig(std::string &Text)
 /* NOTE(koekeishiya): The passed string has to include the absolute path to the file. */
 void KwmParseConfig(std::string File)
 {
+    ClientSockFD = INVALID_SOCKFD;
     tokenizer Tokenizer = {};
     char *FileContents = ReadFile(File);
 
@@ -993,7 +2043,7 @@ void KwmParseConfig(std::string File)
                 case Token_Identifier:
                 {
                     if(TokenEquals(Token, "kwmc"))
-                        KwmParseKwmc(&Tokenizer);
+                        KwmParseKwmc(&Tokenizer, INVALID_SOCKFD);
                     else if(TokenEquals(Token, "exec"))
                         KwmExecuteSystemCommand(GetTextTilEndOfLine(&Tokenizer));
                     else if(TokenEquals(Token, "include"))
