@@ -112,9 +112,10 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
         else
         {
             ax_display *Display = AXLibWindowDisplay(Window);
-            MarkedNode = GetTreeNodeForPoint(WindowTree[Display->Space->Identifier].RootNode, Cursor);
-            if(MarkedNode)
+            tree_node *NewNode = GetTreeNodeForPoint(WindowTree[Display->Space->Identifier].RootNode, Cursor);
+            if(NewNode && NewNode != MarkedNode)
             {
+                MarkedNode = NewNode;
                 UpdateBorder(&MarkedBorder, MarkedNode);
             }
         }
