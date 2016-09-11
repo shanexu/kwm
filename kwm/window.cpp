@@ -1379,20 +1379,20 @@ void SwapFocusedWindowWithNearest(int Shift)
     }
     else if(Space->Settings.Mode == SpaceModeBSP)
     {
-        tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(Space->RootNode, Window->ID);
-        if(TreeNode)
+        tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(Space->RootNode, Window->ID);
+        if(Node)
         {
-            tree_node *NewFocusNode = NULL;;
+            tree_node *ClosestNode = NULL;;
 
             if(Shift == 1)
-                NewFocusNode = GetNearestTreeNodeToTheRight(TreeNode);
+                ClosestNode = GetNearestTreeNodeToTheRight(Node);
             else if(Shift == -1)
-                NewFocusNode = GetNearestTreeNodeToTheLeft(TreeNode);
+                ClosestNode = GetNearestTreeNodeToTheLeft(Node);
 
-            if(NewFocusNode)
+            if(ClosestNode)
             {
-                SwapNodeWindowIDs(TreeNode, NewFocusNode);
-                MoveCursorToCenterOfWindow(Window);
+                SwapNodeWindowIDs(Node, ClosestNode);
+                MoveCursorToCenterOfTreeNode(ClosestNode);
             }
         }
     }
@@ -1414,20 +1414,18 @@ void SwapFocusedWindowDirected(int Degrees)
 
     if(Space->Settings.Mode == SpaceModeBSP)
     {
-        tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(Space->RootNode, Window->ID);
-        if(TreeNode)
+        tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(Space->RootNode, Window->ID);
+        if(Node)
         {
-            tree_node *NewFocusNode = NULL;
+            tree_node *ClosestNode = NULL;
             ax_window *ClosestWindow = NULL;
             if(FindClosestWindow(Degrees, &ClosestWindow, KWMSettings.Cycle == CycleModeScreen))
-                NewFocusNode = GetTreeNodeFromWindowID(Space->RootNode, ClosestWindow->ID);
+                ClosestNode = GetTreeNodeFromWindowID(Space->RootNode, ClosestWindow->ID);
 
-            if(NewFocusNode)
+            if(ClosestNode)
             {
-                SwapNodeWindowIDs(TreeNode, NewFocusNode);
-                Window->Position = AXLibGetWindowPosition(Window->Ref);
-                Window->Size = AXLibGetWindowSize(Window->Ref);
-                MoveCursorToCenterOfWindow(Window);
+                SwapNodeWindowIDs(Node, ClosestNode);
+                MoveCursorToCenterOfTreeNode(ClosestNode);
             }
         }
     }
