@@ -441,6 +441,12 @@ KwmQueryCommand(std::vector<std::string> &Tokens, int ClientSockFD)
     {
         KwmConstructEvent(KWMEvent_QueryMouseFollowsFocus, KwmCreateContext(ClientSockFD));
     }
+    else
+    {
+        KwmWriteToSocket("Invalid command 'kwmc " + CreateStringFromTokens(Tokens, 0) + "'", ClientSockFD);
+        shutdown(ClientSockFD, SHUT_RDWR);
+        close(ClientSockFD);
+    }
 }
 
 internal void
