@@ -10,11 +10,11 @@
 extern std::map<std::string, space_info> WindowTree;
 extern ax_state AXState;
 extern ax_application *FocusedApplication;
-extern ax_window *MarkedWindow;
 extern kwm_settings KWMSettings;
 extern kwm_border MarkedBorder;
 
 internal bool DragMoveWindow = false;
+internal tree_node *MarkedNode = NULL;
 
 internal inline CGPoint
 GetCursorPos()
@@ -39,6 +39,13 @@ IsCursorInsideRect(double X, double Y, double Width, double Height)
     return false;
 }
 
+internal inline void
+ClearMarkedNode()
+{
+    MarkedNode = NULL;
+    ClearBorder(&MarkedBorder);
+}
+
 EVENT_CALLBACK(Callback_AXEvent_MouseMoved)
 {
     FocusWindowBelowCursor();
@@ -59,38 +66,27 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown)
 
 EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
 {
-    /* TODO(koekeishiya): Can we simplify some of the error checking going on (?) */
     if(DragMoveWindow)
     {
         DEBUG("AXEvent_LeftMouseUp");
         DragMoveWindow = false;
 
-        ax_window *FocusedWindow = FocusedApplication->Focus;
-        if(!FocusedWindow || !MarkedWindow || (MarkedWindow == FocusedWindow))
-        {
-            ClearMarkedWindow();
-            return;
-        }
+        /* NOTE(koekeishiya): DragMoveWindow can only be true if the LeftMouseDown event
+         * was triggered on top of a window. Thus, we assume that the FocusedApplication
+         * and its Focus can never be NULL here. */
 
-        ax_display *Display = AXLibWindowDisplay(FocusedWindow);
-        if(!Display)
+        ax_window *Window = FocusedApplication->Focus;
+        if(MarkedNode && MarkedNode->WindowID != Window->ID)
         {
-            ClearMarkedWindow();
-            return;
-        }
-
-        space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
-        tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
-        if(TreeNode)
-        {
-            tree_node *NewFocusNode = GetTreeNodeFromWindowID(SpaceInfo->RootNode, MarkedWindow->ID);
-            if(NewFocusNode)
+            ax_display *Display = AXLibWindowDisplay(Window);
+            tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(WindowTree[Display->Space->Identifier].RootNode, Window->ID);
+            if(Node)
             {
-                SwapNodeWindowIDs(TreeNode, NewFocusNode);
+                SwapNodeWindowIDs(Node, MarkedNode);
             }
         }
 
-        ClearMarkedWindow();
+        ClearMarkedNode();
     }
 }
 
@@ -102,28 +98,24 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
     {
         DEBUG("AXEvent_LeftMouseDragged");
 
-        ax_window *FocusedWindow = NULL;
-        if(FocusedApplication)
-            FocusedWindow = FocusedApplication->Focus;
+        /* NOTE(koekeishiya): DragMoveWindow can only be true if the LeftMouseDown event
+         * was triggered on top of a window. Thus, we assume that the FocusedApplication
+         * and its Focus can never be NULL here. */
 
-        if((FocusedWindow) &&
-           (AXLibHasFlags(FocusedWindow, AXWindow_Floating)))
+        ax_window *Window = FocusedApplication->Focus;
+        if(AXLibHasFlags(Window, AXWindow_Floating))
         {
-            double X = Cursor->x - FocusedWindow->Size.width / 2;
-            double Y = Cursor->y - FocusedWindow->Size.height / 2;
-            AXLibSetWindowPosition(FocusedWindow->Ref, X, Y);
+            double X = Cursor->x - Window->Size.width / 2;
+            double Y = Cursor->y - Window->Size.height / 2;
+            AXLibSetWindowPosition(Window->Ref, X, Y);
         }
         else
         {
-            uint32_t WindowID = AXLibGetWindowBelowCursor();
-            if(WindowID != 0)
+            ax_display *Display = AXLibWindowDisplay(Window);
+            MarkedNode = GetTreeNodeForPoint(WindowTree[Display->Space->Identifier].RootNode, Cursor);
+            if(MarkedNode)
             {
-                ax_window *Window = GetWindowByID(WindowID);
-                if(Window)
-                {
-                    MarkedWindow = Window;
-                    UpdateBorder(&MarkedBorder, MarkedWindow);
-                }
+                UpdateBorder(&MarkedBorder, MarkedNode);
             }
         }
     }

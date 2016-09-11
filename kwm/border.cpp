@@ -56,6 +56,21 @@ RefreshBorder(kwm_border *Border, ax_window *Window)
     fflush(Border->Handle);
 }
 
+internal inline void
+RefreshBorder(kwm_border *Border, tree_node *Node)
+{
+    std::string Command = "x:" + std::to_string(Node->Container.X) + \
+                          " y:" + std::to_string(Node->Container.Y) + \
+                          " w:" + std::to_string(Node->Container.Width) + \
+                          " h:" + std::to_string(Node->Container.Height) + \
+                          " " + Border->Color.Format + \
+                          " s:" + std::to_string(Border->Width);
+
+    Command += (Border->Radius != -1 ? " rad:" + std::to_string(Border->Radius) : "") + "\n";
+    fwrite(Command.c_str(), Command.size(), 1, Border->Handle);
+    fflush(Border->Handle);
+}
+
 void UpdateBorder(kwm_border *Border, ax_window *Window)
 {
     if(Border && Border->Enabled)
@@ -71,6 +86,29 @@ void UpdateBorder(kwm_border *Border, ax_window *Window)
 
             if(Border->Handle)
                 RefreshBorder(Border, Window);
+        }
+        else
+        {
+            ClearBorder(Border);
+        }
+    }
+}
+
+void UpdateBorder(kwm_border *Border, tree_node *Node)
+{
+    if(Border && Border->Enabled)
+    {
+        if(Node)
+        {
+            if((Border->Type == BORDER_FOCUSED) &&
+               (!KWMHotkeys.ActiveMode->Color.Format.empty()))
+                Border->Color = KWMHotkeys.ActiveMode->Color;
+
+            if(!Border->Handle)
+                OpenBorder(Border);
+
+            if(Border->Handle)
+                RefreshBorder(Border, Node);
         }
         else
         {

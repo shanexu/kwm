@@ -8,6 +8,7 @@ tree_node *CreateTreeFromWindowIDList(ax_display *Display, std::vector<uint32_t>
 void FillDeserializedTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr);
 void RotateBSPTree(int Deg);
 tree_node *GetNearestLeafNodeNeighbour(tree_node *Node);
+tree_node *GetTreeNodeForPoint(tree_node *Node, CGPoint *Point);
 tree_node *GetTreeNodeFromWindowID(tree_node *Node, uint32_t WindowID);
 tree_node *GetTreeNodeFromWindowIDOrLinkNode(tree_node *Node, uint32_t WindowID);
 link_node *GetLinkNodeFromWindowID(tree_node *Root, uint32_t WindowID);

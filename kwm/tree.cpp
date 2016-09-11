@@ -104,6 +104,30 @@ tree_node *GetNearestLeafNodeNeighbour(tree_node *Node)
     return NULL;
 }
 
+/* NOTE(koekeishiya): This function can probably be optimized by checking
+ * containers in a Root->Child approach, rather than iterating through
+ * every leaf node. */
+tree_node *GetTreeNodeForPoint(tree_node *Node, CGPoint *Point)
+{
+    if(Node)
+    {
+        tree_node *CurrentNode = NULL;
+        GetFirstLeafNode(Node, (void**)&CurrentNode);
+        while(CurrentNode)
+        {
+            if(Point->x >= CurrentNode->Container.X &&
+               Point->x <= CurrentNode->Container.X + CurrentNode->Container.Width &&
+               Point->y >= CurrentNode->Container.Y &&
+               Point->y <= CurrentNode->Container.Y + CurrentNode->Container.Height)
+                return CurrentNode;
+
+            CurrentNode = GetNearestTreeNodeToTheRight(CurrentNode);
+        }
+    }
+
+    return NULL;
+}
+
 tree_node *GetTreeNodeFromWindowID(tree_node *Node, uint32_t WindowID)
 {
     if(Node)
