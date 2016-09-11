@@ -1574,6 +1574,10 @@ KwmParseQueryOption(tokenizer *Tokenizer)
                 ReportInvalidCommand("Expected token '-' after 'query split'");
             }
         }
+        else
+        {
+            ReportInvalidCommand("Unknown command 'query tiling " + std::string(Selector.Text, Selector.TextLength) + "'");
+        }
     }
     else if(TokenEquals(Token, "window"))
     {
@@ -1677,7 +1681,7 @@ KwmParseQueryOption(tokenizer *Tokenizer)
             if(TokenEquals(Token, "focus"))
                 KwmConstructEvent(KWMEvent_QueryCycleFocus, KwmCreateContext(ClientSockFD));
             else
-                ReportInvalidCommand("Unknown command 'query cycle-focus " + std::string(Token.Text, Token.TextLength) + "'");
+                ReportInvalidCommand("Unknown command 'query cycle-" + std::string(Token.Text, Token.TextLength) + "'");
         }
         else
         {
