@@ -24,8 +24,11 @@ taking the time to experiment and set up your own binds.
 
     - prefix:
         - s: toggle split-type of existing container
-        - h: decrease split-ratio of focused container
-        - l: increase split-ratio of focused container
+
+        - h: increase split-ratio of focused container towards west
+        - j: increase split-ratio of focused container towards south
+        - k: increase split-ratio of focused container towards north
+        - l: increase split-ratio of focused container towards east
 
         - f: toggle window fullscreen
         - d: toggle window parent container
@@ -41,6 +44,11 @@ taking the time to experiment and set up your own binds.
         - darrow: increase screen padding-bottom
 
     - prefix+shift:
+        - h: decrease split-ratio of focused container towards west
+        - j: decrease split-ratio of focused container towards south
+        - k: decrease split-ratio of focused container towards north
+        - l: decrease split-ratio of focused container towards east
+
         - x: decrease horizontal gap
         - y: decrease vertical gap
 
