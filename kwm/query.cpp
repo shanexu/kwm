@@ -25,10 +25,8 @@ GetSplitModeOfWindow(ax_window *Window)
         return "";
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return "";
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, Window->ID);
     if(Node)
     {

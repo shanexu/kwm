@@ -76,15 +76,12 @@ void RemoveWindowFromScratchpad(ax_window *Window)
             AXLibClearFlags(Window, AXWindow_Floating);
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(Display)
-        {
-            if(!AXLibSpaceHasWindow(Window, Display->Space->ID))
-                AXLibSpaceAddWindow(Display->Space->ID, Window->ID);
+        if(!AXLibSpaceHasWindow(Window, Display->Space->ID))
+            AXLibSpaceAddWindow(Display->Space->ID, Window->ID);
 
-            AddWindowToNodeTree(Display, Window->ID);
-            if(KWMSettings.Focus == FocusModeStandby)
-                KWMSettings.Focus = FocusModeAutoraise;
-        }
+        AddWindowToNodeTree(Display, Window->ID);
+        if(KWMSettings.Focus == FocusModeStandby)
+            KWMSettings.Focus = FocusModeAutoraise;
 
         int Slot = GetScratchpadSlotOfWindow(Window);
         Scratchpad.Windows.erase(Slot);
@@ -99,13 +96,10 @@ void ToggleScratchpadWindow(int Index)
     {
         ax_window *Window = Scratchpad.Windows[Index];
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(Display)
-        {
-            if(AXLibSpaceHasWindow(Window, Display->Space->ID))
-                HideScratchpadWindow(Index);
-            else
-                ShowScratchpadWindow(Index);
-        }
+        if(AXLibSpaceHasWindow(Window, Display->Space->ID))
+            HideScratchpadWindow(Index);
+        else
+            ShowScratchpadWindow(Index);
     }
 }
 
@@ -116,19 +110,16 @@ void HideScratchpadWindow(int Index)
     {
         ax_window *Window = Scratchpad.Windows[Index];
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(Display)
-        {
-            if(!AXLibHasFlags(Window, AXWindow_Floating))
-                AXLibAddFlags(Window, AXWindow_Floating);
+        if(!AXLibHasFlags(Window, AXWindow_Floating))
+            AXLibAddFlags(Window, AXWindow_Floating);
 
-            RemoveWindowFromNodeTree(Display, Window->ID);
-            AXLibSpaceRemoveWindow(Display->Space->ID, Window->ID);
-            if(KWMSettings.Focus == FocusModeStandby)
-                KWMSettings.Focus = FocusModeAutoraise;
+        RemoveWindowFromNodeTree(Display, Window->ID);
+        AXLibSpaceRemoveWindow(Display->Space->ID, Window->ID);
+        if(KWMSettings.Focus == FocusModeStandby)
+            KWMSettings.Focus = FocusModeAutoraise;
 
-            if(Scratchpad.LastFocus != -1)
-                FocusWindowByID(Scratchpad.LastFocus);
-        }
+        if(Scratchpad.LastFocus != -1)
+            FocusWindowByID(Scratchpad.LastFocus);
     }
 }
 
@@ -147,12 +138,9 @@ void ShowScratchpadWindow(int Index)
 
         ax_window *Window = Scratchpad.Windows[Index];
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(Display)
-        {
-            AXLibSpaceAddWindow(Display->Space->ID, Window->ID);
-            ResizeScratchpadWindow(Display, Window);
-            FocusWindowByID(Window->ID);
-        }
+        AXLibSpaceAddWindow(Display->Space->ID, Window->ID);
+        ResizeScratchpadWindow(Display, Window);
+        FocusWindowByID(Window->ID);
     }
 }
 

@@ -49,14 +49,9 @@ void GetTagForMonocleSpace(space_info *Space, std::string &Tag)
 
 void GetTagForCurrentSpace(std::string &Tag, ax_window *Window)
 {
-    ax_display *Display = NULL;
-    if(Window)
-        Display = AXLibWindowDisplay(Window);
-
-    if(!Display)
-        Display = AXLibMainDisplay();
-
+    ax_display *Display = Window ? AXLibWindowDisplay(Window) : AXLibMainDisplay();
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     if(SpaceInfo->Initialized)
     {
         if(SpaceInfo->Settings.Mode == SpaceModeBSP)
@@ -209,9 +204,6 @@ void MoveFocusedWindowToSpace(std::string SpaceID)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     int TotalSpaces = AXLibDisplaySpacesCount(Display);
     int ActiveSpace = AXLibDesktopIDFromCGSSpaceID(Display, Display->Space->ID);
     int DestinationSpaceID = ActiveSpace;

@@ -231,10 +231,8 @@ void ToggleTypeOfFocusedNode()
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, Window->ID);
     if(TreeNode && TreeNode != SpaceInfo->RootNode)
         TreeNode->Type = TreeNode->Type == NodeTypeTree ? NodeTypeLink : NodeTypeTree;
@@ -247,10 +245,8 @@ void ChangeTypeOfFocusedNode(node_type Type)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, Window->ID);
     if(TreeNode && TreeNode != SpaceInfo->RootNode)
         TreeNode->Type = Type;
@@ -327,10 +323,8 @@ void ResizeWindowToContainerSize(ax_window *Window)
             return;
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(!Display)
-            return;
-
         space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
         tree_node *Node = GetTreeNodeFromWindowID(SpaceInfo->RootNode, Window->ID);
         if(Node)
             ResizeWindowToContainerSize(Node);
@@ -363,10 +357,8 @@ void ModifyContainerSplitRatio(double Offset)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *Root = SpaceInfo->RootNode;
     if(!Root || IsLeafNode(Root) || Root->WindowID != 0)
         return;
@@ -446,10 +438,8 @@ void ModifyContainerSplitRatio(double Offset, int Degrees)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *Root = SpaceInfo->RootNode;
     if(!Root || IsLeafNode(Root) || Root->WindowID != 0)
         return;

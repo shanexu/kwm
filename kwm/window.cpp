@@ -236,9 +236,6 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
             if(ApplyWindowRules(Window))
                 continue;
 
-            if(!Display)
-                Display = AXLibWindowDisplay(Window);
-
             FloatNonResizable(Window);
             TileWindow(Display, Window);
         }
@@ -327,17 +324,11 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationActivated)
         if(Application->Focus)
         {
             ax_display *Display = AXLibWindowDisplay(Application->Focus);
-            if(!Display)
-                Display = AXLibMainDisplay();
-
-            if(Display)
+            if(AXLibSpaceHasWindow(Application->Focus, Display->Space->ID))
             {
-                if(AXLibSpaceHasWindow(Application->Focus, Display->Space->ID))
-                {
-                    StandbyOnFloat(Application->Focus);
-                    DrawFocusedBorder(Display, Application->Focus);
-                    Display->Space->FocusedWindow = Application->Focus->ID;
-                }
+                StandbyOnFloat(Application->Focus);
+                DrawFocusedBorder(Display, Application->Focus);
+                Display->Space->FocusedWindow = Application->Focus->ID;
             }
         }
     }
@@ -361,9 +352,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowCreated)
             return;
 
         ax_display *Display = AXLibCursorDisplay();
-        if(!Display)
-            Display = AXLibWindowDisplay(Window);
-
         if(Display)
         {
             FloatNonResizable(Window);
@@ -388,11 +376,8 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
             DEBUG("AXEvent_WindowDestroyed: " << Window->Application->Name << " - [Unknown]");
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(Display)
-        {
-            RemoveWindowFromScratchpad(Window);
-            RemoveWindowFromNodeTree(Display, Window->ID);
-        }
+        RemoveWindowFromScratchpad(Window);
+        RemoveWindowFromNodeTree(Display, Window->ID);
 
         if(FocusedApplication == Window->Application)
         {
@@ -426,7 +411,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMinimized)
             DEBUG("AXEvent_WindowMinimized: " << Window->Application->Name << " - [Unknown]");
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        Assert(Display != NULL);
         RemoveWindowFromNodeTree(Display, Window->ID);
 
         ClearBorder(&FocusedBorder);
@@ -450,8 +434,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDeminimized)
             DEBUG("AXEvent_WindowDeminimized: " << Window->Application->Name << " - [Unknown]");
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        Assert(Display != NULL);
-
         if((AXLibIsWindowStandard(Window) || AXLibIsWindowCustom(Window)) &&
            (!AXLibHasFlags(Window, AXWindow_Floating)))
         {
@@ -480,15 +462,9 @@ EVENT_CALLBACK(Callback_AXEvent_WindowFocused)
             if(FocusedApplication == Window->Application)
             {
                 ax_display *Display = AXLibWindowDisplay(Window);
-                if(!Display)
-                    Display = AXLibMainDisplay();
-
-                if(Display)
-                {
-                    StandbyOnFloat(Window);
-                    DrawFocusedBorder(Display, Window);
-                    Display->Space->FocusedWindow = Window->ID;
-                }
+                StandbyOnFloat(Window);
+                DrawFocusedBorder(Display, Window);
+                Display->Space->FocusedWindow = Window->ID;
             }
         }
     }
@@ -512,9 +488,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
             LockWindowToContainerSize(Window);
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(!Display)
-            Display = AXLibMainDisplay();
-
         if((FocusedApplication == Window->Application) &&
            (FocusedApplication->Focus == Window))
             DrawFocusedBorder(Display, Window);
@@ -542,9 +515,6 @@ EVENT_CALLBACK(Callback_AXEvent_WindowResized)
             LockWindowToContainerSize(Window);
 
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(!Display)
-            Display = AXLibMainDisplay();
-
         if((FocusedApplication == Window->Application) &&
            (FocusedApplication->Focus == Window))
             DrawFocusedBorder(Display, Window);
@@ -1126,9 +1096,6 @@ void ToggleWindowFloating(uint32_t WindowID, bool Center)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     if(AXLibHasFlags(Window, AXWindow_Floating))
     {
         AXLibClearFlags(Window, AXWindow_Floating);
@@ -1164,12 +1131,7 @@ void ToggleFocusedWindowParentContainer()
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *Space = &WindowTree[Display->Space->Identifier];
-    if(!Space->RootNode)
-        return;
 
     if(Space->Settings.Mode != SpaceModeBSP)
         return;
@@ -1199,12 +1161,7 @@ void ToggleFocusedWindowFullscreen()
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *Space = &WindowTree[Display->Space->Identifier];
-    if(!Space->RootNode)
-        return;
 
     if(Space->Settings.Mode != SpaceModeBSP)
         return;
@@ -1235,20 +1192,16 @@ void ToggleFocusedWindowFullscreen()
 bool IsWindowFullscreen(ax_window *Window)
 {
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return false;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     return SpaceInfo->RootNode && SpaceInfo->RootNode->WindowID == Window->ID;
 }
 
 bool IsWindowParentContainer(ax_window *Window)
 {
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return false;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *Node = GetTreeNodeFromWindowID(SpaceInfo->RootNode, Window->ID);
     return Node && Node->Parent && Node->Parent->WindowID == Window->ID;
 }
@@ -1258,10 +1211,8 @@ void LockWindowToContainerSize(ax_window *Window)
     if(Window)
     {
         ax_display *Display = AXLibWindowDisplay(Window);
-        if(!Display)
-            return;
-
         space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
         tree_node *Node = GetTreeNodeFromWindowID(SpaceInfo->RootNode, Window->ID);
         if(Node)
         {
@@ -1322,10 +1273,8 @@ void SwapFocusedWindowWithMarked()
         return;
 
     ax_display *Display = AXLibWindowDisplay(FocusedWindow);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+
     tree_node *TreeNode = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, FocusedWindow->ID);
     if(TreeNode)
     {
@@ -1347,13 +1296,7 @@ void SwapFocusedWindowWithNearest(int Shift)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *Space = &WindowTree[Display->Space->Identifier];
-    if(!Space)
-        return;
-
     if(Space->Settings.Mode == SpaceModeMonocle)
     {
         link_node *Link = GetLinkNodeFromTree(Space->RootNode, Window->ID);
@@ -1405,13 +1348,7 @@ void SwapFocusedWindowDirected(int Degrees)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *Space = &WindowTree[Display->Space->Identifier];
-    if(!Space)
-        return;
-
     if(Space->Settings.Mode == SpaceModeBSP)
     {
         tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(Space->RootNode, Window->ID);
@@ -1564,9 +1501,6 @@ void ShiftWindowFocusDirected(int Degrees)
     }
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(SpaceInfo->Settings.Mode == SpaceModeBSP)
     {
@@ -1604,9 +1538,6 @@ void ShiftWindowFocus(int Shift)
     }
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
     {
@@ -1678,9 +1609,6 @@ void ShiftSubTreeWindowFocus(int Shift)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    if(!Display)
-        return;
-
     space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
     if(SpaceInfo->Settings.Mode == SpaceModeBSP)
     {
