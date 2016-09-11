@@ -520,7 +520,7 @@ ax_display *AXLibWindowDisplay(ax_window *Window)
         }
     }
 
-    return BestDisplay;
+    return BestDisplay ? BestDisplay : AXLibMainDisplay();
 }
 
 
