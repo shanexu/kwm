@@ -30,23 +30,23 @@ ax_window *AXLibConstructWindow(ax_application *Application, AXUIElementRef Wind
 
 bool AXLibIsWindowStandard(ax_window *Window)
 {
-    bool Result = ((CFEqual(Window->Type.Role, kAXWindowRole)) &&
-                   (CFEqual(Window->Type.Subrole, kAXStandardWindowSubrole)));
+    bool Result = ((Window->Type.Role && CFEqual(Window->Type.Role, kAXWindowRole)) &&
+                   (Window->Type.Subrole && CFEqual(Window->Type.Subrole, kAXStandardWindowSubrole)));
     return Result;
 }
 
 bool AXLibIsWindowCustom(ax_window *Window)
 {
     bool Result = ((Window->Type.CustomRole) &&
-                   ((CFEqual(Window->Type.Role, Window->Type.CustomRole)) ||
-                   (CFEqual(Window->Type.Subrole, Window->Type.CustomRole))));
+                   ((Window->Type.Role && CFEqual(Window->Type.Role, Window->Type.CustomRole)) ||
+                    (Window->Type.Subrole && CFEqual(Window->Type.Subrole, Window->Type.CustomRole))));
     return Result;
 }
 
 bool AXLibWindowHasRole(ax_window *Window, CFTypeRef Role)
 {
-    bool Result = ((CFEqual(Window->Type.Role, Role)) ||
-                   (CFEqual(Window->Type.Subrole, Role)));
+    bool Result = ((Window->Type.Role && CFEqual(Window->Type.Role, Role)) ||
+                   (Window->Type.Subrole && CFEqual(Window->Type.Subrole, Role)));
     return Result;
 }
 
