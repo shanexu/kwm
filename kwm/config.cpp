@@ -1332,13 +1332,13 @@ KwmParseTreeOption(tokenizer *Tokenizer)
         else
             ReportInvalidCommand("Invalid command 'tree save " + std::string(Token.Text, Token.TextLength) + "'");
     }
-    else if(TokenEquals(Token, "load"))
+    else if(TokenEquals(Token, "restore"))
     {
         token Token = GetToken(Tokenizer);
         if(Token.Type != Token_EndOfStream)
             LoadWindowNodeTree(AXLibMainDisplay(), std::string(Token.Text, Token.TextLength));
         else
-            ReportInvalidCommand("Invalid command 'tree load " + std::string(Token.Text, Token.TextLength) + "'");
+            ReportInvalidCommand("Invalid command 'tree restore " + std::string(Token.Text, Token.TextLength) + "'");
     }
     else
     {
