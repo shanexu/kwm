@@ -1,14 +1,13 @@
 import Foundation
 import AppKit
 
-func trim(str: String) -> String {
-    return str.stringByTrimmingCharactersInSet(
-        NSCharacterSet.whitespaceAndNewlineCharacterSet()
+func trim(_ str: String) -> String {
+    return str.trimmingCharacters(
+        in: CharacterSet.whitespacesAndNewlines
     )
-
 }
 
-func parseFrame(args: Array<String>, strokeWidth: CGFloat) -> NSRect
+func parseFrame(_ args: Array<String>, strokeWidth: CGFloat) -> NSRect
 {
     var frameHash = [String: CGFloat]()
     frameHash["w"] = 0
@@ -21,8 +20,8 @@ func parseFrame(args: Array<String>, strokeWidth: CGFloat) -> NSRect
     let scrnHeight: CGFloat = scrn.frame.size.height
 
     for arg in args {
-        if ((arg.characters.indexOf(":")) != nil) {
-            let pair: Array = arg.componentsSeparatedByString(":")
+        if ((arg.characters.index(of: ":")) != nil) {
+            let pair: Array = arg.components(separatedBy: ":")
             let key: String = pair[0]
             let val: String = trim(pair[1])
             let intVal = Float(val)
@@ -53,13 +52,13 @@ func parseFrame(args: Array<String>, strokeWidth: CGFloat) -> NSRect
 
     let computedFrame = NSRect(x: frameHash["x"]!,
                                y: frameHash["y"]!,
-                           width: frameHash["w"]!,
-                          height: frameHash["h"]!)
+                               width: frameHash["w"]!,
+                               height: frameHash["h"]!)
 
-    return CGRectInset(computedFrame, -strokeWidth, -strokeWidth)
+    return computedFrame.insetBy(dx: -strokeWidth, dy: -strokeWidth)
 }
 
-func parseColor(args: Array<String>) -> NSColor
+func parseColor(_ args: Array<String>) -> NSColor
 {
     var colorHash = [String: CGFloat]()
     colorHash["r"] = 1
@@ -68,8 +67,8 @@ func parseColor(args: Array<String>) -> NSColor
     colorHash["a"] = 1
 
     for arg in args {
-        if ((arg.characters.indexOf(":")) != nil) {
-            let pair: Array = arg.componentsSeparatedByString(":")
+        if ((arg.characters.index(of: ":")) != nil) {
+            let pair: Array = arg.components(separatedBy: ":")
             let key: String = pair[0]
             let val: String = trim(pair[1])
             let floatVal = Float(val)
@@ -99,14 +98,14 @@ func parseColor(args: Array<String>) -> NSColor
     return NSColor(red: colorHash["r"]!, green: colorHash["g"]!, blue: colorHash["b"]!, alpha: colorHash["a"]!)
 }
 
-func parseStroke(args: Array<String>) -> [String: CGFloat]
+func parseStroke(_ args: Array<String>) -> [String: CGFloat]
 {
     var strokeHash = [String: CGFloat]()
     strokeHash["size"] = CGFloat(4)
 
     for arg in args {
-        if ((arg.characters.indexOf(":")) != nil) {
-            let pair: Array = arg.componentsSeparatedByString(":")
+        if ((arg.characters.index(of: ":")) != nil) {
+            let pair: Array = arg.components(separatedBy: ":")
             let key: String = pair[0]
             let val: String = trim(pair[1])
             let floatVal = Float(val)
@@ -153,13 +152,13 @@ class OverlayView: NSView
         fatalError("init(coder:) has not been implemented")
     }
 
-    var colorclear = NSColor.clearColor()
+    var colorclear = NSColor.clear
 
-    override func drawRect(rect: NSRect)
+    override func draw(_ rect: NSRect)
     {
         colorclear.setFill()
 
-        let bpath:NSBezierPath = NSBezierPath(roundedRect: CGRectInset(rect, lineWidth/2, lineWidth/2), xRadius:lineRadius, yRadius:lineRadius)
+        let bpath:NSBezierPath = NSBezierPath(roundedRect: rect.insetBy(dx: lineWidth/2, dy: lineWidth/2), xRadius:lineRadius, yRadius:lineRadius)
 
         borderColor.set()
         bpath.lineWidth = lineWidth
@@ -172,7 +171,7 @@ class OverlayController: NSObject, NSApplicationDelegate
 
     let window = NSWindow()
 
-    func showOverlayView(args: Array<String>)
+    func showOverlayView(_ args: Array<String>)
     {
         let overlayColor = parseColor(args)
         let overlayStroke = parseStroke(args)
@@ -189,31 +188,31 @@ class OverlayController: NSObject, NSApplicationDelegate
         window.setFrame(NSRectToCGRect(overlayFrame), display: true)
     }
 
-    func applicationDidFinishLaunching(aNotification: NSNotification)
+    func applicationDidFinishLaunching(_ aNotification: Notification)
     {
-        window.opaque = false
-        window.backgroundColor = NSColor.clearColor()
+        window.isOpaque = false
+        window.backgroundColor = NSColor.clear
         window.styleMask = NSBorderlessWindowMask
         window.ignoresMouseEvents = true
-        window.level = Int(CGWindowLevelForKey(.FloatingWindowLevelKey))
+        window.level = Int(CGWindowLevelForKey(.floatingWindow))
         window.hasShadow = false
         // window.collectionBehavior = NSWindowCollectionBehavior.CanJoinAllSpaces
-        window.collectionBehavior = NSWindowCollectionBehavior.CanJoinAllSpaces
+        window.collectionBehavior = NSWindowCollectionBehavior.canJoinAllSpaces
         window.makeKeyAndOrderFront(self)
         self.listenToStdIn()
     }
 
-    func listenToStdIn() -> NSObjectProtocol
+    func listenToStdIn()
     {
-        let outHandle = NSFileHandle.fileHandleWithStandardInput()
+        let outHandle = FileHandle.standardInput
         outHandle.waitForDataInBackgroundAndNotify()
 
         var stdListen: NSObjectProtocol!
-        stdListen = NSNotificationCenter.defaultCenter().addObserverForName(NSFileHandleDataAvailableNotification, object: outHandle, queue: nil) {
+        stdListen = NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: outHandle, queue: nil) {
             notification -> Void in
             let data = outHandle.availableData
-            if (data.length > 0) {
-                if let str = NSString(data: data, encoding: NSUTF8StringEncoding) as String? {
+            if (data.count > 0) {
+                if let str = NSString(data: data, encoding: String.Encoding.utf8.rawValue) as String? {
                     str.enumerateLines { (line, stop) -> () in
                         let trimmedString = trim(line);
 
@@ -222,24 +221,20 @@ class OverlayController: NSObject, NSApplicationDelegate
                         } else if (trimmedString == "quit") {
                             exit(0)
                         } else {
-                            let args = trimmedString.componentsSeparatedByString(" ")
+                            let args = trimmedString.components(separatedBy: " ")
                                 self.showOverlayView(args)
                         }
                     }
                     outHandle.waitForDataInBackgroundAndNotify()
                 } else {
-                    NSNotificationCenter.defaultCenter().removeObserver(stdListen)
+                    NotificationCenter.default.removeObserver(stdListen)
                 }
-
             }
         }
-
-        return stdListen
     }
-
 }
 
-let app = NSApplication.sharedApplication()
+let app = NSApplication.shared()
 let overlayController = OverlayController()
 
 app.delegate = overlayController
