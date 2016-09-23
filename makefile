@@ -1,8 +1,7 @@
 DEBUG_BUILD   = -DDEBUG_BUILD -g
 FRAMEWORKS    = -framework ApplicationServices -framework Carbon -framework Cocoa
 DEVELOPER_DIR = $(shell xcode-select -p)
-SWIFT_STATIC  = $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift_static/macosx
-SDK_ROOT      = $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+SDK_ROOT      = $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/window.cpp kwm/display.cpp \
 				kwm/daemon.cpp kwm/interpreter.cpp kwm/keys.cpp kwm/space.cpp kwm/border.cpp kwm/cursor.cpp \
 				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp \
@@ -63,15 +62,11 @@ $(OBJS_DIR)/kwmc/%.o: kwmc/%.cpp
 	g++ -c $< $(BUILD_FLAGS) -o $@
 
 $(BUILD_PATH)/kwm-overlay: $(foreach obj,$(KWMO_OBJS),$(OBJS_DIR)/$(obj))
-	swiftc $^ -lc++ -L $(SWIFT_STATIC) -Xlinker -force_load_swift_libs -o $@
+	swiftc $^ -static-stdlib -sdk $(SDK_ROOT) -o $@
 
 $(OBJS_DIR)/kwm-overlay/%.o: kwm-overlay/%.swift
 	@mkdir -p $(@D)
 	swiftc -c $^ $(DEBUG_BUILD) -sdk $(SDK_ROOT) -o $@
-
-$(OBJS_DIR)/kwm-overlay/%.o: kwm-overlay/%.mm
-	@mkdir -p $(@D)
-	g++ -c $^ $(DEBUG_BUILD) $(BUILD_FLAGS) -o $@
 
 $(BUILD_PATH)/kwm_template.plist: $(KWM_PLIST)
 	cp $^ $@
