@@ -232,9 +232,7 @@ EVENT_CALLBACK(Callback_KWMEvent_QueryCurrentSpaceMode)
 EVENT_CALLBACK(Callback_KWMEvent_QueryCurrentSpaceTag)
 {
     int *SockFD = (int *) Event->Context;
-
     std::string Output;
-    ax_window *Window = NULL;
 
     ax_application *Application = AXLibGetFocusedApplication();
     if(Application)
