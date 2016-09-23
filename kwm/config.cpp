@@ -544,6 +544,8 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
             CreateColorFormat(&FocusedBorder.Color);
             mode *BindingMode = GetBindingMode("default");
             BindingMode->Color = FocusedBorder.Color;
+            if(FocusedApplication && FocusedApplication->Focus)
+                UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
         }
     }
     else if(TokenEquals(TokenBorder, "marked"))
