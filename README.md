@@ -1,4 +1,4 @@
-## Brief Description [![Build Status](https://travis-ci.org/koekeishiya/kwm.svg?branch=master)](https://travis-ci.org/koekeishiya/kwm)
+## Description [![Build Status](https://travis-ci.org/koekeishiya/kwm.svg?branch=master)](https://travis-ci.org/koekeishiya/kwm)
 
 **NOTE:** The master branch is considered stable and can be used instead of the latest release version by people who wish to do so.
 
@@ -26,7 +26,7 @@ For more screenshots, [click here.](https://github.com/koekeishiya/kwm/issues/2)
 
 The bar seen in the above screenshot can be found [here](https://github.com/koekeishiya/nerdbar.widget).
 
-## Install:
+## Install
 
 **NOTE:** Kwm requires ['Displays have separate spaces'](https://support.apple.com/library/content/dam/edam/applecare/images/en_US/osx/separate_spaces.png) to be enabled.
 
@@ -69,7 +69,7 @@ Manually manage *Kwm* using launchctl
 
       launchctl load -w ~/Library/LaunchAgents/com.koekeishiya.kwm.plist
 
-## Configuration:
+## Configuration
 
 The default configuration file is `$HOME/.kwm/kwmrc` and is a script that contains *Kwmc* commands
 to be executed when *Kwm* starts.  In addition to the above, the file `$HOME/.kwm/init` is a shell
