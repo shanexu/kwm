@@ -5,7 +5,7 @@
 #include "space.h"
 #include "border.h"
 #include "helpers.h"
-#include "axlib/display.h"
+#include "../axlib/display.h"
 
 #define internal static
 

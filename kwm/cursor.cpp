@@ -4,7 +4,7 @@
 #include "tree.h"
 #include "space.h"
 #include "border.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 #define internal static
 extern std::map<std::string, space_info> WindowTree;

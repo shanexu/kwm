@@ -2,7 +2,7 @@
 #include "helpers.h"
 #include "interpreter.h"
 #include "border.h"
-#include "axlib/event.h"
+#include "../axlib/event.h"
 
 #define internal static
 #define local_persist static

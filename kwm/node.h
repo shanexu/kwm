@@ -2,8 +2,8 @@
 #define NODE_H
 
 #include "types.h"
-#include "axlib/display.h"
-#include "axlib/window.h"
+#include "../axlib/display.h"
+#include "../axlib/window.h"
 
 tree_node *CreateRootNode();
 link_node *CreateLinkNode();

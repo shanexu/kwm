@@ -2,7 +2,7 @@
 #define DISPLAY_H
 
 #include "types.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 void UpdateSpaceOfDisplay(ax_display *Display, space_info *Space);
 void SetDefaultPaddingOfDisplay(container_offset Offset);

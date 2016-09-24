@@ -2,7 +2,7 @@
 #define SCRATCHPAD_H
 
 #include "types.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 int GetScratchpadSlotOfWindow(ax_window *Window);
 

@@ -1,6 +1,5 @@
 #include "border.h"
 #include "window.h"
-#include "axlib/axlib.h"
 
 #define internal static
 #define local_persist static

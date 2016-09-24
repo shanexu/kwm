@@ -17,7 +17,7 @@
 #include "scratchpad.h"
 #include "cursor.h"
 #include "event.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 #define internal static
 #define INVALID_SOCKFD -1

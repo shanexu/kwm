@@ -5,7 +5,7 @@
 #include "rules.h"
 #include "config.h"
 #include "tokenizer.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 #define internal static
 

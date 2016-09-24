@@ -2,8 +2,8 @@
 #define WINDOW_H
 
 #include "types.h"
-#include "axlib/display.h"
-#include "axlib/window.h"
+#include "../axlib/display.h"
+#include "../axlib/window.h"
 
 void CreateWindowNodeTree(ax_display *Display);
 void CreateInactiveWindowNodeTree(ax_display *Display, std::vector<uint32_t> *Windows);

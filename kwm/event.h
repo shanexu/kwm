@@ -1,7 +1,7 @@
 #ifndef KWM_EVENT_H
 #define KWM_EVENT_H
 
-#include "axlib/event.h"
+#include "../axlib/event.h"
 
 /* NOTE(koekeishiya): Declare kwm_event_type callbacks as external functions. */
 extern EVENT_CALLBACK(Callback_KWMEvent_QueryTilingMode);

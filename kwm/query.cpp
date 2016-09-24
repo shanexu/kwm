@@ -5,7 +5,7 @@
 #include "tree.h"
 #include "node.h"
 
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 #define internal static
 

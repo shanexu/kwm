@@ -2,7 +2,7 @@
 #define BORDER_H
 
 #include "types.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 void CloseBorder(kwm_border *Border);
 void ClearBorder(kwm_border *Border);

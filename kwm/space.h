@@ -2,7 +2,7 @@
 #define SPACE_H
 
 #include "types.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 void GetTagForMonocleSpace(space_info *Space, std::string &Tag);
 void GetTagForCurrentSpace(std::string &Tag, ax_window *Window);

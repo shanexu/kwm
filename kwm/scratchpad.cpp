@@ -2,7 +2,6 @@
 #include "display.h"
 #include "space.h"
 #include "window.h"
-#include "axlib/axlib.h"
 
 #define internal static
 extern kwm_settings KWMSettings;

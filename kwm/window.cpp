@@ -10,7 +10,7 @@
 #include "serializer.h"
 #include "cursor.h"
 #include "scratchpad.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 #include <cmath>
 

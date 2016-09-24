@@ -2,7 +2,7 @@
 #define CONTAINER_H
 
 #include "types.h"
-#include "axlib/display.h"
+#include "../axlib/display.h"
 
 void SetRootNodeContainer(ax_display *Display, tree_node *Node);
 void SetLinkNodeContainer(ax_display *Display, link_node *Link);

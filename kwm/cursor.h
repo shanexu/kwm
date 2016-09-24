@@ -2,7 +2,7 @@
 #define CURSOR_H
 
 #include "types.h"
-#include "axlib/window.h"
+#include "../axlib/window.h"
 #include <Carbon/Carbon.h>
 
 void FocusWindowBelowCursor();

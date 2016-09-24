@@ -3,7 +3,7 @@
 #include "tree.h"
 #include "space.h"
 #include "window.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 #define internal static
 

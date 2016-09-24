@@ -6,7 +6,7 @@
 #include "scratchpad.h"
 #include "border.h"
 #include "config.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 #include <getopt.h>
 
 #define internal static

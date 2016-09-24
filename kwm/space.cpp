@@ -5,7 +5,7 @@
 #include "border.h"
 #include "keys.h"
 #include "helpers.h"
-#include "axlib/axlib.h"
+#include "../axlib/axlib.h"
 
 extern std::map<std::string, space_info> WindowTree;
 extern ax_application *FocusedApplication;

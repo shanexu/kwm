@@ -2,7 +2,7 @@
 #define TREE_H
 
 #include "types.h"
-#include "axlib/display.h"
+#include "../axlib/display.h"
 
 tree_node *CreateTreeFromWindowIDList(ax_display *Display, std::vector<uint32_t> *Windows);
 void FillDeserializedTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr);
