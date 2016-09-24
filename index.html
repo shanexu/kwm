@@ -47,7 +47,7 @@
 
       <section id="main_content">
         <h2>
-<a id="brief-description" class="anchor" href="#brief-description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Brief Description</h2>
+<a id="brief-description" class="anchor" href="#brief-description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Description</h2>
 
 <p><strong>NOTE:</strong> The master branch is considered stable and can be used instead of the latest version by people who wish to do so.</p>
 
@@ -75,7 +75,7 @@ For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">clic
 The bar seen in the above screenshot can be found <a href="https://github.com/koekeishiya/nerdbar.widget">here.</a></p>
 
 <h2>
-<a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extended Information:</h2>
+<a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extended Information</h2>
 
 <p>The different features; binary space partitioning, focus-follows-mouse and the hotkey-system can all be enabled
 independently. This allows the user to choose which functionality to enable depending on their workflow.</p>
@@ -93,7 +93,7 @@ Using hotkeys to change window focus will work even if focus-follows-mouse has b
 <em>Kwm</em> supports external monitors and have commands that allow for focusing screens, and moving windows.</p>
 
 <h2>
-<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install:</h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install</h2>
 
 <p><strong>NOTE:</strong> Kwm requires <a href="https://support.apple.com/library/content/dam/edam/applecare/images/en_US/osx/separate_spaces.png">'Displays have separate spaces'</a> to be enabled.</p>
 
@@ -102,25 +102,44 @@ Using hotkeys to change window focus will work even if focus-follows-mouse has b
 <pre><code>  brew install koekeishiya/kwm/kwm
 </code></pre>
 
-<p>To compile from source</p>
+<p>Manage *Kwm* using brew services </p>
 
-<pre><code>  make install
+<pre><code>  brew services start kwm
 </code></pre>
 
-<p>Build with debug information</p>
+<h2>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Development</h2>
 
-<pre><code>  make
+<p><strong>NOTE:</strong> Kwm requires <a href="https://support.apple.com/library/content/dam/edam/applecare/images/en_US/osx/separate_spaces.png">'Displays have separate spaces'</a> to be enabled.</p>
+
+<p><strong>NOTE:</strong> Requires Xcode-8 command line tools.</p>
+
+<p>Build *AXLib* only</p>
+
+<pre><code>  make install-lib  # release version, runs cleanlib
+      make lib          # debug version
 </code></pre>
 
-<p><strong>The following instructions only apply when built from source!</strong><p>
+<p>Build *Kwm* (also builds *AXLib* if required)</p>
 
-<p>Start <em>Kwm</em> automatically on login through launchd</p>
+<pre><code>  make install      # release version, runs cleankwm
+      make              # debug version
+</code></pre>
+
+<p>Remove temporary build artifacts</p>
+
+<pre><code>  make clean        # runs cleanlib and cleankwm
+      make cleanlib     # remove axlib artifacts
+      make cleankwm     # remove kwm artifacts
+</code></pre>
+
+<p>Start <em>Kwm</em> on login through launchd</p>
 
 <pre><code>  edit /path/to/kwm on line 9 of examples/com.koekeishiya.kwm.plist
   cp examples/com.koekeishiya.kwm.plist ~/Library/LaunchAgents/
 </code></pre>
 
-<p>Manually start Kwm using launchct without relogging<p>
+<p>Manually manage <em>Kwm</em> using launchctl<p>
 
 <pre><code>  launchctl load -w ~/Library/LaunchAgents/com.koekeishiya.kwm.plist</code></pre>
 
@@ -128,7 +147,7 @@ Using hotkeys to change window focus will work even if focus-follows-mouse has b
 the terminal application to have Accessibility Permissions (Not Recommended).</p>
 
 <h2>
-<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration:</h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h2>
 
 <p>The default configuration file is <code>$HOME/.kwm/kwmrc</code> and is a script that contains <em>Kwmc</em> commands
 to be executed when <em>Kwm</em> starts. This file can be used to blacklist applications and specify
@@ -148,7 +167,7 @@ in which case it would probably be a good idea to set the <a href="https://githu
 <p>A sample config file can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
 
 <h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage:</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
 <p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space using the tiling mode set in the config file.
 By default, it will use binary space partitioning. This will also happen once for any other space the user might switch to.</p>
