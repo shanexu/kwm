@@ -34,27 +34,40 @@ A codesigned binary release is available through Homebrew
 
       brew install koekeishiya/kwm/kwm
 
-To compile from source
+Manage *Kwm* using brew services
 
-      make install
+      brew services start kwm
 
-Build with debug information
+## Development
 
-      make
+**NOTE:** Kwm requires ['Displays have separate spaces'](https://support.apple.com/library/content/dam/edam/applecare/images/en_US/osx/separate_spaces.png) to be enabled.
 
-**The following instructions only apply when built from source!**
+**NOTE:** Requires Xcode-8 command line tools
+
+Build *AXLib* only
+
+      make install-lib  # release version, runs cleanlib
+      make lib          # debug version
+
+Build *Kwm* (also builds *AXLib* if required)
+
+      make install      # release version, runs cleankwm
+      make              # debug version
+
+Remove temporary build artifacts
+
+      make clean        # runs cleanlib and cleankwm
+      make cleanlib     # remove axlib artifacts
+      make cleankwm     # remove kwm artifacts
 
 Start *Kwm* on login through launchd
 
       edit /path/to/kwm on line 9 of examples/com.koekeishiya.kwm.plist
       cp examples/com.koekeishiya.kwm.plist ~/Library/LaunchAgents/
 
-Manually start *Kwm* using launchctl without relogging
+Manually manage *Kwm* using launchctl
 
       launchctl load -w ~/Library/LaunchAgents/com.koekeishiya.kwm.plist
-
-I would recommend for *Kwm* to be managed by launchd, as it otherwise requires
-the terminal application to have Accessibility Permissions (Not Recommended).
 
 ## Configuration:
 
