@@ -117,20 +117,20 @@ Using hotkeys to change window focus will work even if focus-follows-mouse has b
 <p>Build <em>AXLib</em> only</p>
 
 <pre><code>  make install-lib  # release version, runs cleanlib
-    make lib          # debug version
+make lib          # debug version
 </code></pre>
 
 <p>Build <em>Kwm</em> (also builds <em>AXLib</em> if required)</p>
 
 <pre><code>  make install      # release version, runs cleankwm
-    make              # debug version
+make              # debug version
 </code></pre>
 
 <p>Remove temporary build artifacts</p>
 
 <pre><code>  make clean        # runs cleanlib and cleankwm
-      make cleanlib     # remove axlib artifacts
-      make cleankwm     # remove kwm artifacts
+make cleanlib     # remove axlib artifacts
+make cleankwm     # remove kwm artifacts
 </code></pre>
 
 <p>Start <em>Kwm</em> on login through launchd</p>
