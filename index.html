@@ -75,22 +75,76 @@ For more screenshots, <a href="https://github.com/koekeishiya/kwm/issues/2">clic
 The bar seen in the above screenshot can be found <a href="https://github.com/koekeishiya/nerdbar.widget">here.</a></p>
 
 <h2>
-<a id="extended-information" class="anchor" href="#extended-information" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extended Information</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
-<p>The different features; binary space partitioning, focus-follows-mouse and the hotkey-system can all be enabled
-independently. This allows the user to choose which functionality to enable depending on their workflow.</p>
+<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space using the tiling mode set in the config file.
+By default, it will use <a href="https://en.wikipedia.org/wiki/Binary_space_partitioning">binary space partitioning</a>. This will also happen once for any other space the user might switch to.</p>
 
-<p><em>Binary Space Partitioning:</em>
-<em>Kwm</em> tiles windows using a binary-tree structure. For information, check the usage section.</p>
+<p>When <em>Kwm</em> detects a new window, it is inserted into a window tree using an insertion point, with the given split-mode.
+When a window is closed, it will be removed from the window tree and the tree will be rebalanced.
+By default, the insertion point is the focused container, but a temporary insertion point can be set.</p>
 
-<p><em>System-Wide Hotkeys:</em>
-<em>Kwm</em> allows the user to bind and unbind hotkeys to commands through the <em>Kwmc</em> tool, using a bind and unbind option.
-These binds support the use of a single prefix, which may be bind-specific or global (apply to all binds).
-There are 3 types of hotkeys: global, global + blacklist applications, specified applications.
-Using hotkeys to change window focus will work even if focus-follows-mouse has been disabled.</p>
+<p>There are 3 types of split-modes available:</p>
 
-<p><em>Multiple monitor support:</em>
-<em>Kwm</em> supports external monitors and have commands that allow for focusing screens, and moving windows.</p>
+<ul>
+<li>Optimal - uses width/height ratio (default)</li>
+<li>Vertical</li>
+<li>Horizontal</li>
+</ul>
+
+<p>A node in the bsp-tree can be in 2 different states:</p>
+
+<ul>
+<li>Tree Node</li>
+<li>Link Node</li>
+</ul>
+
+<p>Example of a bsp-tree consisting of only Tree Nodes:</p>
+
+<pre><code>          a                       a                       a
+         / \         --&gt;         / \         --&gt;         / \
+        1   2                   1   b                   1   b
+                                   / \                     / \
+                                  3   2                   c   2
+                                                         / \
+                                                        4   3
+
+---------------------   ---------------------   ---------------------
+|         |         |   |         |         |   |         |    |    |
+|         |         |   |         |    3    |   |         | 4  |  3 |
+|         |         |   |         |    *    |   |         | *  |    |
+|    1    |    2    |   |    1    |---------|   |    1    |---------|
+|         |    *    |   |         |         |   |         |         |
+|         |         |   |         |    2    |   |         |    2    |
+|         |         |   |         |         |   |         |         |
+---------------------   ---------------------   ---------------------
+
+</code></pre>
+
+<p>Example of a bsp-tree consisting of a <a href="https://github.com/koekeishiya/kwm/pull/231">monocle-subtree (a Link Node)</a>:</p>
+
+<pre><code>          a                       a                       a
+         / \         --&gt;         / \         --&gt;         / \
+        1   b                   1   b                   1   b
+           / \                 /   / \                 /   / \
+          3   2               4   3   2               4   3   2
+                                                     /
+                                                    5
+
+---------------------   ---------------------   ---------------------
+| SubTree |         |   | SubTree |         |   | SubTree |         |
+|    1    |    3    |   |    1    |    3    |   |    1    |    3    |
+|         |         |   |    |    |         |   |    |    |         |
+|         |---------|   |    4    |---------|   |    4    |---------|
+|         |         |   |         |         |   |    |    |         |
+|         |    2    |   |         |    2    |   |    5    |    2    |
+|         |         |   |         |         |   |         |         |
+---------------------   ---------------------   ---------------------
+
+</code></pre>
+
+<p>If a window is not detected by <em>Kwm</em>, it is most likely due to a 'window role' mismatch.
+Use the window rule system to fix this. See <a href="https://github.com/koekeishiya/kwm/issues/40">#issue 40</a> for information.</p>
 
 <h2>
 <a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install</h2>
@@ -165,83 +219,6 @@ before writing them into the config file.</p>
 in which case it would probably be a good idea to set the <a href="https://github.com/koekeishiya/kwm/issues/191">directories Kwm uses</a> for various settings.</p>
 
 <p>A sample config file can be found within the <a href="https://github.com/koekeishiya/kwm/tree/master/examples">examples</a> directory.</p>
-
-<h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
-
-<p>When <em>Kwm</em> starts, it will automatically tile the windows of the current space using the tiling mode set in the config file.
-By default, it will use binary space partitioning. This will also happen once for any other space the user might switch to.</p>
-
-<p>When <em>Kwm</em> detects a new window, it is inserted into a window tree using an insertion point, with the given split-mode.
-When a window is closed, it will be removed from the window tree and the tree will be rebalanced.
-By default, the insertion point is the focused container, but a temporary insertion point can be set.</p>
-
-<p>There are 3 types of split-modes available:</p>
-
-<ul>
-<li>Optimal - uses width/height ratio (default)</li>
-<li>Vertical</li>
-<li>Horizontal</li>
-</ul>
-
-<p>A node in the bsp-tree can be in 2 different states:</p>
-
-<ul>
-<li>Tree Node</li>
-<li>Link Node</li>
-</ul>
-
-<p>Example of a bsp-tree consisting of only Tree Nodes:</p>
-
-<pre><code>          a                       a                       a
-         / \         --&gt;         / \         --&gt;         / \
-        1   2                   1   b                   1   b
-                                   / \                     / \
-                                  3   2                   c   2
-                                                         / \
-                                                        4   3
-
----------------------   ---------------------   ---------------------
-|         |         |   |         |         |   |         |    |    |
-|         |         |   |         |    3    |   |         | 4  |  3 |
-|         |         |   |         |    *    |   |         | *  |    |
-|    1    |    2    |   |    1    |---------|   |    1    |---------|
-|         |    *    |   |         |         |   |         |         |
-|         |         |   |         |    2    |   |         |    2    |
-|         |         |   |         |         |   |         |         |
----------------------   ---------------------   ---------------------
-
-</code></pre>
-
-<p>Example of a bsp-tree consisting of a <a href="https://github.com/koekeishiya/kwm/pull/231">monocle-subtree (a Link Node)</a>:</p>
-
-<pre><code>          a                       a                       a
-         / \         --&gt;         / \         --&gt;         / \
-        1   b                   1   b                   1   b
-           / \                 /   / \                 /   / \
-          3   2               4   3   2               4   3   2
-                                                     /
-                                                    5
-
----------------------   ---------------------   ---------------------
-| SubTree |         |   | SubTree |         |   | SubTree |         |
-|    1    |    3    |   |    1    |    3    |   |    1    |    3    |
-|         |         |   |    |    |         |   |    |    |         |
-|         |---------|   |    4    |---------|   |    4    |---------|
-|         |         |   |         |         |   |    |    |         |
-|         |    2    |   |         |    2    |   |    5    |    2    |
-|         |         |   |         |         |   |         |         |
----------------------   ---------------------   ---------------------
-
-</code></pre>
-
-<p>In addition to bsp, <em>Kwm</em> supports both monocle and floating spaces.
-If a space is set to floating mode, <em>Kwm</em> will ignore this space.
-If a space is in monocle mode, every window will run fullscreen.</p>
-
-<p>If a window is not detected by <em>Kwm</em>, it is most likely due to a 'window role' mismatch.
-Use the window rule system to fix this.
-See <a href="https://github.com/koekeishiya/kwm/issues/40">#issue 40</a> for information.</p>
 
 <h3>
 <a id="donate" class="anchor" href="#donate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Donate</h3>
