@@ -15,8 +15,7 @@ AXLIB_OBJS    = $(AXLIB_OBJS_TMP:.mm=.o)
 KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/window.cpp kwm/display.cpp \
 				kwm/daemon.cpp kwm/interpreter.cpp kwm/keys.cpp kwm/space.cpp kwm/border.cpp kwm/cursor.cpp \
 				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp
-KWM_OBJS_TMP  = $(KWM_SRCS:.cpp=.o)
-KWM_OBJS      = $(KWM_OBJS_TMP:.mm=.o)
+KWM_OBJS      = $(KWM_SRCS:.cpp=.o)
 
 KWMC_SRCS     = kwmc/kwmc.cpp
 KWMO_SRCS     = kwm-overlay/kwm-overlay.swift
@@ -84,10 +83,6 @@ $(BUILD_PATH)/kwm: $(foreach obj,$(KWM_OBJS),$(OBJS_DIR)/$(obj)) $(LIB)
 	g++ $^ $(DEBUG_BUILD) $(BUILD_FLAGS) -lpthread $(FRAMEWORKS) -o $@
 
 $(OBJS_DIR)/kwm/%.o: kwm/%.cpp
-	@mkdir -p $(@D)
-	g++ -c $< $(DEBUG_BUILD) $(BUILD_FLAGS) -o $@
-
-$(OBJS_DIR)/kwm/%.o: kwm/%.mm
 	@mkdir -p $(@D)
 	g++ -c $< $(DEBUG_BUILD) $(BUILD_FLAGS) -o $@
 
