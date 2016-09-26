@@ -308,23 +308,11 @@ AXLibRemoveDisplay(CGDirectDisplayID DisplayID)
 
     if(StoredDisplayID)
     {
-        /* TODO(koekeishiya): This code-path is not taken (on my machine) when a display is disconnected.
+        /* NOTE(koekeishiya): This code-path is not taken (on my machine) when a display is disconnected.
         The call to AXLibGetDisplayIdentifier(..) results in a 'display not found' error, and we end up returning NULL
         causing our StoredDisplayID to be zero.
 
-        Is there any case where StoredDisplayID would actually be non-zero (?)
-        Confirm if this code-path is actually ran when a 4k-display is removed,
-        or a gpu-switch is triggered (?) lack of hardware to perform these tests. */
-
-        /* NOTE(koekeishiya): If the display is asleep and not physically disconnected, we want the state to persist. */
-        if(!CGDisplayIsAsleep(StoredDisplayID))
-        {
-            /* NOTE(koekeishiya): Display has been removed. Reset state. */
-            if((*Displays)[StoredDisplayID].Identifier)
-                CFRelease((*Displays)[StoredDisplayID].Identifier);
-
-            Displays->erase(StoredDisplayID);
-        }
+        This is only non-zero when a fake 'GPU display' is removed, and so we do nothing. */
     }
     else if(Displays->find(DisplayID) != Displays->end())
     {
