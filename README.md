@@ -12,11 +12,10 @@ and different types of hotkeys.
 
 *Kwm* runs a local daemon to read messages and trigger functions.
 *Kwmc* is used to write to *Kwm*'s socket, and must be used when interacting with and configuring how *Kwm* works.
-For a list of available commands, [**view the Kwmc configuration reference.**](https://koekeishiya.github.io/kwm/kwmc.html)
 
-For in depth information, [**view the Kwm reference page.**](https://koekeishiya.github.io/kwm)
+For in depth information, [**click here**](https://koekeishiya.github.io/kwm).
 For sample configurations and other useful scripts, check out the [wiki](https://github.com/koekeishiya/kwm/wiki).
-You can also drop by the channel **##kwm** on [freenode](http://webchat.freenode.net)
+You can also drop by the channel **##kwm** on [freenode](http://webchat.freenode.net).
 
 *Kwm* requires access to the OSX accessibility API.
 Tested on El Capitan (10.11.1 - 10.11.6).
@@ -71,7 +70,9 @@ Manually manage *Kwm* using launchctl
 
 ## Configuration
 
-The default configuration file is `$HOME/.kwm/kwmrc` and is a script that contains *Kwmc* commands
+**NOTE**: [Documentation](https://koekeishiya.github.io/kwm/kwmc.html) of available commands
+
+The default configuration file is `$HOME/.kwm/kwmrc` and is a script that contains *kwmc* commands
 to be executed when *Kwm* starts.  In addition to the above, the file `$HOME/.kwm/init` is a shell
 script that will be ran after *Kwm* has finished setting up the internal configuration.
 
@@ -80,10 +81,8 @@ in which case it would probably be a good idea to set the [directories *Kwm* use
 
 A sample config file can be found within the [examples](examples) directory.
 Any error that occur during parsing of the config file will be written to **stderr**.
-[Click here](https://github.com/koekeishiya/kwm/issues/285#issuecomment-216703278) for more information.
+For more information, [click here](https://github.com/koekeishiya/kwm/issues/285#issuecomment-216703278).
 
 ### Donate
-First of all, *Kwm* will always be free and open source, however some users have
-expressed interest in some way to show their support.
-
+*Kwm* will always be free and open source, however, some users have expressed interest in some way to show their support.
 If you wish to do so, I have set up a patreon [here](https://www.patreon.com/aasvi).
