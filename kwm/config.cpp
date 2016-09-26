@@ -1152,6 +1152,8 @@ KwmParseWindowOption(tokenizer *Tokenizer)
                         ModifyContainerSplitRatio(Ratio, 180);
                     else if(TokenEquals(Direction, "west"))
                         ModifyContainerSplitRatio(Ratio, 270);
+                    else if(TokenEquals(Direction, "focused"))
+                        ModifyContainerSplitRatio(Ratio);
                     else
                         ReportInvalidCommand("Unknown selector '" + std::string(Direction.Text, Direction.TextLength) + "'");
                 }
