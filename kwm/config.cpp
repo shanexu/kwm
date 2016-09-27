@@ -33,7 +33,6 @@ extern kwm_border MarkedBorder;
 
 extern kwm_path KWMPath;
 extern kwm_settings KWMSettings;
-extern kwm_hotkeys KWMHotkeys;
 
 internal inline void
 ReportInvalidCommand(std::string Command)
@@ -56,18 +55,6 @@ KwmParseConfigOptionTiling(tokenizer *Tokenizer)
         KWMSettings.Space = SpaceModeFloating;
     else
         ReportInvalidCommand("Unknown command 'config tiling " + std::string(Token.Text, Token.TextLength) + "'");
-}
-
-internal void
-KwmParseConfigOptionHotkeys(tokenizer *Tokenizer)
-{
-    token Token = GetToken(Tokenizer);
-    if(TokenEquals(Token, "on"))
-        AddFlags(&KWMSettings, Settings_BuiltinHotkeys);
-    else if(TokenEquals(Token, "off"))
-        ClearFlags(&KWMSettings, Settings_BuiltinHotkeys);
-    else
-        ReportInvalidCommand("Unknown command 'config hotkeys " + std::string(Token.Text, Token.TextLength) + "'");
 }
 
 internal void
@@ -542,8 +529,6 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
             std::string BorderColor(Token.Text, Token.TextLength);
             FocusedBorder.Color = ConvertHexRGBAToColor(ConvertHexStringToInt(BorderColor));
             CreateColorFormat(&FocusedBorder.Color);
-            mode *BindingMode = GetBindingMode("default");
-            BindingMode->Color = FocusedBorder.Color;
             if(FocusedApplication && FocusedApplication->Focus)
                 UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
         }
@@ -870,66 +855,6 @@ KwmParseConfigOptionDisplay(tokenizer *Tokenizer)
 }
 
 internal void
-KwmParseModeOptionActivate(tokenizer *Tokenizer)
-{
-    token TokenMode = GetToken(Tokenizer);
-    std::string Mode(TokenMode.Text, TokenMode.TextLength);
-    KwmActivateBindingMode(Mode);
-}
-
-internal void
-KwmParseModeOptionProperties(token *TokenMode, tokenizer *Tokenizer)
-{
-    std::string Mode(TokenMode->Text, TokenMode->TextLength);
-    mode *BindingMode = GetBindingMode(Mode);
-
-    token Token = GetToken(Tokenizer);
-    if(TokenEquals(Token, "prefix"))
-    {
-        token Token = GetToken(Tokenizer);
-        std::string Status(Token.Text, Token.TextLength);
-        if(TokenEquals(Token, "on"))
-            BindingMode->Prefix = true;
-        else if(TokenEquals(Token, "off"))
-            BindingMode->Prefix = false;
-        else
-            ReportInvalidCommand("Unknown command 'mode " + Mode + " prefix " + Status + "'");
-    }
-    else if(TokenEquals(Token, "timeout"))
-    {
-        token Token = GetToken(Tokenizer);
-        switch(Token.Type)
-        {
-            case Token_Digit:
-            {
-                BindingMode->Timeout = ConvertStringToDouble(std::string(Token.Text, Token.TextLength));
-            } break;
-            default:
-            {
-                std::string Timeout(Token.Text, Token.TextLength);
-                ReportInvalidCommand("Unknown command 'mode " + Mode + " timeout " + Timeout + "'");
-            } break;
-        }
-    }
-    else if(TokenEquals(Token, "color"))
-    {
-        token Token = GetToken(Tokenizer);
-        std::string Color(Token.Text, Token.TextLength);
-        BindingMode->Color = ConvertHexRGBAToColor(ConvertHexStringToInt(Color));
-        CreateColorFormat(&BindingMode->Color);
-    }
-    else if(TokenEquals(Token, "restore"))
-    {
-        token Token = GetToken(Tokenizer);
-        BindingMode->Restore = std::string(Token.Text, Token.TextLength);
-    }
-    else
-    {
-        ReportInvalidCommand("Unknown command 'mode " + Mode + " " + std::string(Token.Text, Token.TextLength) + "'");
-    }
-}
-
-internal void
 KwmParseConfigOption(tokenizer *Tokenizer)
 {
     token Token = GetToken(Tokenizer);
@@ -944,8 +869,6 @@ KwmParseConfigOption(tokenizer *Tokenizer)
         {
             if(TokenEquals(Token, "tiling"))
                 KwmParseConfigOptionTiling(Tokenizer);
-            else if(TokenEquals(Token, "hotkeys"))
-                KwmParseConfigOptionHotkeys(Tokenizer);
             else if(TokenEquals(Token, "padding"))
                 KwmParseConfigOptionPadding(Tokenizer);
             else if(TokenEquals(Token, "gap"))
@@ -980,31 +903,6 @@ KwmParseConfigOption(tokenizer *Tokenizer)
                 KwmReloadConfig();
             else
                 ReportInvalidCommand("Unknown command 'config " + std::string(Token.Text, Token.TextLength) + "'");
-        } break;
-        default:
-        {
-            ReportInvalidCommand("Unknown token '" + std::string(Token.Text, Token.TextLength) + "'");
-        } break;
-    }
-}
-
-internal void
-KwmParseModeOption(tokenizer *Tokenizer)
-{
-    token Token = GetToken(Tokenizer);
-    switch(Token.Type)
-    {
-        case Token_EndOfStream:
-        {
-            ReportInvalidCommand("Unexpected end of stream!");
-            return;
-        } break;
-        case Token_Identifier:
-        {
-            if(TokenEquals(Token, "activate"))
-                KwmParseModeOptionActivate(Tokenizer);
-            else
-                KwmParseModeOptionProperties(&Token, Tokenizer);
         } break;
         default:
         {
@@ -1922,8 +1820,6 @@ void KwmParseKwmc(tokenizer *Tokenizer, int SockFD)
         {
             if(TokenEquals(Token, "config"))
                 KwmParseConfigOption(Tokenizer);
-            else if(TokenEquals(Token, "mode"))
-                KwmParseModeOption(Tokenizer);
             else if(TokenEquals(Token, "window"))
                 KwmParseWindowOption(Tokenizer);
             else if(TokenEquals(Token, "tree"))
@@ -2079,11 +1975,9 @@ void KwmParseConfig(std::string File)
 internal void
 KwmClearSettings()
 {
-    KWMHotkeys.Modes.clear();
     KWMSettings.WindowRules.clear();
     KWMSettings.SpaceSettings.clear();
     KWMSettings.DisplaySettings.clear();
-    KWMHotkeys.ActiveMode = GetBindingMode("default");
 }
 
 void KwmReloadConfig()

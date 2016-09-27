@@ -11,7 +11,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <chrono>
 
 #include <stdlib.h>
 #include <string.h>
@@ -23,12 +22,10 @@
 #include <dlfcn.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
 
 struct space_identifier;
 struct color;
-struct mode;
-struct hotkey;
+struct modifier_keys;
 struct space_settings;
 struct container_offset;
 
@@ -41,7 +38,6 @@ struct scratchpad;
 
 struct kwm_mach;
 struct kwm_border;
-struct kwm_hotkeys;
 struct kwm_path;
 struct kwm_settings;
 
@@ -58,8 +54,6 @@ struct kwm_settings;
     #define DEBUG(x) do {} while(0)
     #define Assert(Expression) do {} while(0)
 #endif
-
-typedef std::chrono::time_point<std::chrono::steady_clock> kwm_time_point;
 
 enum focus_option
 {
@@ -113,13 +107,6 @@ enum border_type
     BORDER_MARKED,
 };
 
-enum hotkey_state
-{
-    HotkeyStateNone,
-    HotkeyStateInclude,
-    HotkeyStateExclude
-};
-
 struct space_identifier
 {
     int ScreenID, SpaceID;
@@ -131,16 +118,9 @@ struct space_identifier
     }
 };
 
-struct hotkey
+struct modifier_keys
 {
-    std::vector<std::string> List;
-    hotkey_state State;
-
     uint32_t Flags;
-    CGKeyCode Key;
-
-    std::string Mode;
-    std::string Command;
 };
 
 struct container_offset
@@ -158,18 +138,6 @@ struct color
     double Alpha;
 
     std::string Format;
-};
-
-struct mode
-{
-    std::vector<hotkey> Hotkeys;
-    std::string Name;
-    color Color;
-
-    bool Prefix;
-    double Timeout;
-    std::string Restore;
-    kwm_time_point Time;
 };
 
 struct node_container
@@ -266,13 +234,6 @@ struct kwm_border
     int Width;
 };
 
-struct kwm_hotkeys
-{
-    std::map<std::string, mode> Modes;
-    hotkey MouseDragKey;
-    mode *ActiveMode;
-};
-
 struct kwm_path
 {
     std::string FilePath;
@@ -306,13 +267,12 @@ struct kwm_settings
 enum kwm_toggleable
 {
     Settings_MouseFollowsFocus = (1 << 0),
-    Settings_BuiltinHotkeys = (1 << 1),
-    Settings_StandbyOnFloat = (1 << 2),
-    Settings_CenterOnFloat = (1 << 3),
-    Settings_SpawnAsLeftChild = (1 << 4),
-    Settings_FloatNonResizable = (1 << 5),
-    Settings_LockToContainer = (1 << 6),
-    Settings_MouseDrag = (1 << 7),
+    Settings_StandbyOnFloat = (1 << 1),
+    Settings_CenterOnFloat = (1 << 2),
+    Settings_SpawnAsLeftChild = (1 << 3),
+    Settings_FloatNonResizable = (1 << 4),
+    Settings_LockToContainer = (1 << 5),
+    Settings_MouseDrag = (1 << 6),
 };
 
 inline void

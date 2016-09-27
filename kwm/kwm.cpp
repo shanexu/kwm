@@ -21,10 +21,10 @@ ax_window *MarkedWindow = NULL;
 kwm_mach KWMMach = {};
 kwm_path KWMPath = {};
 kwm_settings KWMSettings = {};
-kwm_hotkeys KWMHotkeys = {};
 kwm_border FocusedBorder = {};
 kwm_border MarkedBorder = {};
 scratchpad Scratchpad = {};
+modifier_keys MouseDragKey = {};
 
 internal CGEventRef
 CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void *Refcon)
@@ -36,26 +36,6 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
         {
             DEBUG("Notice: Restarting Event Tap");
             CGEventTapEnable(KWMMach.EventTap, true);
-        } break;
-        case kCGEventKeyDown:
-        {
-            if(HasFlags(&KWMSettings, Settings_BuiltinHotkeys))
-            {
-                hotkey *Hotkey = new(std::nothrow) hotkey;
-                if(Hotkey)
-                {
-                    if(HotkeyForCGEvent(Event, Hotkey))
-                    {
-                        AXLibConstructEvent(AXEvent_HotkeyPressed, Hotkey, false);
-                        if(!(Hotkey->Flags & Hotkey_Modifier_Flag_Passthrough))
-                            return NULL;
-                    }
-                    else
-                    {
-                        delete Hotkey;
-                    }
-                }
-            }
         } break;
         case kCGEventMouseMoved:
         {
@@ -185,7 +165,6 @@ KwmInit()
 
     AddFlags(&KWMSettings,
             Settings_MouseFollowsFocus |
-            Settings_BuiltinHotkeys |
             Settings_StandbyOnFloat |
             Settings_CenterOnFloat |
             Settings_LockToContainer);
@@ -215,7 +194,6 @@ KwmInit()
         Fatal("Error: Failed to get environment variable 'HOME'");
     }
 
-    KWMHotkeys.ActiveMode = GetBindingMode("default");
     GetKwmFilePath();
 }
 
@@ -264,8 +242,7 @@ ParseArguments(int argc, char **argv)
 internal inline void
 ConfigureRunLoop()
 {
-    KWMMach.EventMask = ((1 << kCGEventKeyDown) |
-                         (1 << kCGEventMouseMoved) |
+    KWMMach.EventMask = ((1 << kCGEventMouseMoved) |
                          (1 << kCGEventLeftMouseDragged) |
                          (1 << kCGEventLeftMouseDown) |
                          (1 << kCGEventLeftMouseUp));
@@ -318,9 +295,6 @@ int main(int argc, char **argv)
      * refinement, because we will (sometimes ?) get NULL when started by launchd at login */
     if(FocusedApplication && FocusedApplication->Focus)
         UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
-
-    if(CGSIsSecureEventInputSet())
-        fprintf(stderr, "Notice: Secure Keyboard Entry is enabled, hotkeys will not work!\n");
 
     ConfigureRunLoop();
     CFRunLoopRun();

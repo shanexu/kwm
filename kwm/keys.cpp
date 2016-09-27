@@ -1,659 +1,168 @@
 #include "keys.h"
 #include "helpers.h"
 #include "interpreter.h"
-#include "border.h"
-#include "../axlib/event.h"
 
 #define internal static
 #define local_persist static
 
-extern ax_application *FocusedApplication;
-extern kwm_hotkeys KWMHotkeys;
-extern kwm_border FocusedBorder;
+extern modifier_keys MouseDragKey;
 
 internal const char *Shell = "/bin/bash";
 internal const char *ShellArgs = "-c";
 
 internal inline bool
-HasFlags(hotkey *Hotkey, uint32_t Flag)
+HasFlags(modifier_keys *Modifier, uint32_t Flag)
 {
-    bool Result = Hotkey->Flags & Flag;
+    bool Result = Modifier->Flags & Flag;
     return Result;
 }
 
 internal inline void
-AddFlags(hotkey *Hotkey, uint32_t Flag)
+AddFlags(modifier_keys *Modifier, uint32_t Flag)
 {
-    Hotkey->Flags |= Flag;
-}
-
-internal CFStringRef
-KeycodeToString(CGKeyCode Keycode)
-{
-    TISInputSourceRef Keyboard = TISCopyCurrentASCIICapableKeyboardLayoutInputSource();
-    CFDataRef Uchr = (CFDataRef) TISGetInputSourceProperty(Keyboard, kTISPropertyUnicodeKeyLayoutData);
-    CFRelease(Keyboard);
-
-    UCKeyboardLayout *KeyboardLayout = (UCKeyboardLayout *) CFDataGetBytePtr(Uchr);
-    if(KeyboardLayout)
-    {
-        UInt32 DeadKeyState = 0;
-        UniCharCount MaxStringLength = 255;
-        UniCharCount ActualStringLength = 0;
-        UniChar UnicodeString[MaxStringLength];
-
-        OSStatus Status = UCKeyTranslate(KeyboardLayout, Keycode,
-                                         kUCKeyActionDown, 0,
-                                         LMGetKbdType(), 0,
-                                         &DeadKeyState,
-                                         MaxStringLength,
-                                         &ActualStringLength,
-                                         UnicodeString);
-
-        if(ActualStringLength == 0 && DeadKeyState)
-        {
-            Status = UCKeyTranslate(KeyboardLayout, kVK_Space,
-                                    kUCKeyActionDown, 0,
-                                    LMGetKbdType(), 0,
-                                    &DeadKeyState,
-                                    MaxStringLength,
-                                    &ActualStringLength,
-                                    UnicodeString);
-        }
-
-        if(ActualStringLength > 0 && Status == noErr)
-            return CFStringCreateWithCharacters(NULL, UnicodeString, ActualStringLength);
-    }
-
-    return NULL;
-}
-
-internal bool
-KeycodeForChar(char Key, CGKeyCode *Keycode)
-{
-    local_persist CFMutableDictionaryRef CharToCodeDict = NULL;
-
-    bool Result = true;
-    UniChar Character = Key;
-    CFStringRef CharStr;
-
-    if(!CharToCodeDict)
-    {
-        CharToCodeDict = CFDictionaryCreateMutable(kCFAllocatorDefault, 128,
-                                                   &kCFCopyStringDictionaryKeyCallBacks, NULL);
-        if(!CharToCodeDict)
-            return false;
-
-        for(std::size_t KeyIndex = 0; KeyIndex < 128; ++KeyIndex)
-        {
-            CFStringRef KeyString = KeycodeToString((CGKeyCode)KeyIndex);
-            if (KeyString != NULL)
-            {
-                CFDictionaryAddValue(CharToCodeDict, KeyString, (const void *)KeyIndex);
-                CFRelease(KeyString);
-            }
-        }
-    }
-
-    CharStr = CFStringCreateWithCharacters(kCFAllocatorDefault, &Character, 1);
-    if(!CFDictionaryGetValueIfPresent(CharToCodeDict, CharStr, (const void **)Keycode))
-        Result = false;
-
-    CFRelease(CharStr);
-    return Result;
-}
-
-internal bool
-GetLayoutIndependentKeycode(std::string Key, CGKeyCode *Keycode)
-{
-    bool Result = true;
-
-    if(Key == "return")
-        *Keycode = kVK_Return;
-    else if(Key == "tab")
-        *Keycode = kVK_Tab;
-    else if(Key == "space")
-        *Keycode = kVK_Space;
-    else if(Key == "backspace")
-        *Keycode = kVK_Delete;
-    else if(Key == "delete")
-        *Keycode = kVK_ForwardDelete;
-    else if(Key == "escape")
-        *Keycode =  kVK_Escape;
-    else if(Key == "left")
-        *Keycode =  kVK_LeftArrow;
-    else if(Key == "right")
-        *Keycode =  kVK_RightArrow;
-    else if(Key == "up")
-        *Keycode = kVK_UpArrow;
-    else if(Key == "down")
-        *Keycode = kVK_DownArrow;
-    else if(Key == "f1")
-        *Keycode = kVK_F1;
-    else if(Key == "f2")
-        *Keycode = kVK_F2;
-    else if(Key == "f3")
-        *Keycode = kVK_F3;
-    else if(Key == "f4")
-        *Keycode = kVK_F4;
-    else if(Key == "f5")
-        *Keycode = kVK_F5;
-    else if(Key == "f6")
-        *Keycode = kVK_F6;
-    else if(Key == "f7")
-        *Keycode = kVK_F7;
-    else if(Key == "f8")
-        *Keycode = kVK_F8;
-    else if(Key == "f9")
-        *Keycode = kVK_F9;
-    else if(Key == "f10")
-        *Keycode = kVK_F10;
-    else if(Key == "f11")
-        *Keycode = kVK_F11;
-    else if(Key == "f12")
-        *Keycode = kVK_F12;
-    else if(Key == "f13")
-        *Keycode = kVK_F13;
-    else if(Key == "f14")
-        *Keycode = kVK_F14;
-    else if(Key == "f15")
-        *Keycode = kVK_F15;
-    else if(Key == "f16")
-        *Keycode = kVK_F16;
-    else if(Key == "f17")
-        *Keycode = kVK_F17;
-    else if(Key == "f18")
-        *Keycode = kVK_F18;
-    else if(Key == "f19")
-        *Keycode = kVK_F19;
-    else if(Key == "f20")
-        *Keycode = kVK_F20;
-    else
-        Result = false;
-
-    return Result;
+    Modifier->Flags |= Flag;
 }
 
 internal inline bool
-DoesBindingModeExist(std::string Mode)
+CompareCmdKey(modifier_keys *A, modifier_keys *B)
 {
-    std::map<std::string, mode>::iterator It = KWMHotkeys.Modes.find(Mode);
-    return !Mode.empty() && It != KWMHotkeys.Modes.end();
-}
-
-internal inline bool
-CompareCmdKey(hotkey *A, hotkey *B)
-{
-    if(HasFlags(A, Hotkey_Modifier_Flag_Cmd))
+    if(HasFlags(A, Modifier_Flag_Cmd))
     {
-        return (HasFlags(B, Hotkey_Modifier_Flag_LCmd) ||
-                HasFlags(B, Hotkey_Modifier_Flag_RCmd) ||
-                HasFlags(B, Hotkey_Modifier_Flag_Cmd));
+        return (HasFlags(B, Modifier_Flag_LCmd) ||
+                HasFlags(B, Modifier_Flag_RCmd) ||
+                HasFlags(B, Modifier_Flag_Cmd));
     }
     else
     {
-        return ((HasFlags(A, Hotkey_Modifier_Flag_LCmd) == HasFlags(B, Hotkey_Modifier_Flag_LCmd)) &&
-                (HasFlags(A, Hotkey_Modifier_Flag_RCmd) == HasFlags(B, Hotkey_Modifier_Flag_RCmd)) &&
-                (HasFlags(A, Hotkey_Modifier_Flag_Cmd) == HasFlags(B, Hotkey_Modifier_Flag_Cmd)));
+        return ((HasFlags(A, Modifier_Flag_LCmd) == HasFlags(B, Modifier_Flag_LCmd)) &&
+                (HasFlags(A, Modifier_Flag_RCmd) == HasFlags(B, Modifier_Flag_RCmd)) &&
+                (HasFlags(A, Modifier_Flag_Cmd) == HasFlags(B, Modifier_Flag_Cmd)));
     }
 }
 
 internal inline bool
-CompareShiftKey(hotkey *A, hotkey *B)
+CompareShiftKey(modifier_keys *A, modifier_keys *B)
 {
-    if(HasFlags(A, Hotkey_Modifier_Flag_Shift))
+    if(HasFlags(A, Modifier_Flag_Shift))
     {
-        return (HasFlags(B, Hotkey_Modifier_Flag_LShift) ||
-                HasFlags(B, Hotkey_Modifier_Flag_RShift) ||
-                HasFlags(B, Hotkey_Modifier_Flag_Shift));
+        return (HasFlags(B, Modifier_Flag_LShift) ||
+                HasFlags(B, Modifier_Flag_RShift) ||
+                HasFlags(B, Modifier_Flag_Shift));
     }
     else
     {
-        return ((HasFlags(A, Hotkey_Modifier_Flag_LShift) == HasFlags(B, Hotkey_Modifier_Flag_LShift)) &&
-                (HasFlags(A, Hotkey_Modifier_Flag_RShift) == HasFlags(B, Hotkey_Modifier_Flag_RShift)) &&
-                (HasFlags(A, Hotkey_Modifier_Flag_Shift) == HasFlags(B, Hotkey_Modifier_Flag_Shift)));
+        return ((HasFlags(A, Modifier_Flag_LShift) == HasFlags(B, Modifier_Flag_LShift)) &&
+                (HasFlags(A, Modifier_Flag_RShift) == HasFlags(B, Modifier_Flag_RShift)) &&
+                (HasFlags(A, Modifier_Flag_Shift) == HasFlags(B, Modifier_Flag_Shift)));
     }
 }
 
 internal inline bool
-CompareAltKey(hotkey *A, hotkey *B)
+CompareAltKey(modifier_keys *A, modifier_keys *B)
 {
-    if(HasFlags(A, Hotkey_Modifier_Flag_Alt))
+    if(HasFlags(A, Modifier_Flag_Alt))
     {
-        return (HasFlags(B, Hotkey_Modifier_Flag_LAlt) ||
-                HasFlags(B, Hotkey_Modifier_Flag_RAlt) ||
-                HasFlags(B, Hotkey_Modifier_Flag_Alt));
+        return (HasFlags(B, Modifier_Flag_LAlt) ||
+                HasFlags(B, Modifier_Flag_RAlt) ||
+                HasFlags(B, Modifier_Flag_Alt));
     }
     else
     {
-        return ((HasFlags(A, Hotkey_Modifier_Flag_LAlt) == HasFlags(B, Hotkey_Modifier_Flag_LAlt)) &&
-                (HasFlags(A, Hotkey_Modifier_Flag_RAlt) == HasFlags(B, Hotkey_Modifier_Flag_RAlt)) &&
-                (HasFlags(A, Hotkey_Modifier_Flag_Alt) == HasFlags(B, Hotkey_Modifier_Flag_Alt)));
+        return ((HasFlags(A, Modifier_Flag_LAlt) == HasFlags(B, Modifier_Flag_LAlt)) &&
+                (HasFlags(A, Modifier_Flag_RAlt) == HasFlags(B, Modifier_Flag_RAlt)) &&
+                (HasFlags(A, Modifier_Flag_Alt) == HasFlags(B, Modifier_Flag_Alt)));
     }
 }
 
 internal inline bool
-CompareControlKey(hotkey *A, hotkey *B)
+CompareControlKey(modifier_keys *A, modifier_keys *B)
 {
-    return (HasFlags(A, Hotkey_Modifier_Flag_Control) == HasFlags(B, Hotkey_Modifier_Flag_Control));
-}
-
-internal bool
-HotkeysAreEqual(hotkey *A, hotkey *B)
-{
-    if(A && B)
-    {
-        return CompareCmdKey(A, B) &&
-               CompareShiftKey(A, B) &&
-               CompareAltKey(A, B) &&
-               CompareControlKey(A, B) &&
-               A->Key == B->Key;
-    }
-
-    return false;
+    return (HasFlags(A, Modifier_Flag_Control) == HasFlags(B, Modifier_Flag_Control));
 }
 
 internal void
-CheckPrefixTimeout()
-{
-    if(KWMHotkeys.ActiveMode->Prefix)
-    {
-        kwm_time_point NewPrefixTime = std::chrono::steady_clock::now();
-        std::chrono::duration<double> Diff = NewPrefixTime - KWMHotkeys.ActiveMode->Time;
-        if(Diff.count() > KWMHotkeys.ActiveMode->Timeout)
-        {
-            DEBUG("Prefix timeout expired. Switching to mode " << KWMHotkeys.ActiveMode->Restore);
-            KwmActivateBindingMode(KWMHotkeys.ActiveMode->Restore);
-        }
-    }
-}
-
-
-internal bool
-IsHotkeyStateReqFulfilled(hotkey *Hotkey)
-{
-    if(Hotkey->State == HotkeyStateInclude && FocusedApplication)
-    {
-        for(std::size_t AppIndex = 0; AppIndex < Hotkey->List.size(); ++AppIndex)
-        {
-            if(FocusedApplication->Name == Hotkey->List[AppIndex])
-                return true;
-        }
-
-        return false;
-    }
-    else if(Hotkey->State == HotkeyStateExclude && FocusedApplication)
-    {
-        for(std::size_t AppIndex = 0; AppIndex < Hotkey->List.size(); ++AppIndex)
-        {
-            if(FocusedApplication->Name == Hotkey->List[AppIndex])
-                return false;
-        }
-    }
-
-    return true;
-}
-
-internal void
-KwmExecuteHotkey(hotkey *Hotkey)
-{
-    if(Hotkey->Command.empty())
-        return;
-
-    std::vector<std::string> Commands = SplitString(Hotkey->Command, ';');
-    DEBUG("KwmExecuteHotkey: Number of commands " << Commands.size());
-    for(int CmdIndex = 0; CmdIndex < Commands.size(); ++CmdIndex)
-    {
-        std::string &Command = TrimString(Commands[CmdIndex]);
-        if(!Command.empty())
-        {
-            DEBUG("KwmExecuteHotkey() " << Command);
-            if(IsPrefixOfString(Command, "exec"))
-                KwmExecuteSystemCommand(Command);
-            else
-                KwmInterpretCommand(Command, 0);
-
-            if(KWMHotkeys.ActiveMode->Prefix)
-            {
-                KWMHotkeys.ActiveMode->Time = std::chrono::steady_clock::now();
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, KWMHotkeys.ActiveMode->Timeout * NSEC_PER_SEC), dispatch_get_main_queue(),
-                ^{
-                    CheckPrefixTimeout();
-                });
-            }
-        }
-    }
-}
-
-internal void
-DetermineHotkeyState(hotkey *Hotkey, std::string &Command)
-{
-    std::size_t StartOfList = Command.find("{");
-    std::size_t EndOfList = Command.find("}");
-
-    bool Valid = !Command.empty() &&
-                 StartOfList != std::string::npos &&
-                 EndOfList != std::string::npos;
-
-    if(Valid)
-    {
-        std::string Applications = Command.substr(StartOfList + 1, EndOfList - (StartOfList + 1));
-        Hotkey->List = SplitString(Applications, ',');
-
-        if(Command[Command.size()-2] == '-')
-        {
-            if(Command[Command.size()-1] == 'e')
-                Hotkey->State = HotkeyStateExclude;
-            else if(Command[Command.size()-1] == 'i')
-                Hotkey->State = HotkeyStateInclude;
-            else
-                Hotkey->State = HotkeyStateNone;
-
-            Command = Command.substr(0, StartOfList - 1);
-        }
-    }
-
-    if(!Valid)
-        Hotkey->State = HotkeyStateNone;
-}
-
-internal void
-KwmParseHotkeyModifiers(hotkey *Hotkey, std::string KeySym)
+ParseModifiers(modifier_keys *Modifier, std::string KeySym)
 {
     std::vector<std::string> Modifiers = SplitString(KeySym, '+');
     for(std::size_t ModIndex = 0; ModIndex < Modifiers.size(); ++ModIndex)
     {
         if(Modifiers[ModIndex] == "cmd")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_Cmd);
+            AddFlags(Modifier, Modifier_Flag_Cmd);
         else if(Modifiers[ModIndex] == "lcmd")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_LCmd);
+            AddFlags(Modifier, Modifier_Flag_LCmd);
         else if(Modifiers[ModIndex] == "rcmd")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_RCmd);
+            AddFlags(Modifier, Modifier_Flag_RCmd);
         else if(Modifiers[ModIndex] == "alt")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_Alt);
+            AddFlags(Modifier, Modifier_Flag_Alt);
         else if(Modifiers[ModIndex] == "lalt")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_LAlt);
+            AddFlags(Modifier, Modifier_Flag_LAlt);
         else if(Modifiers[ModIndex] == "ralt")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_RAlt);
+            AddFlags(Modifier, Modifier_Flag_RAlt);
         else if(Modifiers[ModIndex] == "shift")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_Shift);
+            AddFlags(Modifier, Modifier_Flag_Shift);
         else if(Modifiers[ModIndex] == "lshift")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_LShift);
+            AddFlags(Modifier, Modifier_Flag_LShift);
         else if(Modifiers[ModIndex] == "rshift")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_RShift);
+            AddFlags(Modifier, Modifier_Flag_RShift);
         else if(Modifiers[ModIndex] == "ctrl")
-            AddFlags(Hotkey, Hotkey_Modifier_Flag_Control);
+            AddFlags(Modifier, Modifier_Flag_Control);
+    }
+}
+
+internal modifier_keys
+ModifierFromCGEvent(CGEventRef Event)
+{
+    modifier_keys Modifier = {};
+    CGEventFlags Flags = CGEventGetFlags(Event);
+
+    if((Flags & Event_Mask_Cmd) == Event_Mask_Cmd)
+    {
+        if((Flags & Event_Mask_LCmd) == Event_Mask_LCmd)
+            AddFlags(&Modifier, Modifier_Flag_LCmd);
+        else if((Flags & Event_Mask_RCmd) == Event_Mask_RCmd)
+            AddFlags(&Modifier, Modifier_Flag_RCmd);
         else
-            Hotkey->Mode = Modifiers[ModIndex];
+            AddFlags(&Modifier, Modifier_Flag_Cmd);
     }
-}
 
-internal bool
-KwmParseHotkey(std::string KeySym, std::string Command, hotkey *Hotkey, bool Passthrough, bool KeycodeInHex)
-{
-    std::vector<std::string> KeyTokens = SplitString(KeySym, '-');
-    if(KeyTokens.size() != 2)
-        return false;
-
-    Hotkey->Mode = "default";
-    KwmParseHotkeyModifiers(Hotkey, KeyTokens[0]);
-    DetermineHotkeyState(Hotkey, Command);
-    Hotkey->Command = Command;
-    if(Passthrough)
-        AddFlags(Hotkey, Hotkey_Modifier_Flag_Passthrough);
-
-    CGKeyCode Keycode;
-    bool Result = false;
-    if(KeycodeInHex)
+    if((Flags & Event_Mask_Shift) == Event_Mask_Shift)
     {
-        Result = true;
-        Keycode = ConvertHexStringToInt(KeyTokens[1]);
-        DEBUG("bindcode: " << Keycode);
+        if((Flags & Event_Mask_LShift) == Event_Mask_LShift)
+            AddFlags(&Modifier, Modifier_Flag_LShift);
+        else if((Flags & Event_Mask_RShift) == Event_Mask_RShift)
+            AddFlags(&Modifier, Modifier_Flag_RShift);
+        else
+            AddFlags(&Modifier, Modifier_Flag_Shift);
     }
-    else
+
+    if((Flags & Event_Mask_Alt) == Event_Mask_Alt)
     {
-        Result = GetLayoutIndependentKeycode(KeyTokens[1], &Keycode);
-        if(!Result)
-            Result = KeycodeForChar(KeyTokens[1][0], &Keycode);
+        if((Flags & Event_Mask_LAlt) == Event_Mask_LAlt)
+            AddFlags(&Modifier, Modifier_Flag_LAlt);
+        else if((Flags & Event_Mask_RAlt) == Event_Mask_RAlt)
+            AddFlags(&Modifier, Modifier_Flag_RAlt);
+        else
+            AddFlags(&Modifier, Modifier_Flag_Alt);
     }
 
-    Hotkey->Key = Keycode;
-    return Result;
-}
+    if((Flags & Event_Mask_Control) == Event_Mask_Control)
+        AddFlags(&Modifier, Modifier_Flag_Control);
 
-internal bool
-HotkeyExists(uint32_t Flags, CGKeyCode Keycode, hotkey *Hotkey, std::string &Mode)
-{
-    hotkey TempHotkey = {};
-    TempHotkey.Flags = Flags;
-    TempHotkey.Key = Keycode;
-
-    mode *BindingMode = GetBindingMode(Mode);
-    for(std::size_t HotkeyIndex = 0; HotkeyIndex < BindingMode->Hotkeys.size(); ++HotkeyIndex)
-    {
-        hotkey *CheckHotkey = &BindingMode->Hotkeys[HotkeyIndex];
-        if(HotkeysAreEqual(CheckHotkey, &TempHotkey))
-        {
-            if(Hotkey)
-                *Hotkey = *CheckHotkey;
-
-            return true;
-        }
-    }
-
-    return false;
+    return Modifier;
 }
 
 void KwmSetMouseDragKey(std::string KeySym)
 {
-    KwmParseHotkeyModifiers(&KWMHotkeys.MouseDragKey, KeySym);
-}
-
-void KwmAddHotkey(std::string KeySym, std::string Command, bool Passthrough, bool KeycodeInHex)
-{
-    hotkey Hotkey = {};
-    if(KwmParseHotkey(KeySym, Command, &Hotkey, Passthrough, KeycodeInHex) &&
-       !HotkeyExists(Hotkey.Flags, Hotkey.Key, NULL, Hotkey.Mode))
-        KWMHotkeys.Modes[Hotkey.Mode].Hotkeys.push_back(Hotkey);
-}
-
-void KwmRemoveHotkey(std::string KeySym, bool KeycodeInHex)
-{
-    hotkey NewHotkey = {};
-    if(KwmParseHotkey(KeySym, "", &NewHotkey, false, KeycodeInHex))
-    {
-        mode *BindingMode = GetBindingMode(NewHotkey.Mode);
-        for(std::size_t HotkeyIndex = 0; HotkeyIndex < BindingMode->Hotkeys.size(); ++HotkeyIndex)
-        {
-            hotkey *CurrentHotkey = &BindingMode->Hotkeys[HotkeyIndex];
-            if(HotkeysAreEqual(CurrentHotkey, &NewHotkey))
-            {
-                BindingMode->Hotkeys.erase(BindingMode->Hotkeys.begin() + HotkeyIndex);
-                break;
-            }
-        }
-    }
-}
-
-mode *GetBindingMode(std::string Mode)
-{
-    std::map<std::string, mode>::iterator It = KWMHotkeys.Modes.find(Mode);
-    if(It == KWMHotkeys.Modes.end())
-    {
-        mode NewMode = {};
-        NewMode.Name = Mode;
-        KWMHotkeys.Modes[Mode] = NewMode;
-    }
-
-    return &KWMHotkeys.Modes[Mode];
-}
-
-void KwmActivateBindingMode(std::string Mode)
-{
-    mode *BindingMode = GetBindingMode(Mode);
-    if(!DoesBindingModeExist(Mode))
-        BindingMode = GetBindingMode("default");
-
-    KWMHotkeys.ActiveMode = BindingMode;
-    UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
-    if(BindingMode->Prefix)
-    {
-        BindingMode->Time = std::chrono::steady_clock::now();
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, BindingMode->Timeout * NSEC_PER_SEC), dispatch_get_main_queue(),
-        ^{
-            CheckPrefixTimeout();
-        });
-    }
-}
-
-internal hotkey
-CreateHotkeyFromCGEvent(CGEventRef Event)
-{
-    hotkey Eventkey = {};
-    CGEventFlags Flags = CGEventGetFlags(Event);
-
-    if((Flags & Hotkey_Modifier_Cmd) == Hotkey_Modifier_Cmd)
-    {
-        if((Flags & Hotkey_Modifier_LCmd) == Hotkey_Modifier_LCmd)
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_LCmd);
-        else if((Flags & Hotkey_Modifier_RCmd) == Hotkey_Modifier_RCmd)
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_RCmd);
-        else
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_Cmd);
-    }
-
-    if((Flags & Hotkey_Modifier_Shift) == Hotkey_Modifier_Shift)
-    {
-        if((Flags & Hotkey_Modifier_LShift) == Hotkey_Modifier_LShift)
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_LShift);
-        else if((Flags & Hotkey_Modifier_RShift) == Hotkey_Modifier_RShift)
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_RShift);
-        else
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_Shift);
-    }
-
-    if((Flags & Hotkey_Modifier_Alt) == Hotkey_Modifier_Alt)
-    {
-        if((Flags & Hotkey_Modifier_LAlt) == Hotkey_Modifier_LAlt)
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_LAlt);
-        else if((Flags & Hotkey_Modifier_RAlt) == Hotkey_Modifier_RAlt)
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_RAlt);
-        else
-            AddFlags(&Eventkey, Hotkey_Modifier_Flag_Alt);
-    }
-
-    if((Flags & Hotkey_Modifier_Control) == Hotkey_Modifier_Control)
-        AddFlags(&Eventkey, Hotkey_Modifier_Flag_Control);
-
-    Eventkey.Key = (CGKeyCode)CGEventGetIntegerValueField(Event, kCGKeyboardEventKeycode);
-    return Eventkey;
-}
-
-bool HotkeyForCGEvent(CGEventRef Event, hotkey *Hotkey)
-{
-    hotkey Eventkey = CreateHotkeyFromCGEvent(Event);
-    return HotkeyExists(Eventkey.Flags, Eventkey.Key, Hotkey, KWMHotkeys.ActiveMode->Name);
+    ParseModifiers(&MouseDragKey, KeySym);
 }
 
 bool MouseDragKeyMatchesCGEvent(CGEventRef Event)
 {
-    hotkey Eventkey = CreateHotkeyFromCGEvent(Event);
-    return (CompareCmdKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
-            CompareShiftKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
-            CompareAltKey(&KWMHotkeys.MouseDragKey, &Eventkey) &&
-            CompareControlKey(&KWMHotkeys.MouseDragKey, &Eventkey));
-}
-
-EVENT_CALLBACK(Callback_AXEvent_HotkeyPressed)
-{
-    hotkey *Hotkey = (hotkey *) Event->Context;
-    DEBUG("AXEvent_HotkeyPressed: Hotkey activated");
-
-    if(IsHotkeyStateReqFulfilled(Hotkey))
-        KwmExecuteHotkey(Hotkey);
-
-    delete Hotkey;
-}
-
-internal void
-KwmEmitKeystroke(uint32_t Flags, std::string Key)
-{
-    CGEventFlags EventFlags = 0;
-    if(Flags & Hotkey_Modifier_Flag_Cmd)
-        EventFlags |= kCGEventFlagMaskCommand;
-    if(Flags & Hotkey_Modifier_Flag_Control)
-        EventFlags |= kCGEventFlagMaskControl;
-    if(Flags & Hotkey_Modifier_Flag_Alt)
-        EventFlags |= kCGEventFlagMaskAlternate;
-    if(Flags & Hotkey_Modifier_Flag_Shift)
-        EventFlags |= kCGEventFlagMaskShift;
-
-    CGKeyCode Keycode;
-    bool Result = GetLayoutIndependentKeycode(Key, &Keycode);
-    if(!Result)
-        Result = KeycodeForChar(Key[0], &Keycode);
-
-    if(Result)
-    {
-        CGEventRef EventKeyDown = CGEventCreateKeyboardEvent(NULL, Keycode, true);
-        CGEventRef EventKeyUp = CGEventCreateKeyboardEvent(NULL, Keycode, false);
-        CGEventSetFlags(EventKeyDown, EventFlags);
-        CGEventSetFlags(EventKeyUp, EventFlags);
-
-        CGEventPost(kCGHIDEventTap, EventKeyDown);
-        CGEventPost(kCGHIDEventTap, EventKeyUp);
-
-        CFRelease(EventKeyDown);
-        CFRelease(EventKeyUp);
-    }
-}
-
-void KwmEmitKeystrokes(std::string Text)
-{
-    CFStringRef TextRef = CFStringCreateWithCString(NULL, Text.c_str(), kCFStringEncodingMacRoman);
-    CGEventRef EventKeyDown = CGEventCreateKeyboardEvent(NULL, 0, true);
-    CGEventRef EventKeyUp = CGEventCreateKeyboardEvent(NULL, 0, false);
-
-    UniChar OutputBuffer;
-    for(std::size_t CharIndex = 0; CharIndex < Text.size(); ++CharIndex)
-    {
-        CFStringGetCharacters(TextRef, CFRangeMake(CharIndex, 1), &OutputBuffer);
-
-        CGEventSetFlags(EventKeyDown, 0);
-        CGEventKeyboardSetUnicodeString(EventKeyDown, 1, &OutputBuffer);
-        CGEventPost(kCGHIDEventTap, EventKeyDown);
-
-        CGEventSetFlags(EventKeyUp, 0);
-        CGEventKeyboardSetUnicodeString(EventKeyUp, 1, &OutputBuffer);
-        CGEventPost(kCGHIDEventTap, EventKeyUp);
-    }
-
-    CFRelease(EventKeyUp);
-    CFRelease(EventKeyDown);
-    CFRelease(TextRef);
-}
-
-void KwmEmitKeystroke(std::string KeySym)
-{
-    std::vector<std::string> KeyTokens = SplitString(KeySym, '-');
-    if(KeyTokens.size() != 2)
-        return;
-
-    uint32_t Flags = 0;
-    std::vector<std::string> Modifiers = SplitString(KeyTokens[0], '+');
-    for(std::size_t ModIndex = 0; ModIndex < Modifiers.size(); ++ModIndex)
-    {
-        if(Modifiers[ModIndex] == "cmd")
-            Flags |= Hotkey_Modifier_Flag_Cmd;
-        else if(Modifiers[ModIndex] == "alt")
-            Flags |= Hotkey_Modifier_Flag_Alt;
-        else if(Modifiers[ModIndex] == "ctrl")
-            Flags |= Hotkey_Modifier_Flag_Control;
-        else if(Modifiers[ModIndex] == "shift")
-            Flags |= Hotkey_Modifier_Flag_Shift;
-    }
-
-    KwmEmitKeystroke(Flags, KeyTokens[1]);
+    modifier_keys Modifier = ModifierFromCGEvent(Event);
+    return (CompareCmdKey(&MouseDragKey, &Modifier) &&
+            CompareShiftKey(&MouseDragKey, &Modifier) &&
+            CompareAltKey(&MouseDragKey, &Modifier) &&
+            CompareControlKey(&MouseDragKey, &Modifier));
 }
 
 void KwmExecuteSystemCommand(std::string Command)

@@ -4,7 +4,6 @@
 #define internal static
 #define local_persist static
 
-extern kwm_hotkeys KWMHotkeys;
 extern kwm_path KWMPath;
 
 internal void
@@ -76,10 +75,6 @@ void UpdateBorder(kwm_border *Border, ax_window *Window)
     {
         if(Window)
         {
-            if((Border->Type == BORDER_FOCUSED) &&
-               (!KWMHotkeys.ActiveMode->Color.Format.empty()))
-                Border->Color = KWMHotkeys.ActiveMode->Color;
-
             if(!Border->Handle)
                 OpenBorder(Border);
 
@@ -99,10 +94,6 @@ void UpdateBorder(kwm_border *Border, tree_node *Node)
     {
         if(Node)
         {
-            if((Border->Type == BORDER_FOCUSED) &&
-               (!KWMHotkeys.ActiveMode->Color.Format.empty()))
-                Border->Color = KWMHotkeys.ActiveMode->Color;
-
             if(!Border->Handle)
                 OpenBorder(Border);
 
