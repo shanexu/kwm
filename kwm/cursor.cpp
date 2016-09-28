@@ -140,6 +140,19 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
     free(Cursor);
 }
 
+
+EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged) {
+    DEBUG("AXEvent_RightMouseDragged");
+}
+
+EVENT_CALLBACK(Callback_AXEvent_RightMouseDown) {
+    DEBUG("AXEvent_RightMouseDown");
+}
+
+EVENT_CALLBACK(Callback_AXEvent_RightMouseUp) {
+    DEBUG("AXEvent_RightMouseUp");
+}
+
 void MoveCursorToCenterOfTreeNode(tree_node *Node)
 {
     if((HasFlags(&KWMSettings, Settings_MouseFollowsFocus)) &&

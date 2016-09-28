@@ -38,6 +38,9 @@ extern EVENT_CALLBACK(Callback_AXEvent_MouseMoved);
 extern EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged);
 extern EVENT_CALLBACK(Callback_AXEvent_LeftMouseDown);
 extern EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp);
+extern EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged);
+extern EVENT_CALLBACK(Callback_AXEvent_RightMouseDown);
+extern EVENT_CALLBACK(Callback_AXEvent_RightMouseUp);
 
 enum ax_event_type
 {
@@ -69,6 +72,9 @@ enum ax_event_type
     AXEvent_LeftMouseDragged,
     AXEvent_LeftMouseDown,
     AXEvent_LeftMouseUp,
+    AXEvent_RightMouseDragged,
+    AXEvent_RightMouseDown,
+    AXEvent_RightMouseUp,
 };
 
 struct ax_event
