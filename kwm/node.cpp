@@ -387,8 +387,7 @@ IsLeftChildInSubTree(tree_node *Root, tree_node *Target)
     return Result;
 }
 
-internal tree_node *
-FindLowestCommonAncestor(tree_node *A, tree_node *B)
+tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B)
 {
     if(!A || !B)
         return NULL;
@@ -458,14 +457,20 @@ void ModifyContainerSplitRatio(double Offset, int Degrees)
                 if(!(Node == Ancestor->LeftChild || IsLeftChildInSubTree(Ancestor->LeftChild, Node)))
                     Offset = -Offset;
 
-                if(Ancestor->SplitRatio + Offset > 0.0 &&
-                   Ancestor->SplitRatio + Offset < 1.0)
-                {
-                    Ancestor->SplitRatio += Offset;
-                    ResizeNodeContainer(Display, Ancestor);
-                    ApplyTreeNodeContainer(Ancestor);
-                }
+                double NewSplitRatio = Ancestor->SplitRatio + Offset;
+                SetContainerSplitRatio(NewSplitRatio, Node, Ancestor, Display);
             }
         }
+    }
+}
+
+void SetContainerSplitRatio(double SplitRatio, tree_node *Node, tree_node *Ancestor, ax_display *Display)
+{
+    if(SplitRatio > 0.0 &&
+       SplitRatio < 1.0)
+    {
+        Ancestor->SplitRatio = SplitRatio;
+        ResizeNodeContainer(Display, Ancestor);
+        ApplyTreeNodeContainer(Ancestor);
     }
 }
