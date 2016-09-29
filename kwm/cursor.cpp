@@ -213,6 +213,9 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseUp) {
     if(DragResizeNode)
     {
         DEBUG("AXEvent_RightMouseUp");
+        
+        ApplyTreeNodeContainer(ResizeState.HorizontalAncestor);
+        ApplyTreeNodeContainer(ResizeState.VerticalAncestor);
         ResizeState = ResizeStateStruct();
         DragResizeNode = false;
     }
@@ -229,7 +232,7 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged) {
             double ContainerHeight = ResizeState.VerticalAncestor->Container.Height;
             double SplitRatio = (CursorPos.y - ContainerTop) / ContainerHeight;
             if (fabs(SplitRatio - ResizeState.VerticalAncestor->SplitRatio) > SplitRatioMinDifference)
-                SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.VerticalAncestor, ResizeState.Display);
+                SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.VerticalAncestor, ResizeState.Display, false);
         }
         
         if (ResizeState.HorizontalAncestor) {
@@ -237,7 +240,7 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged) {
             double ContainerWidth = ResizeState.HorizontalAncestor->Container.Width;
             double SplitRatio = (CursorPos.x - ContainerLeft) / ContainerWidth;
             if (fabs(SplitRatio - ResizeState.HorizontalAncestor->SplitRatio) > SplitRatioMinDifference)
-            SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.HorizontalAncestor, ResizeState.Display);
+                SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.HorizontalAncestor, ResizeState.Display, false);
         }
     }
     

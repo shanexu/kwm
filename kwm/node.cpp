@@ -458,19 +458,20 @@ void ModifyContainerSplitRatio(double Offset, int Degrees)
                     Offset = -Offset;
 
                 double NewSplitRatio = Ancestor->SplitRatio + Offset;
-                SetContainerSplitRatio(NewSplitRatio, Node, Ancestor, Display);
+                SetContainerSplitRatio(NewSplitRatio, Node, Ancestor, Display, true);
             }
         }
     }
 }
 
-void SetContainerSplitRatio(double SplitRatio, tree_node *Node, tree_node *Ancestor, ax_display *Display)
+void SetContainerSplitRatio(double SplitRatio, tree_node *Node, tree_node *Ancestor, ax_display *Display, bool ResizeWindows)
 {
     if(SplitRatio > 0.0 &&
        SplitRatio < 1.0)
     {
         Ancestor->SplitRatio = SplitRatio;
         ResizeNodeContainer(Display, Ancestor);
-        ApplyTreeNodeContainer(Ancestor);
+        if(ResizeWindows)
+            ApplyTreeNodeContainer(Ancestor);
     }
 }
