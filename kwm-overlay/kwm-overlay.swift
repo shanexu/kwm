@@ -214,12 +214,12 @@ class OverlayController: NSObject, NSApplicationDelegate
             if (data.count > 0) {
                 if let str = NSString(data: data, encoding: String.Encoding.utf8.rawValue) as String? {
                     str.enumerateLines { (line, stop) -> () in
-                        let trimmedString = trim(line);
+                        let trimmedString = trim(line)
 
                         if (trimmedString == "clear") {
                             self.window.contentView = nil
                         } else if (trimmedString == "quit") {
-                            exit(0)
+                            NSApplication.shared().terminate(nil)
                         } else {
                             let args = trimmedString.components(separatedBy: " ")
                                 self.showOverlayView(args)
