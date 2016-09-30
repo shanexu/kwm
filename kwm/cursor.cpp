@@ -6,6 +6,7 @@
 #include "border.h"
 #include "../axlib/axlib.h"
 #include "display.h"
+#include "helpers.h"
 
 #define internal static
 extern std::map<std::string, space_info> WindowTree;
@@ -25,6 +26,13 @@ struct ResizeStateStruct {
     tree_node *VerticalAncestor;
     ax_display *Display;
 };
+
+struct ResizeIndicatorBorder {
+    kwm_border *Border;
+    tree_node *Node;
+};
+
+internal std::vector<ResizeIndicatorBorder> ResizeIndicatorBorders;
 
 internal ResizeStateStruct ResizeState = ResizeStateStruct();
 
@@ -151,6 +159,58 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
     free(Cursor);
 }
 
+internal ResizeIndicatorBorder
+InitializeResizedNodeBorder(tree_node *Node) {
+    DEBUG("Made resize border");
+    kwm_border *Border = new kwm_border();
+    Border->Type = BORDER_MARKED;
+    Border->Enabled = true;
+    Border->Radius = 2;
+    Border->Color = (color){0.6, 0.5, 1.0, 1.0};
+    CreateColorFormat(&(Border->Color));
+    
+    return (ResizeIndicatorBorder) {Border, Node};
+}
+
+internal void
+InitializeResizedNodeBorders(tree_node *Ancestor) {
+    DEBUG("Initing borders");
+    if(Ancestor)
+    {
+        ResizeIndicatorBorders.push_back(InitializeResizedNodeBorder(Ancestor));
+        if (Ancestor->LeftChild)
+            InitializeResizedNodeBorders(Ancestor->LeftChild);
+        if (Ancestor->RightChild)
+            InitializeResizedNodeBorders(Ancestor->RightChild);
+    } else {
+        DEBUG("But no node");
+    }
+}
+
+internal void
+UpdateResizedNodeBorders() {
+    for(std::vector<ResizeIndicatorBorder>::iterator it = ResizeIndicatorBorders.begin(); it != ResizeIndicatorBorders.end(); ++it) {
+        UpdateBorder(it->Border, it->Node);
+    }
+}
+
+internal void
+FreeResizedNodeBorders() {
+    while (!ResizeIndicatorBorders.empty())
+    {
+        DEBUG("interated");
+        kwm_border *Border = ResizeIndicatorBorders.back().Border;
+        DEBUG("close");
+        CloseBorder(Border);
+        DEBUG("free");
+        free(Border);
+        DEBUG("pop");
+        ResizeIndicatorBorders.pop_back();
+        DEBUG("loop");
+    }
+    
+}
+
 EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
 {
     CGPoint CursorPos = GetCursorPos();
@@ -206,6 +266,18 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
     ResizeState.Node = NodeBelowCursor;
     ResizeState.Display = CursorDisplay;
     
+    tree_node *AbsoluteAncestor;
+    if (ResizeState.VerticalAncestor && ResizeState.HorizontalAncestor)
+        AbsoluteAncestor = FindLowestCommonAncestor(ResizeState.VerticalAncestor, ResizeState.HorizontalAncestor);
+    else if (ResizeState.VerticalAncestor)
+        AbsoluteAncestor = ResizeState.VerticalAncestor;
+    else if (ResizeState.HorizontalAncestor)
+        AbsoluteAncestor = ResizeState.HorizontalAncestor;
+    else
+        AbsoluteAncestor = NULL;
+    
+    InitializeResizedNodeBorders(AbsoluteAncestor);
+    
     DEBUG("AXEvent_RightMouseDown");
 }
 
@@ -214,6 +286,7 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseUp) {
     {
         DEBUG("AXEvent_RightMouseUp");
         
+        FreeResizedNodeBorders();
         ApplyTreeNodeContainer(ResizeState.HorizontalAncestor);
         ApplyTreeNodeContainer(ResizeState.VerticalAncestor);
         ResizeState = ResizeStateStruct();
@@ -242,11 +315,13 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged) {
             if (fabs(SplitRatio - ResizeState.HorizontalAncestor->SplitRatio) > SplitRatioMinDifference)
                 SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.HorizontalAncestor, ResizeState.Display, false);
         }
+        UpdateResizedNodeBorders();
     }
     
     CGPoint *EventCursorPos = (CGPoint *) Event->Context;
     free(EventCursorPos);
 }
+
 
 void MoveCursorToCenterOfTreeNode(tree_node *Node)
 {
