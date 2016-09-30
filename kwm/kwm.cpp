@@ -7,6 +7,7 @@
 #include "border.h"
 #include "config.h"
 #include "../axlib/axlib.h"
+#include "overlaylib.h"
 #include <getopt.h>
 
 #define internal static
@@ -260,6 +261,8 @@ int main(int argc, char **argv)
 {
     if(ParseArguments(argc, argv))
         return 0;
+	
+	testSwiftFunction();
 
     NSApplicationLoad();
     if(!AXLibDisplayHasSeparateSpaces())

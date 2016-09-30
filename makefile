@@ -2,8 +2,10 @@ CONFIG_DIR    = $(HOME)/.kwm
 SAMPLE_CONFIG = examples/kwmrc
 DEBUG_BUILD   = -DDEBUG_BUILD -g
 
-AXLIB_PATH    = ./lib
+AXLIB_PATH      = ./lib
+OVERLAYLIB_PATH = ./lib
 FRAMEWORKS    = -framework ApplicationServices -framework Carbon -framework Cocoa -L$(AXLIB_PATH) -laxlib
+SWIFT_LINK_FLAGS = -ObjC -Xlinker -framework -Xlinker Foundation
 DEVELOPER_DIR = $(shell xcode-select -p)
 SDK_ROOT      = $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
@@ -14,17 +16,21 @@ AXLIB_OBJS    = $(AXLIB_OBJS_TMP:.mm=.o)
 
 KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/window.cpp kwm/display.cpp \
 				kwm/daemon.cpp kwm/interpreter.cpp kwm/keys.cpp kwm/space.cpp kwm/border.cpp kwm/cursor.cpp \
-				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp
+				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp \
+				kwm/overlaylib.cpp
 KWM_OBJS      = $(KWM_SRCS:.cpp=.o)
 
 KWMC_SRCS     = kwmc/kwmc.cpp
 KWMO_SRCS     = kwm-overlay/kwm-overlay.swift
+OVERLAYLIB_SRCS = overlaylib/overlaylib.swift
 
 OBJS_DIR      = ./obj
 BUILD_PATH    = ./bin
 BUILD_FLAGS   = -Wall
 BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(BUILD_PATH)/kwm-overlay $(CONFIG_DIR)/kwmrc
 LIB           = $(AXLIB_PATH)/libaxlib.a
+OVERLAYLIB    = $(OVERLAYLIB_PATH)/overlaylib.dylib
+SWIFTC_BUILD_FLAGS = -static-stdlib -emit-library
 
 # The 'all' target builds a debug version of Kwm.
 # (Re)Build AXLib if necessary, otherwise remain untouched.
@@ -76,10 +82,13 @@ $(OBJS_DIR)/axlib/%.o: axlib/%.mm
 	@mkdir -p $(@D)
 	g++ -c $< $(DEBUG_BUILD) $(BUILD_FLAGS) -o $@
 
+$(OVERLAYLIB): $(OVERLAYLIB_SRCS)
+	swiftc $^ $(SWIFTC_BUILD_FLAGS) -o $@
+
 $(BUILD_PATH):
 	mkdir -p $(BUILD_PATH) && mkdir -p $(CONFIG_DIR)
 
-$(BUILD_PATH)/kwm: $(foreach obj,$(KWM_OBJS),$(OBJS_DIR)/$(obj)) $(LIB)
+$(BUILD_PATH)/kwm: $(foreach obj,$(KWM_OBJS),$(OBJS_DIR)/$(obj)) $(LIB) $(OVERLAYLIB)
 	g++ $^ $(DEBUG_BUILD) $(BUILD_FLAGS) -lpthread $(FRAMEWORKS) -o $@
 
 $(OBJS_DIR)/kwm/%.o: kwm/%.cpp
