@@ -289,6 +289,7 @@ AXLibAddDisplay(CGDirectDisplayID DisplayID)
     {
         /* NOTE(koekeishiya): For some reason OSX added a display with a CGDirectDisplayID that
                               is still in use by the same display we added earlier (?) */
+        return;
     }
 
     /* NOTE(koekeishiya): Refresh map of connected displays and update exisitng frame bounds. */
@@ -462,6 +463,9 @@ ax_display *AXLibMainDisplay()
     NSDictionary *ScreenDictionary = [[NSScreen mainScreen] deviceDescription];
     NSNumber *ScreenID = [ScreenDictionary objectForKey:@"NSScreenNumber"];
     CGDirectDisplayID MainDisplay = [ScreenID unsignedIntValue];
+    if(Displays->find(MainDisplay) == Displays->end())
+        AXLibAddDisplay(MainDisplay);
+
     return &(*Displays)[MainDisplay];
 }
 
