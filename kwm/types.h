@@ -226,12 +226,12 @@ struct kwm_mach
 struct kwm_border
 {
     bool Enabled;
-    FILE *Handle;
+    uint32_t BorderId;
     border_type Type;
 
     double Radius;
     color Color;
-    int Width;
+    double Width;
 };
 
 struct kwm_path

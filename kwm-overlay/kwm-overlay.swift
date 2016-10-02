@@ -158,7 +158,7 @@ class OverlayView: NSView
     {
         colorclear.setFill()
 
-        let bpath:NSBezierPath = NSBezierPath(roundedRect: rect.insetBy(dx: lineWidth/2, dy: lineWidth/2), xRadius:lineRadius, yRadius:lineRadius)
+        let bpath:NSBezierPath = NSBezierPath(roundedRect: self.frame.insetBy(dx: lineWidth/2, dy: lineWidth/2), xRadius:lineRadius, yRadius:lineRadius)
 
         borderColor.set()
         bpath.lineWidth = lineWidth

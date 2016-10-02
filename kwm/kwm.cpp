@@ -7,7 +7,6 @@
 #include "border.h"
 #include "config.h"
 #include "../axlib/axlib.h"
-#include "overlaylib.h"
 #include <getopt.h>
 
 #define internal static
@@ -252,6 +251,7 @@ ConfigureRunLoop()
     if(!KWMMach.EventTap || !CGEventTapIsEnabled(KWMMach.EventTap))
         Fatal("Error: Could not create event-tap!");
 
+
     CFRunLoopAddSource(CFRunLoopGetMain(),
                        CFMachPortCreateRunLoopSource(kCFAllocatorDefault, KWMMach.EventTap, 0),
                        kCFRunLoopCommonModes);
@@ -261,8 +261,6 @@ int main(int argc, char **argv)
 {
     if(ParseArguments(argc, argv))
         return 0;
-	
-	testSwiftFunction();
 
     NSApplicationLoad();
     if(!AXLibDisplayHasSeparateSpaces())
@@ -272,6 +270,9 @@ int main(int argc, char **argv)
     AXLibStartEventLoop();
     if(!KwmStartDaemon())
         Fatal("Error: Could not start daemon!");
+
+	OverlayLibInitialize();
+	DEBUG("OverlayLib initialized!");
 
     ax_display *MainDisplay = AXLibMainDisplay();
     ax_display *Display = MainDisplay;

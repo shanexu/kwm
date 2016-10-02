@@ -2,8 +2,7 @@ CONFIG_DIR    = $(HOME)/.kwm
 SAMPLE_CONFIG = examples/kwmrc
 DEBUG_BUILD   = -DDEBUG_BUILD -g
 
-AXLIB_PATH      = ./lib
-OVERLAYLIB_PATH = ./lib
+AXLIB_PATH    = ./lib
 FRAMEWORKS    = -framework ApplicationServices -framework Carbon -framework Cocoa -L$(AXLIB_PATH) -laxlib
 SWIFT_LINK_FLAGS = -ObjC -Xlinker -framework -Xlinker Foundation
 DEVELOPER_DIR = $(shell xcode-select -p)
@@ -16,8 +15,7 @@ AXLIB_OBJS    = $(AXLIB_OBJS_TMP:.mm=.o)
 
 KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/window.cpp kwm/display.cpp \
 				kwm/daemon.cpp kwm/interpreter.cpp kwm/keys.cpp kwm/space.cpp kwm/border.cpp kwm/cursor.cpp \
-				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp \
-				kwm/overlaylib.cpp
+				kwm/serializer.cpp kwm/tokenizer.cpp kwm/rules.cpp kwm/scratchpad.cpp kwm/config.cpp kwm/query.cpp
 KWM_OBJS      = $(KWM_SRCS:.cpp=.o)
 
 KWMC_SRCS     = kwmc/kwmc.cpp
@@ -29,6 +27,7 @@ BUILD_PATH    = ./bin
 BUILD_FLAGS   = -Wall
 BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(BUILD_PATH)/kwm-overlay $(CONFIG_DIR)/kwmrc
 LIB           = $(AXLIB_PATH)/libaxlib.a
+OVERLAYLIB_PATH = $(BUILD_PATH)
 OVERLAYLIB    = $(OVERLAYLIB_PATH)/overlaylib.dylib
 SWIFTC_BUILD_FLAGS = -static-stdlib -emit-library
 
@@ -67,7 +66,7 @@ lib: $(LIB)
 # This is an order-only dependency so that we create the directory if it
 # doesn't exist, but don't try to rebuild the binaries if they happen to
 # be older than the directory's timestamp.
-$(BINS): | $(BUILD_PATH)
+$(BINS) $(OVERLAYLIB): | $(BUILD_PATH)
 
 $(AXLIB_PATH)/libaxlib.a: $(foreach obj,$(AXLIB_OBJS),$(OBJS_DIR)/$(obj))
 	@rm -rf $(AXLIB_PATH)
@@ -97,9 +96,6 @@ $(OBJS_DIR)/kwm/%.o: kwm/%.cpp
 
 $(BUILD_PATH)/kwmc: $(KWMC_SRCS)
 	g++ $^ -O2 -o $@
-
-$(BUILD_PATH)/kwm-overlay: $(KWMO_SRCS)
-	swiftc $^ -static-stdlib -sdk $(SDK_ROOT) -o $@
 
 $(CONFIG_DIR)/kwmrc: $(SAMPLE_CONFIG)
 	mkdir -p $(CONFIG_DIR)
