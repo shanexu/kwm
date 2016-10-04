@@ -165,23 +165,25 @@ InitializeResizedNodeBorder(tree_node *Node) {
     kwm_border *Border = new kwm_border();
     Border->Type = BORDER_MARKED;
     Border->Enabled = true;
-    Border->Radius = 2;
-    Border->Color = (color){0.6, 0.5, 1.0, 1.0};
+    Border->Radius = 6;
+	Border->Width = 2;
+    Border->Color = (color){0.6, 0.5, 1.0, 0.4};
     CreateColorFormat(&(Border->Color));
     
     return (ResizeIndicatorBorder) {Border, Node};
 }
 
 internal void
-InitializeResizedNodeBorders(tree_node *Ancestor) {
+InitializeResizedNodeBorders(tree_node *Node) {
     DEBUG("Initing borders");
-    if(Ancestor)
+    if(Node)
     {
-        ResizeIndicatorBorders.push_back(InitializeResizedNodeBorder(Ancestor));
-        if (Ancestor->LeftChild)
-            InitializeResizedNodeBorders(Ancestor->LeftChild);
-        if (Ancestor->RightChild)
-            InitializeResizedNodeBorders(Ancestor->RightChild);
+		if (Node->WindowID)
+			ResizeIndicatorBorders.push_back(InitializeResizedNodeBorder(Node));
+        if (Node->LeftChild)
+            InitializeResizedNodeBorders(Node->LeftChild);
+        if (Node->RightChild)
+            InitializeResizedNodeBorders(Node->RightChild);
     } else {
         DEBUG("But no node");
     }
@@ -275,6 +277,9 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
         AbsoluteAncestor = ResizeState.HorizontalAncestor;
     else
         AbsoluteAncestor = NULL;
+
+	if (AbsoluteAncestor == NULL)
+		AbsoluteAncestor = Root;
     
     InitializeResizedNodeBorders(AbsoluteAncestor);
     
@@ -296,7 +301,7 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseUp) {
 
 EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged) {
     CGPoint CursorPos = GetCursorPos();
-    static const double SplitRatioMinDifference = 0.01;
+    static const double SplitRatioMinDifference = 0.002;
     if (DragResizeNode)
     {
         DEBUG("AXEvent_RightMouseDragged");
