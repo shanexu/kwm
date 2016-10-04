@@ -19,17 +19,16 @@ KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/wind
 KWM_OBJS      = $(KWM_SRCS:.cpp=.o)
 
 KWMC_SRCS     = kwmc/kwmc.cpp
-KWMO_SRCS     = kwm-overlay/kwm-overlay.swift
 OVERLAYLIB_SRCS = overlaylib/overlaylib.swift
 
 OBJS_DIR      = ./obj
 BUILD_PATH    = ./bin
 BUILD_FLAGS   = -Wall
-BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(BUILD_PATH)/kwm-overlay $(CONFIG_DIR)/kwmrc
+BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(CONFIG_DIR)/kwmrc
 LIB           = $(AXLIB_PATH)/libaxlib.a
 OVERLAYLIB_PATH = $(BUILD_PATH)
 OVERLAYLIB    = $(OVERLAYLIB_PATH)/overlaylib.dylib
-SWIFTC_BUILD_FLAGS = -static-stdlib -emit-library
+SWIFTC_BUILD_FLAGS = -static-stdlib -emit-library -sdk $(SDK_ROOT)
 
 # The 'all' target builds a debug version of Kwm.
 # (Re)Build AXLib if necessary, otherwise remain untouched.
