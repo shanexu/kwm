@@ -175,11 +175,11 @@ class OverlayController: NSObject, NSApplicationDelegate
 
 	func updateBorderFrame(id borderId: UInt32, frame: NSRect, borderColor: NSColor, borderWidth: CGFloat, cornerRadius: CGFloat)
 	{
-		guard let border = borders[borderId] else
-			{ return }
-
 		DispatchQueue.main.async
 		{
+			guard let border = self.borders[borderId] else
+				{ return }
+
 			border.nodeFrame = frame
 			border.borderColor = borderColor
 			border.borderWidth = borderWidth
