@@ -81,7 +81,7 @@ $(OBJS_DIR)/axlib/%.o: axlib/%.mm
 	g++ -c $< $(DEBUG_BUILD) $(BUILD_FLAGS) -o $@
 
 $(OVERLAYLIB): $(OVERLAYLIB_SRCS)
-	swiftc $^ $(SWIFTC_BUILD_FLAGS) -o $@
+	swiftc $^ $(SWIFTC_BUILD_FLAGS) -Xlinker -install_name -Xlinker '@executable_path/overlaylib.dylib' -o $@
 
 $(BUILD_PATH):
 	mkdir -p $(BUILD_PATH) && mkdir -p $(CONFIG_DIR)
