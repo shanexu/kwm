@@ -112,7 +112,10 @@ class OverlayWindow
 		{ return nodeFrame.insetBy(dx: -self.borderWidth, dy: -self.borderWidth) }
 
 	func updateFrame()
-		{ window.setFrame(grownFrame, display: true) }
+	{
+		window.setFrame(grownFrame, display: true)
+		overlayView.needsDisplay = true
+	}
 
 	var nodeFrame: NSRect
 	{
