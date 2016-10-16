@@ -1,11 +1,3 @@
-//
-//  overlaylib.swift
-//  kwm
-//
-//  Created by Jarrad Whitaker on 30/9/16.
-//
-//
-
 import Foundation
 import AppKit
 import Cocoa
