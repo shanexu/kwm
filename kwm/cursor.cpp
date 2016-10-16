@@ -163,15 +163,12 @@ internal ResizeIndicatorBorder
 InitializeResizedNodeBorder(tree_node *Node) {
     DEBUG("Making resize border");
 	kwm_border *Border = (kwm_border *) malloc( sizeof(*Border) );
-	DEBUG("Made resize border");
     Border->Type = BORDER_MARKED;
 	Border->BorderId = 0;
     Border->Enabled = true;
     Border->Radius = 6;
 	Border->Width = 2;
-    Border->Color = (color){0.6, 0.5, 1.0, 0.4};
-	DEBUG("Border: " << Border);
-    CreateColorFormat(&(Border->Color));
+    Border->Color = (color) {0.6, 0.5, 1.0, 0.4};
     
     return (ResizeIndicatorBorder) {Border, Node};
 }
@@ -187,31 +184,29 @@ InitializeResizedNodeBorders(tree_node *Node) {
             InitializeResizedNodeBorders(Node->LeftChild);
         if (Node->RightChild)
             InitializeResizedNodeBorders(Node->RightChild);
-    } else {
-        DEBUG("But no node");
     }
 }
 
 internal void
-UpdateResizedNodeBorders() {
-    for(std::vector<ResizeIndicatorBorder>::iterator it = ResizeIndicatorBorders.begin(); it != ResizeIndicatorBorders.end(); ++it) {
+UpdateResizedNodeBorders()
+{
+	for(std::vector<ResizeIndicatorBorder>::iterator it = ResizeIndicatorBorders.begin();
+	    it != ResizeIndicatorBorders.end();
+	    ++it)
+	{
         UpdateBorder(it->Border, it->Node);
     }
 }
 
 internal void
-FreeResizedNodeBorders() {
+FreeResizedNodeBorders()
+{
     while (!ResizeIndicatorBorders.empty())
     {
-        DEBUG("interated");
         kwm_border *Border = ResizeIndicatorBorders.back().Border;
-        DEBUG("close");
         CloseBorder(Border);
-        DEBUG("free");
         free(Border);
-        DEBUG("pop");
         ResizeIndicatorBorders.pop_back();
-        DEBUG("loop");
     }
     
 }
