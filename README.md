@@ -2,18 +2,16 @@
 
 **NOTE:** The master branch is considered stable and can be used instead of the latest release version by people who wish to do so.
 
-If you building from source on the master branch [khd](https://github.com/koekeishiya/khd) is required in order to allow key-bindings to control kwm.
-
 [**Kwm**](https://koekeishiya.github.io/kwm) started as a simple project to get true focus-follows-mouse support on OSX through event tapping.
 It is now a tiling window manager that represents windows as the leaves of a binary tree.
 *Kwm* supports binary space partitioned, monocle and floating spaces.
 
 *Kwm* uses the event taps API (Quartz Event Services) to observe, filter and alter user input events prior
-to their delivery to a foreground application. This allows for functionality such as focus-follows-mouse,
-and different types of hotkeys.
+to their delivery to a foreground application.
 
 *Kwm* runs a local daemon to read messages and trigger functions.
 *Kwmc* is used to write to *Kwm*'s socket, and must be used when interacting with and configuring how *Kwm* works.
+[khd](https://github.com/koekeishiya/khd) can be used to create keybindings to perform some *Kwmc* command.
 
 For in depth information, [**click here**](https://koekeishiya.github.io/kwm).
 For sample configurations and other useful scripts, check out the [wiki](https://github.com/koekeishiya/kwm/wiki).
