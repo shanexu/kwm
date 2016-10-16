@@ -378,6 +378,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowDestroyed)
         ax_display *Display = AXLibWindowDisplay(Window);
         RemoveWindowFromScratchpad(Window);
         RemoveWindowFromNodeTree(Display, Window->ID);
+        RebalanceNodeTree(Display);
 
         if(FocusedApplication == Window->Application)
         {
@@ -1726,7 +1727,7 @@ void CenterWindowInsideNodeContainer(ax_window *Window, int *Xptr, int *Yptr, in
     int XDiff = (X + Width) - (WindowOrigin.x + WindowOGSize.width);
     int YDiff = (Y + Height) - (WindowOrigin.y + WindowOGSize.height);
 
-    if(XDiff > 0 || YDiff > 0)
+    if(abs(XDiff) > 0 || abs(YDiff) > 0)
     {
         double XOff = XDiff / 2.0f;
         X += XOff > 0 ? XOff : 0;
