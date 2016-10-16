@@ -74,6 +74,17 @@ token GetToken(tokenizer *Tokenizer)
             if(Tokenizer->At[0] == '"')
                 ++Tokenizer->At;
         } break;
+        case '#':
+        {
+            ++Tokenizer->At;
+            Token.Text = Tokenizer->At;
+
+            while(Tokenizer->At[0] && !IsEndOfLine(Tokenizer->At[0]))
+                ++Tokenizer->At;
+
+            Token.Type = Token_Comment;
+            Token.TextLength = Tokenizer->At - Token.Text;
+        } break;
         case '/':
         {
             if(Tokenizer->At[0] == '*')
