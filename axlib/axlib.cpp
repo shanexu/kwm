@@ -234,7 +234,7 @@ uint32_t AXLibGetWindowBelowCursor()
             CFStringRef CFOwner = (CFStringRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowOwnerName"));
             CFStringRef CFName = (CFStringRef) CFDictionaryGetValue(Elem, CFSTR("kCGWindowName"));
 
-            bool IsKwmOverlay = (CFOwner && CFStringCompare(CFOwner, CFSTR("kwm-overlay"), 0) == kCFCompareEqualTo);
+            bool IsKwmOverlay = (CFOwner && CFStringCompare(CFOwner, CFSTR("kwm"), 0) == kCFCompareEqualTo);
             bool IsDock = (CFOwner && CFStringCompare(CFOwner, CFSTR("Dock"), 0) == kCFCompareEqualTo);
             bool IsLaunchpad = (CFName && CFStringCompare(CFName, CFSTR("LPSpringboard"), 0) == kCFCompareEqualTo);
             bool IsDockBar = (CFName && CFStringCompare(CFName, CFSTR("Dock"), 0) == kCFCompareEqualTo);
