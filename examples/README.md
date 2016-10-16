@@ -1,11 +1,9 @@
-### Default Binds:
+### Keybindings
 
-Note: "Secure Keyboard Entry" must be disabled for binds to work.
+The following keybindings are provided in the `khdrc` file. This is a config file for [Khd](https://github.com/koekeishiya/khd),
+a program meant for creating various types of keybindins. Feel free to use any other tool that allows mapping a key-combination to some command.
 
-The following are the binds provided in the sample config. They do not cover all of the options
-available with Kwm, and do not utilize the binding system to its potential. I strongly recommend
-taking the time to experiment and set up your own binds.
-
+I strongly recommend taking the time to experiment and set up your own binds, instead of using the ones provided here.
 
     - prefix-key: ctrl-s
 
