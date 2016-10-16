@@ -162,12 +162,12 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
 internal ResizeIndicatorBorder
 InitializeResizedNodeBorder(tree_node *Node) {
     DEBUG("Making resize border");
-	kwm_border *Border = (kwm_border *) malloc( sizeof(*Border) );
+    kwm_border *Border = (kwm_border *) malloc( sizeof(*Border) );
     Border->Type = BORDER_MARKED;
-	Border->BorderId = 0;
+    Border->BorderId = 0;
     Border->Enabled = true;
     Border->Radius = 6;
-	Border->Width = 2;
+    Border->Width = 2;
     Border->Color = (color) {0.6, 0.5, 1.0, 0.4};
     
     return (ResizeIndicatorBorder) {Border, Node};
@@ -178,8 +178,8 @@ InitializeResizedNodeBorders(tree_node *Node) {
     DEBUG("Initing borders");
     if(Node)
     {
-		if (Node->WindowID)
-			ResizeIndicatorBorders.push_back(InitializeResizedNodeBorder(Node));
+        if (Node->WindowID)
+            ResizeIndicatorBorders.push_back(InitializeResizedNodeBorder(Node));
         if (Node->LeftChild)
             InitializeResizedNodeBorders(Node->LeftChild);
         if (Node->RightChild)
@@ -190,10 +190,10 @@ InitializeResizedNodeBorders(tree_node *Node) {
 internal void
 UpdateResizedNodeBorders()
 {
-	for(std::vector<ResizeIndicatorBorder>::iterator it = ResizeIndicatorBorders.begin();
-	    it != ResizeIndicatorBorders.end();
-	    ++it)
-	{
+    for(std::vector<ResizeIndicatorBorder>::iterator it = ResizeIndicatorBorders.begin();
+        it != ResizeIndicatorBorders.end();
+        ++it)
+    {
         UpdateBorder(it->Border, it->Node);
     }
 }
@@ -221,10 +221,10 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
     if(!NodeBelowCursor)
         return;
 
-	ax_window *WindowBelowCursor = GetWindowByID(NodeBelowCursor->WindowID);
+    ax_window *WindowBelowCursor = GetWindowByID(NodeBelowCursor->WindowID);
 
-	if (!WindowBelowCursor)
-		return;
+    if (!WindowBelowCursor)
+        return;
     
     DragResizeNode = true;
     
@@ -281,8 +281,8 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
     else
         AbsoluteAncestor = NULL;
 
-	if (AbsoluteAncestor == NULL)
-		AbsoluteAncestor = Root;
+    if (AbsoluteAncestor == NULL)
+        AbsoluteAncestor = Root;
     
     InitializeResizedNodeBorders(AbsoluteAncestor);
     

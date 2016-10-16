@@ -1464,8 +1464,8 @@ double GetWindowDistance(ax_window *A, ax_window *B, int Degrees, bool Wrap)
 
 bool FindClosestWindow(int Degrees, ax_window **ClosestWindow, bool Wrap)
 {
-	ax_window *FocusedWindow = FocusedApplication->Focus;
-	return FindClosestWindow(FocusedWindow, Degrees, ClosestWindow, Wrap);
+    ax_window *FocusedWindow = FocusedApplication->Focus;
+    return FindClosestWindow(FocusedWindow, Degrees, ClosestWindow, Wrap);
 }
 
 bool FindClosestWindow(ax_window *Match, int Degrees, ax_window **ClosestWindow, bool Wrap)
