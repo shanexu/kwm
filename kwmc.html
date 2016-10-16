@@ -55,12 +55,6 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
 <h3><a id="glossary" class="anchor" href="#glossary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of Contents:</h3>
 
 <ul>
-<li><a href="#create-keybindings">Create Keybindings</a>
-  <ul>
-      <li><a href="#binding-modes">Binding Modes</a></li>
-      <li><a href="#variables">Variables</a></li>
-  </ul>
-</li>
 <li><a href="#create-rules">Create Window Rules</a>
   <ul>
       <li><a href="#rule-filter">Window Filter</a></li>
@@ -94,134 +88,6 @@ A command with <code>{foo?}</code> means that an argument is optional.</p>
   </ul>
 </li>
 </ul>
-
-<h2><a id="create-keybindings" class="anchor" href="#create-keybindings" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Keybindings</h2>
-
-<p><strong>NOTE:</strong>The keybinding-feature in Kwm will soon be removed in favour of <a href="https://github.com/koekeishiya/khd">Khd</a>.</p>
-
-<p>Kwm supports two different ways to create a keybind, either through the key-symbol or the key-code.
-My keybinds can be found <a href="https://github.com/koekeishiya/dotfiles/blob/master/kwm/binds">here</a> as an example.</p>
-
-<ul>
-    <li><code>bindsym</code>: accepts a symbol / letter</li>
-    <li><code>bindcode</code>: accepts a hexadecimal keycode</li>
-</ul>
-
-<pre><code>kwmc bindsym mode+mod+mod+mod-key command {opt?}
-kwmc bindcode mode+mod+mod+mod-hex command {opt?}</code></pre>
-
-<p>The following keyboard modifiers are supported.</p>
-<table style="text-align: center;">
-    <tr>
-        <th>Modifier</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td>cmd</td>
-        <td>Matches any of the cmd-keys.</td>
-    </tr>
-    <tr>
-        <td>lcmd</td>
-        <td>Matches the left cmd-key.</td>
-    </tr>
-    <tr>
-        <td>rcmd</td>
-        <td>Matches the right cmd-key.</td>
-    </tr>
-    <tr>
-        <td>shift</td>
-        <td>Matches any of the shift-keys.</td>
-    </tr>
-    <tr>
-        <td>lshift</td>
-        <td>Matches the left shift-key.</td>
-    </tr>
-    <tr>
-        <td>rshift</td>
-        <td>Matches the right shift-key.</td>
-    </tr>
-    <tr>
-        <td>alt</td>
-        <td>Matches any of the alt-keys.</td>
-    </tr>
-    <tr>
-        <td>lalt</td>
-        <td>Matches the left alt-key.</td>
-    </tr>
-    <tr>
-        <td>ralt</td>
-        <td>Matches the right alt-key.</td>
-    </tr>
-    <tr>
-        <td>ctrl</td>
-        <td>Matches the control-key.</td>
-    </tr>
-</table>
-
-<p>The ';' is interpreted as a separator and allows for Kwm to perform
-multiple commands in a single bind. For more advanced use, make shellscripts.</p>
-
-<pre><code>kwmc bindsym mode+mod+mod+mod-key cmd_1 ; cmd_2 ; cmd_n {opt?}
-        {opt}: {app,app,app} -e | {app,app,app} -i
-                -e: not enabled for listed applications
-                -i: only enabled for listed applications</code></pre>
-
-<p>Any keybinds created with the above commands, will be consumed by Kwm.
-If you wish to have a keybind that performs some action and still passes
-through to the target application, the below command can be used.</p>
-
-<pre><code>kwmc bindsym_passthrough ..
-kwmc bindcode_passthrough ..</code></pre>
-
-<p>To remove a keybind, the unbind command can be used.</p>
-
-<pre><code>kwmc unbindsym mode+mod+mod+mod-key
-kwmc unbindcode mode+mod+mod+mod-hex</code></pre>
-
-<p>To run an external command, the prefix 'exec' must be used.</p>
-
-<pre><code>kwmc bindsym cmd-return exec open -na /Applications/Utilities/Terminal.app</code></pre>
-
-<h4 id="binding-modes">Binding Modes</h4>
-
-<p>Kwm supports multiple binding-modes. A binding-mode is a set of keybinds
-that will only be active when Kwm enters that state. The mode can be specified
-through the `mode` symbol as seen in the above commands. If no mode is set,
-it will be added to a `default` mode.</p>
-
-<p>A binding-mode can be configured to activate a specific mode when a timeout is reached.
-For this to work, the mode must enable the prefix flag, as well as specify a timeout
-duration. The restore option will default to the `default` mode.
-The color of the focused-border will be changed to the color associated with the active
-mode, if one has been set.</p>
-
-<pre><code>kwmc mode my_mode prefix on
-kwmc mode my_mode timeout 0.75
-kwmc mode my_mode restore mode_to_activate
-kwmc mode my_mode color 0xaarrggbb</code></pre>
-
-<p>To activate a certain binding-mode, the following command must be used.</p>
-
-<pre><code>kwmc mode activate my_mode</code></pre>
-
-<h4 id="variables">Variables</h4>
-
-<p>Variables can be created using the following define keyword as shown below.
-If a variable already exists, it will be redefined.
-
-<pre><code>define name value</code></pre>
-
-After defining a variable, it can be used as any other word.
-
-<pre><code>define hyper cmd+alt+ctrl+shift
-kwmc bindsym hyper-h window -f west</code></pre>
-
-The current system is very simple and performs a substitution and so variable names that conflict with kwmc command keywords should be avoided!
-The config files are parsed in a top -> bottom manner and a define statement must therefore appear before the variable can be used.
-Failing to do so can cause undefined behaviour. Variables expansion is not recursive so it is not possible to define a variable
-with a value containing another variable.
-
-Variables are in file-scope. Thus, a variable defined in the kwmrc file will not be usable from within included files.</p>
 
 <h2><a id="create-rules" class="anchor" href="#create-rules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Window Rules</h2>
 
@@ -454,13 +320,6 @@ kwmc rule owner="Finder" role="AXDialog" properties={float="true"}
 <section class="code-examples-compact">
 <p>Quit Kwm</p>
 <pre><code>kwmc quit</code></pre>
-
-<p>Automatically emit keystrokes</p>
-<pre><code>kwmc write {some text}</code></pre>
-
-<p>Send a key press</p>
-<pre><code>kwmc press {key}
-    {key}: mod+mod+mod-key</code></pre>
 </section>
 
 <h4 id="windows">Windows</h4>
