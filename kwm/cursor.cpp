@@ -222,14 +222,19 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
     
     if(!NodeBelowCursor)
         return;
+
+	ax_window *WindowBelowCursor = GetWindowByID(NodeBelowCursor->WindowID);
+
+	if (!WindowBelowCursor)
+		return;
     
     DragResizeNode = true;
     
     ax_window *NorthNeighbour, *EastNeighbour, *SouthNeighbour, *WestNeighbour;
-    bool HaveNorth = FindClosestWindow(0, &NorthNeighbour, false);
-    bool HaveEast = FindClosestWindow(90, &EastNeighbour, false);
-    bool HaveSouth = FindClosestWindow(180, &SouthNeighbour, false);
-    bool HaveWest = FindClosestWindow(270, &WestNeighbour, false);
+    bool HaveNorth = FindClosestWindow(WindowBelowCursor, 0, &NorthNeighbour, false);
+    bool HaveEast = FindClosestWindow(WindowBelowCursor, 90, &EastNeighbour, false);
+    bool HaveSouth = FindClosestWindow(WindowBelowCursor, 180, &SouthNeighbour, false);
+    bool HaveWest = FindClosestWindow(WindowBelowCursor, 270, &WestNeighbour, false);
     
     ax_window *VerticalNeighbour;
     if (HaveNorth && HaveSouth) {
