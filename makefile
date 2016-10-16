@@ -4,6 +4,7 @@ DEBUG_BUILD   = -DDEBUG_BUILD -g
 
 AXLIB_PATH    = ./lib
 FRAMEWORKS    = -framework ApplicationServices -framework Carbon -framework Cocoa -L$(AXLIB_PATH) -laxlib
+SWIFT_LINK_FLAGS = -ObjC -Xlinker -framework -Xlinker Foundation
 DEVELOPER_DIR = $(shell xcode-select -p)
 SDK_ROOT      = $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
@@ -18,13 +19,16 @@ KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/wind
 KWM_OBJS      = $(KWM_SRCS:.cpp=.o)
 
 KWMC_SRCS     = kwmc/kwmc.cpp
-KWMO_SRCS     = kwm-overlay/kwm-overlay.swift
+OVERLAYLIB_SRCS = overlaylib/overlaylib.swift
 
 OBJS_DIR      = ./obj
 BUILD_PATH    = ./bin
 BUILD_FLAGS   = -Wall
-BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(BUILD_PATH)/kwm-overlay $(CONFIG_DIR)/kwmrc
+BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(CONFIG_DIR)/kwmrc
 LIB           = $(AXLIB_PATH)/libaxlib.a
+OVERLAYLIB_PATH = $(BUILD_PATH)
+OVERLAYLIB    = $(OVERLAYLIB_PATH)/overlaylib.dylib
+SWIFTC_BUILD_FLAGS = -static-stdlib -emit-library -sdk $(SDK_ROOT)
 
 # The 'all' target builds a debug version of Kwm.
 # (Re)Build AXLib if necessary, otherwise remain untouched.
@@ -61,7 +65,7 @@ lib: $(LIB)
 # This is an order-only dependency so that we create the directory if it
 # doesn't exist, but don't try to rebuild the binaries if they happen to
 # be older than the directory's timestamp.
-$(BINS): | $(BUILD_PATH)
+$(BINS) $(OVERLAYLIB): | $(BUILD_PATH)
 
 $(AXLIB_PATH)/libaxlib.a: $(foreach obj,$(AXLIB_OBJS),$(OBJS_DIR)/$(obj))
 	@rm -rf $(AXLIB_PATH)
@@ -76,10 +80,13 @@ $(OBJS_DIR)/axlib/%.o: axlib/%.mm
 	@mkdir -p $(@D)
 	g++ -c $< $(DEBUG_BUILD) $(BUILD_FLAGS) -o $@
 
+$(OVERLAYLIB): $(OVERLAYLIB_SRCS)
+	swiftc $^ $(SWIFTC_BUILD_FLAGS) -Xlinker -install_name -Xlinker '@executable_path/overlaylib.dylib' -o $@
+
 $(BUILD_PATH):
 	mkdir -p $(BUILD_PATH) && mkdir -p $(CONFIG_DIR)
 
-$(BUILD_PATH)/kwm: $(foreach obj,$(KWM_OBJS),$(OBJS_DIR)/$(obj)) $(LIB)
+$(BUILD_PATH)/kwm: $(foreach obj,$(KWM_OBJS),$(OBJS_DIR)/$(obj)) $(LIB) $(OVERLAYLIB)
 	g++ $^ $(DEBUG_BUILD) $(BUILD_FLAGS) -lpthread $(FRAMEWORKS) -o $@
 
 $(OBJS_DIR)/kwm/%.o: kwm/%.cpp
@@ -88,9 +95,6 @@ $(OBJS_DIR)/kwm/%.o: kwm/%.cpp
 
 $(BUILD_PATH)/kwmc: $(KWMC_SRCS)
 	g++ $^ -O2 -o $@
-
-$(BUILD_PATH)/kwm-overlay: $(KWMO_SRCS)
-	swiftc $^ -static-stdlib -sdk $(SDK_ROOT) -o $@
 
 $(CONFIG_DIR)/kwmrc: $(SAMPLE_CONFIG)
 	mkdir -p $(CONFIG_DIR)

@@ -23,8 +23,11 @@ void ResizeWindowToContainerSize(tree_node *Node);
 void ResizeWindowToContainerSize(link_node *Node);
 void ResizeWindowToContainerSize(ax_window *Window);
 void ResizeWindowToContainerSize();
+tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B);
 void ModifyContainerSplitRatio(double Offset);
 void ModifyContainerSplitRatio(double Offset, int Degrees);
+void SetContainerSplitRatio(double SplitRatio, tree_node *Node, tree_node *Ancestor, ax_display *Display, bool ResizeWindows);
+
 void ToggleTypeOfFocusedNode();
 void ChangeTypeOfFocusedNode(node_type Type);
 

@@ -136,8 +136,6 @@ struct color
     double Green;
     double Blue;
     double Alpha;
-
-    std::string Format;
 };
 
 struct node_container
@@ -226,12 +224,12 @@ struct kwm_mach
 struct kwm_border
 {
     bool Enabled;
-    FILE *Handle;
+    uint32_t BorderId;
     border_type Type;
 
     double Radius;
     color Color;
-    int Width;
+    double Width;
 };
 
 struct kwm_path

@@ -95,16 +95,6 @@ TrimString(std::string &Input)
     return LTrimString(RTrimString(Input));
 }
 
-
-inline void
-CreateColorFormat(color *Color)
-{
-    Color->Format = "r:" + std::to_string(Color->Red) + \
-                    " g:" + std::to_string(Color->Green) + \
-                    " b:" + std::to_string(Color->Blue) + \
-                    " a:" + std::to_string(Color->Alpha);
-}
-
 inline color
 ConvertHexRGBAToColor(unsigned int Color)
 {

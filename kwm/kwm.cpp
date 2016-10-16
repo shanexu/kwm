@@ -67,6 +67,32 @@ CGEventCallback(CGEventTapProxy Proxy, CGEventType Type, CGEventRef Event, void 
                 AXLibConstructEvent(AXEvent_LeftMouseDragged, Cursor, false);
             }
         } break;
+        case kCGEventRightMouseDown:
+        {
+            if(HasFlags(&KWMSettings, Settings_MouseDrag))
+            {
+                if(MouseDragKeyMatchesCGEvent(Event))
+                {
+                    AXLibConstructEvent(AXEvent_RightMouseDown, NULL, false);
+                    return NULL;
+                }
+            }
+        } break;
+        case kCGEventRightMouseUp:
+        {
+            if(HasFlags(&KWMSettings, Settings_MouseDrag))
+                AXLibConstructEvent(AXEvent_RightMouseUp, NULL, false);
+        } break;
+        case kCGEventRightMouseDragged:
+        {
+            if(HasFlags(&KWMSettings, Settings_MouseDrag))
+            {
+                CGPoint *Cursor = (CGPoint *) malloc(sizeof(CGPoint));
+                *Cursor = CGEventGetLocation(Event);
+                AXLibConstructEvent(AXEvent_RightMouseDragged, Cursor, false);
+            }
+        } break;
+
         default: {} break;
     }
 
@@ -245,11 +271,15 @@ ConfigureRunLoop()
     KWMMach.EventMask = ((1 << kCGEventMouseMoved) |
                          (1 << kCGEventLeftMouseDragged) |
                          (1 << kCGEventLeftMouseDown) |
-                         (1 << kCGEventLeftMouseUp));
+                         (1 << kCGEventLeftMouseUp) |
+                         (1 << kCGEventRightMouseDragged) |
+                         (1 << kCGEventRightMouseDown) |
+                         (1 << kCGEventRightMouseUp));
 
     KWMMach.EventTap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionDefault, KWMMach.EventMask, CGEventCallback, NULL);
     if(!KWMMach.EventTap || !CGEventTapIsEnabled(KWMMach.EventTap))
         Fatal("Error: Could not create event-tap!");
+
 
     CFRunLoopAddSource(CFRunLoopGetMain(),
                        CFMachPortCreateRunLoopSource(kCFAllocatorDefault, KWMMach.EventTap, 0),
@@ -269,6 +299,9 @@ int main(int argc, char **argv)
     AXLibStartEventLoop();
     if(!KwmStartDaemon())
         Fatal("Error: Could not start daemon!");
+
+	OverlayLibInitialize();
+	DEBUG("OverlayLib initialized!");
 
     ax_display *MainDisplay = AXLibMainDisplay();
     ax_display *Display = MainDisplay;

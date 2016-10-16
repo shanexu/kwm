@@ -17,6 +17,7 @@ void AddWindowToInactiveNodeTree(ax_display *Display, uint32_t WindowID);
 ax_window *GetWindowByID(uint32_t WindowID);
 void GetCenterOfWindow(ax_window *Window, int *X, int *Y);
 bool WindowIsInDirection(ax_window *WindowA, ax_window *WindowB, int Degrees);
+bool FindClosestWindow(ax_window *Match, int Degrees, ax_window **ClosestWindow, bool Wrap);
 bool FindClosestWindow(int Degrees, ax_window **ClosestWindow, bool Wrap);
 void CenterWindow(ax_display *Display, ax_window *Window);
 

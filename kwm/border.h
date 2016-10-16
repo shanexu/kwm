@@ -4,6 +4,8 @@
 #include "types.h"
 #include "../axlib/axlib.h"
 
+void OverlayLibInitialize();
+
 void CloseBorder(kwm_border *Border);
 void ClearBorder(kwm_border *Border);
 void UpdateBorder(kwm_border *Border, ax_window *Window);
