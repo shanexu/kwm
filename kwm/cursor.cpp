@@ -165,6 +165,7 @@ InitializeResizedNodeBorder(tree_node *Node) {
 	kwm_border *Border = (kwm_border *) malloc( sizeof(*Border) );
 	DEBUG("Made resize border");
     Border->Type = BORDER_MARKED;
+	Border->BorderId = 0;
     Border->Enabled = true;
     Border->Radius = 6;
 	Border->Width = 2;
