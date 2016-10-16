@@ -1924,7 +1924,9 @@ void KwmParseConfig(std::string File)
         std::string FileContentsString(FileContents);
         free(FileContents);
 
-        KwmPreprocessConfig(FileContentsString);
+        /* NOTE(koekeishiya): Disable define statement
+           KwmPreprocessConfig(FileContentsString); */
+
         Tokenizer.At = const_cast<char*>(FileContentsString.c_str());
 
         bool Parsing = true;
