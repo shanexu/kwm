@@ -161,13 +161,15 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
 
 internal ResizeIndicatorBorder
 InitializeResizedNodeBorder(tree_node *Node) {
-    DEBUG("Made resize border");
-    kwm_border *Border = new kwm_border();
+    DEBUG("Making resize border");
+	kwm_border *Border = (kwm_border *) malloc( sizeof(*Border) );
+	DEBUG("Made resize border");
     Border->Type = BORDER_MARKED;
     Border->Enabled = true;
     Border->Radius = 6;
 	Border->Width = 2;
     Border->Color = (color){0.6, 0.5, 1.0, 0.4};
+	DEBUG("Border: " << Border);
     CreateColorFormat(&(Border->Color));
     
     return (ResizeIndicatorBorder) {Border, Node};
