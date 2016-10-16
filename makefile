@@ -4,7 +4,6 @@ DEBUG_BUILD   = -DDEBUG_BUILD -g
 
 AXLIB_PATH    = ./lib
 FRAMEWORKS    = -framework ApplicationServices -framework Carbon -framework Cocoa -L$(AXLIB_PATH) -laxlib
-SWIFT_LINK_FLAGS = -ObjC -Xlinker -framework -Xlinker Foundation
 DEVELOPER_DIR = $(shell xcode-select -p)
 SDK_ROOT      = $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
@@ -19,15 +18,15 @@ KWM_SRCS      = kwm/kwm.cpp kwm/container.cpp kwm/node.cpp kwm/tree.cpp kwm/wind
 KWM_OBJS      = $(KWM_SRCS:.cpp=.o)
 
 KWMC_SRCS     = kwmc/kwmc.cpp
+
 OVERLAYLIB_SRCS = overlaylib/overlaylib.swift
+OVERLAYLIB    = $(BUILD_PATH)/overlaylib.dylib
 
 OBJS_DIR      = ./obj
 BUILD_PATH    = ./bin
 BUILD_FLAGS   = -Wall
 BINS          = $(BUILD_PATH)/kwm $(BUILD_PATH)/kwmc $(CONFIG_DIR)/kwmrc
 LIB           = $(AXLIB_PATH)/libaxlib.a
-OVERLAYLIB_PATH = $(BUILD_PATH)
-OVERLAYLIB    = $(OVERLAYLIB_PATH)/overlaylib.dylib
 SWIFTC_BUILD_FLAGS = -static-stdlib -emit-library -sdk $(SDK_ROOT)
 
 # The 'all' target builds a debug version of Kwm.
