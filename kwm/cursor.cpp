@@ -9,32 +9,34 @@
 #include "helpers.h"
 
 #define internal static
+#define local_persist static
+
 extern std::map<std::string, space_info> WindowTree;
 extern ax_state AXState;
 extern ax_application *FocusedApplication;
 extern kwm_settings KWMSettings;
 extern kwm_border MarkedBorder;
 
-internal bool DragMoveWindow = false;
-internal tree_node *MarkedNode = NULL;
-
-internal bool DragResizeNode = false;
-
-struct ResizeStateStruct {
+struct resize_state_struct
+{
     tree_node *Node;
     tree_node *HorizontalAncestor;
     tree_node *VerticalAncestor;
     ax_display *Display;
 };
 
-struct ResizeIndicatorBorder {
+struct resize_indicator_border
+{
     kwm_border *Border;
     tree_node *Node;
 };
 
-internal std::vector<ResizeIndicatorBorder> ResizeIndicatorBorders;
+internal bool DragMoveWindow = false;
+internal bool DragResizeNode = false;
+internal tree_node *MarkedNode = NULL;
 
-internal ResizeStateStruct ResizeState = ResizeStateStruct();
+internal std::vector<resize_indicator_border> ResizeIndicatorBorders;
+internal resize_state_struct ResizeState = {};
 
 internal inline CGPoint
 GetCursorPos()
@@ -98,10 +100,13 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseUp)
         ax_window *Window = FocusedApplication->Focus;
         ax_display *WindowDisplay = AXLibWindowDisplay(Window);
         ax_display *CursorDisplay = AXLibCursorDisplay();
-        
-        if (WindowDisplay != CursorDisplay) {
+
+        if(WindowDisplay != CursorDisplay)
+        {
             MoveWindowToDisplay(Window, CursorDisplay);
-        } else {
+        }
+        else
+        {
             if(MarkedNode && MarkedNode->WindowID != Window->ID)
             {
                 tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(WindowTree[WindowDisplay->Space->Identifier].RootNode, Window->ID);
@@ -140,14 +145,12 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
             ax_display *CursorDisplay = AXLibCursorDisplay();
             ax_display *WindowDisplay = AXLibWindowDisplay(Window);
             tree_node *NewNode;
-            if (WindowDisplay != CursorDisplay)
-            {
+
+            if(WindowDisplay != CursorDisplay)
                 NewNode = WindowTree[CursorDisplay->Space->Identifier].RootNode;
-            }
             else
-            {
                 NewNode = GetTreeNodeForPoint(WindowTree[WindowDisplay->Space->Identifier].RootNode, Cursor);
-            }
+
             if(NewNode && NewNode != MarkedNode)
             {
                 MarkedNode = NewNode;
@@ -159,30 +162,32 @@ EVENT_CALLBACK(Callback_AXEvent_LeftMouseDragged)
     free(Cursor);
 }
 
-internal ResizeIndicatorBorder
-InitializeResizedNodeBorder(tree_node *Node) {
+internal resize_indicator_border
+InitializeResizedNodeBorder(tree_node *Node)
+{
     DEBUG("Making resize border");
-    kwm_border *Border = (kwm_border *) malloc( sizeof(*Border) );
+    kwm_border *Border = (kwm_border *) malloc(sizeof(*Border));
     Border->Type = BORDER_MARKED;
     Border->BorderId = 0;
     Border->Enabled = true;
     Border->Radius = 6;
     Border->Width = 2;
     Border->Color = (color) {0.6, 0.5, 1.0, 0.4};
-    
-    return (ResizeIndicatorBorder) {Border, Node};
+
+    return (resize_indicator_border) {Border, Node};
 }
 
 internal void
-InitializeResizedNodeBorders(tree_node *Node) {
+InitializeResizedNodeBorders(tree_node *Node)
+{
     DEBUG("Initing borders");
     if(Node)
     {
-        if (Node->WindowID)
+        if(Node->WindowID)
             ResizeIndicatorBorders.push_back(InitializeResizedNodeBorder(Node));
-        if (Node->LeftChild)
+        if(Node->LeftChild)
             InitializeResizedNodeBorders(Node->LeftChild);
-        if (Node->RightChild)
+        if(Node->RightChild)
             InitializeResizedNodeBorders(Node->RightChild);
     }
 }
@@ -190,7 +195,7 @@ InitializeResizedNodeBorders(tree_node *Node) {
 internal void
 UpdateResizedNodeBorders()
 {
-    for(std::vector<ResizeIndicatorBorder>::iterator it = ResizeIndicatorBorders.begin();
+    for(std::vector<resize_indicator_border>::iterator it = ResizeIndicatorBorders.begin();
         it != ResizeIndicatorBorders.end();
         ++it)
     {
@@ -201,14 +206,13 @@ UpdateResizedNodeBorders()
 internal void
 FreeResizedNodeBorders()
 {
-    while (!ResizeIndicatorBorders.empty())
+    while(!ResizeIndicatorBorders.empty())
     {
         kwm_border *Border = ResizeIndicatorBorders.back().Border;
         CloseBorder(Border);
         free(Border);
         ResizeIndicatorBorders.pop_back();
     }
-    
 }
 
 EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
@@ -217,115 +221,116 @@ EVENT_CALLBACK(Callback_AXEvent_RightMouseDown)
     ax_display *CursorDisplay = AXLibCursorDisplay();
     tree_node *Root = WindowTree[CursorDisplay->Space->Identifier].RootNode;
     tree_node *NodeBelowCursor = GetTreeNodeForPoint(Root, &CursorPos);
-    
+
     if(!NodeBelowCursor)
         return;
 
     ax_window *WindowBelowCursor = GetWindowByID(NodeBelowCursor->WindowID);
-
-    if (!WindowBelowCursor)
+    if(!WindowBelowCursor)
         return;
-    
+
     DragResizeNode = true;
-    
+
     ax_window *NorthNeighbour, *EastNeighbour, *SouthNeighbour, *WestNeighbour;
     bool HaveNorth = FindClosestWindow(WindowBelowCursor, 0, &NorthNeighbour, false);
     bool HaveEast = FindClosestWindow(WindowBelowCursor, 90, &EastNeighbour, false);
     bool HaveSouth = FindClosestWindow(WindowBelowCursor, 180, &SouthNeighbour, false);
     bool HaveWest = FindClosestWindow(WindowBelowCursor, 270, &WestNeighbour, false);
-    
+
     ax_window *VerticalNeighbour;
-    if (HaveNorth && HaveSouth) {
-        //find whether north or south bound is closest to cursor
+    //find whether north or south bound is closest to cursor
+    if(HaveNorth && HaveSouth)
         VerticalNeighbour = NorthNeighbour;
-    } else if (HaveNorth) {
+    else if(HaveNorth)
         VerticalNeighbour = NorthNeighbour;
-    } else if (HaveSouth) {
+    else if(HaveSouth)
         VerticalNeighbour = SouthNeighbour;
-    } else {
+    else
         VerticalNeighbour = NULL;
-    }
-    
+
     ax_window *HorizontalNeighbour;
-    if (HaveEast && HaveWest) {
-        //find whether north or south bound is closest to cursor
+    //find whether north or south bound is closest to cursor
+    if(HaveEast && HaveWest)
         HorizontalNeighbour = EastNeighbour;
-    } else if (HaveEast) {
+    else if(HaveEast)
         HorizontalNeighbour = EastNeighbour;
-    } else if (HaveWest) {
+    else if(HaveWest)
         HorizontalNeighbour = WestNeighbour;
-    } else {
+    else
         HorizontalNeighbour = NULL;
-    }
-    
+
     tree_node *VerticalTarget = (VerticalNeighbour)
         ? GetTreeNodeFromWindowIDOrLinkNode(Root, VerticalNeighbour->ID)
         : NULL;
     ResizeState.VerticalAncestor = FindLowestCommonAncestor(NodeBelowCursor, VerticalTarget);
-    
+
     tree_node *HorizontalTarget = (HorizontalNeighbour)
         ? GetTreeNodeFromWindowIDOrLinkNode(Root, HorizontalNeighbour->ID)
         : NULL;
     ResizeState.HorizontalAncestor = FindLowestCommonAncestor(NodeBelowCursor, HorizontalTarget);
-    
+
     ResizeState.Node = NodeBelowCursor;
     ResizeState.Display = CursorDisplay;
-    
+
     tree_node *AbsoluteAncestor;
-    if (ResizeState.VerticalAncestor && ResizeState.HorizontalAncestor)
+    if(ResizeState.VerticalAncestor && ResizeState.HorizontalAncestor)
         AbsoluteAncestor = FindLowestCommonAncestor(ResizeState.VerticalAncestor, ResizeState.HorizontalAncestor);
-    else if (ResizeState.VerticalAncestor)
+    else if(ResizeState.VerticalAncestor)
         AbsoluteAncestor = ResizeState.VerticalAncestor;
-    else if (ResizeState.HorizontalAncestor)
+    else if(ResizeState.HorizontalAncestor)
         AbsoluteAncestor = ResizeState.HorizontalAncestor;
     else
         AbsoluteAncestor = NULL;
 
-    if (AbsoluteAncestor == NULL)
+    if(AbsoluteAncestor == NULL)
         AbsoluteAncestor = Root;
-    
+
     InitializeResizedNodeBorders(AbsoluteAncestor);
-    
     DEBUG("AXEvent_RightMouseDown");
 }
 
-EVENT_CALLBACK(Callback_AXEvent_RightMouseUp) {
+EVENT_CALLBACK(Callback_AXEvent_RightMouseUp)
+{
     if(DragResizeNode)
     {
         DEBUG("AXEvent_RightMouseUp");
-        
+
         FreeResizedNodeBorders();
         ApplyTreeNodeContainer(ResizeState.HorizontalAncestor);
         ApplyTreeNodeContainer(ResizeState.VerticalAncestor);
-        ResizeState = ResizeStateStruct();
+        ResizeState = resize_state_struct();
         DragResizeNode = false;
     }
 }
 
-EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged) {
+EVENT_CALLBACK(Callback_AXEvent_RightMouseDragged)
+{
     CGPoint CursorPos = GetCursorPos();
-    static const double SplitRatioMinDifference = 0.002;
-    if (DragResizeNode)
+    local_persist  const double SplitRatioMinDifference = 0.002;
+    if(DragResizeNode)
     {
         DEBUG("AXEvent_RightMouseDragged");
-        if (ResizeState.VerticalAncestor) {
+        if(ResizeState.VerticalAncestor)
+        {
             double ContainerTop = ResizeState.VerticalAncestor->Container.Y;
             double ContainerHeight = ResizeState.VerticalAncestor->Container.Height;
             double SplitRatio = (CursorPos.y - ContainerTop) / ContainerHeight;
-            if (fabs(SplitRatio - ResizeState.VerticalAncestor->SplitRatio) > SplitRatioMinDifference)
+            if(fabs(SplitRatio - ResizeState.VerticalAncestor->SplitRatio) > SplitRatioMinDifference)
                 SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.VerticalAncestor, ResizeState.Display, false);
         }
-        
-        if (ResizeState.HorizontalAncestor) {
+
+        if(ResizeState.HorizontalAncestor)
+        {
             double ContainerLeft = ResizeState.HorizontalAncestor->Container.X;
             double ContainerWidth = ResizeState.HorizontalAncestor->Container.Width;
             double SplitRatio = (CursorPos.x - ContainerLeft) / ContainerWidth;
-            if (fabs(SplitRatio - ResizeState.HorizontalAncestor->SplitRatio) > SplitRatioMinDifference)
+            if(fabs(SplitRatio - ResizeState.HorizontalAncestor->SplitRatio) > SplitRatioMinDifference)
                 SetContainerSplitRatio(SplitRatio, ResizeState.Node, ResizeState.HorizontalAncestor, ResizeState.Display, false);
         }
+
         UpdateResizedNodeBorders();
     }
-    
+
     CGPoint *EventCursorPos = (CGPoint *) Event->Context;
     free(EventCursorPos);
 }

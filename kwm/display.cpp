@@ -104,14 +104,13 @@ void MoveWindowToDisplay(ax_window *Window, int Shift, bool Relative)
         NewDisplay = Shift == 1 ? AXLibNextDisplay(Display) : AXLibPreviousDisplay(Display);
     else
         NewDisplay = AXLibArrangementDisplay(Shift);
+
     MoveWindowToDisplay(Window, NewDisplay);
 }
 
 void MoveWindowToDisplay(ax_window *Window, ax_display *NewDisplay)
 {
     ax_display *Display = AXLibWindowDisplay(Window);
-
-
     if(NewDisplay && NewDisplay != Display)
     {
         space_info *TargetSpaceInfo = &WindowTree[NewDisplay->Space->Identifier];
@@ -140,14 +139,14 @@ void MoveWindowToDisplay(ax_window *Window, ax_display *NewDisplay)
 void RemoveWindowFromOtherDisplays(ax_window *Window)
 {
     ax_display *WindowDisplay = AXLibWindowDisplay(Window);
-    
+
     ax_display *MainDisplay = AXLibMainDisplay();
     ax_display *Display = MainDisplay;
     do
     {
-        if(Display != WindowDisplay) {
+        if(Display != WindowDisplay)
             RemoveWindowFromNodeTree(Display, Window->ID);
-        }
+
         Display = AXLibNextDisplay(Display);
     } while(Display != MainDisplay);
 }

@@ -483,7 +483,7 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
         if(TokenEquals(Token, "on"))
         {
             FocusedBorder.Enabled = true;
-			UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
+            UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
         }
         else if(TokenEquals(Token, "off"))
         {

@@ -41,7 +41,7 @@ internal Class CBridge = objc_getClass("overlaylib.CBridge");
 
 void OverlayLibInitialize()
 {
-	CBridgeInitialize(CBridge, sel_getUid("initializeOverlay"));
+    CBridgeInitialize(CBridge, sel_getUid("initializeOverlay"));
 }
 
 internal uint32_t
@@ -89,15 +89,15 @@ OverlayLibRemoveBorder(uint32_t BorderId)
 internal void
 OpenBorder(kwm_border *Border)
 {
-	Border->BorderId = OverlayLibCreateBorder(0, 0, 100, 100, 0, 0, 0, 0, 0, 0);
+    Border->BorderId = OverlayLibCreateBorder(0, 0, 100, 100, 0, 0, 0, 0, 0, 0);
 }
 
 void CloseBorder(kwm_border *Border)
 {
     if(Border->BorderId)
     {
-		OverlayLibRemoveBorder(Border->BorderId);
-		Border->BorderId = 0;
+        OverlayLibRemoveBorder(Border->BorderId);
+        Border->BorderId = 0;
     }
 }
 
@@ -105,8 +105,8 @@ void ClearBorder(kwm_border *Border)
 {
     if(Border->BorderId)
     {
-		OverlayLibRemoveBorder(Border->BorderId);
-		Border->BorderId = 0;
+        OverlayLibRemoveBorder(Border->BorderId);
+        Border->BorderId = 0;
     }
 }
 

@@ -486,8 +486,8 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
 
         if(!Event->Intrinsic && HasFlags(&KWMSettings, Settings_LockToContainer))
             LockWindowToContainerSize(Window);
-        
-        if (!Event->Intrinsic)
+
+        if(!Event->Intrinsic)
             RemoveWindowFromOtherDisplays(Window);
 
         ax_display *Display = AXLibWindowDisplay(Window);
