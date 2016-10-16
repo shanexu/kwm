@@ -483,8 +483,7 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
         if(TokenEquals(Token, "on"))
         {
             FocusedBorder.Enabled = true;
-            if(!FocusedBorder.Color.Format.empty())
-                UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
+			UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
         }
         else if(TokenEquals(Token, "off"))
         {
@@ -528,7 +527,6 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
             token Token = GetToken(Tokenizer);
             std::string BorderColor(Token.Text, Token.TextLength);
             FocusedBorder.Color = ConvertHexRGBAToColor(ConvertHexStringToInt(BorderColor));
-            CreateColorFormat(&FocusedBorder.Color);
             if(FocusedApplication && FocusedApplication->Focus)
                 UpdateBorder(&FocusedBorder, FocusedApplication->Focus);
         }
@@ -582,7 +580,6 @@ KwmParseConfigOptionBorder(tokenizer *Tokenizer)
             token Token = GetToken(Tokenizer);
             std::string BorderColor(Token.Text, Token.TextLength);
             MarkedBorder.Color = ConvertHexRGBAToColor(ConvertHexStringToInt(BorderColor));
-            CreateColorFormat(&MarkedBorder.Color);
         }
     }
     else

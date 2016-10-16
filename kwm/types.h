@@ -136,8 +136,6 @@ struct color
     double Green;
     double Blue;
     double Alpha;
-
-    std::string Format;
 };
 
 struct node_container
