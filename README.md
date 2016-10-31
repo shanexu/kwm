@@ -31,11 +31,18 @@ The bar seen in the above screenshot can be found [here](https://github.com/koek
 
 A codesigned binary release is available through Homebrew
 
-      brew install koekeishiya/kwm/kwm
+    brew install koekeishiya/kwm/kwm
 
-Manage *Kwm* using brew services
+Add the example [`kwmrc`](https://github.com/koekeishiya/kwm/blob/master/examples/kwmrc) file to `~/.kwm/kwmrc` to get started.
 
-      brew services start kwm
+Manage Kwm using brew services
+
+    brew services start kwm
+
+### Caveats
+
+As of version 4.0.1 Kwm does not support keyboard shortcuts out of the box. More info can be found [in the example dir](https://github.com/koekeishiya/kwm/tree/master/examples).
+
 
 ## Development
 
