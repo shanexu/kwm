@@ -1752,27 +1752,31 @@ void CenterWindowInsideNodeContainer(ax_window *Window, int *Xptr, int *Yptr, in
 
 void SetWindowDimensions(ax_window *Window, int X, int Y, int Width, int Height)
 {
-    bool Changed = false;
-    if((Window->Position.x != X) ||
-       (Window->Position.y != Y))
+    if(!AXLibIsWindowFullscreen(Window->Ref))
     {
-        Changed = true;
-        AXLibAddFlags(Window, AXWindow_MoveIntrinsic);
-        if(!AXLibSetWindowPosition(Window->Ref, X, Y))
-            AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
-    }
+        bool Changed = false;
 
-    if((Window->Size.width != Width) ||
-       (Window->Size.height != Height))
-    {
-        Changed = true;
-        AXLibAddFlags(Window, AXWindow_SizeIntrinsic);
-        if(!AXLibSetWindowSize(Window->Ref, Width, Height))
-            AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
-    }
+        if((Window->Position.x != X) ||
+           (Window->Position.y != Y))
+        {
+            Changed = true;
+            AXLibAddFlags(Window, AXWindow_MoveIntrinsic);
+            if(!AXLibSetWindowPosition(Window->Ref, X, Y))
+                AXLibClearFlags(Window, AXWindow_MoveIntrinsic);
+        }
 
-    if(Changed)
-        CenterWindowInsideNodeContainer(Window, &X, &Y, &Width, &Height);
+        if((Window->Size.width != Width) ||
+           (Window->Size.height != Height))
+        {
+            Changed = true;
+            AXLibAddFlags(Window, AXWindow_SizeIntrinsic);
+            if(!AXLibSetWindowSize(Window->Ref, Width, Height))
+                AXLibClearFlags(Window, AXWindow_SizeIntrinsic);
+        }
+
+        if(Changed)
+            CenterWindowInsideNodeContainer(Window, &X, &Y, &Width, &Height);
+    }
 }
 
 void CenterWindow(ax_display *Display, ax_window *Window)

@@ -3,12 +3,15 @@
 
 #include <Carbon/Carbon.h>
 
+#define kAXFullscreenAttribute CFSTR("AXFullScreen")
+
 extern "C" AXError _AXUIElementGetWindow(AXUIElementRef, uint32_t *WID);
 uint32_t AXLibGetWindowID(AXUIElementRef WindowRef);
 
 bool AXLibIsWindowMinimized(AXUIElementRef WindowRef);
 bool AXLibIsWindowResizable(AXUIElementRef WindowRef);
 bool AXLibIsWindowMovable(AXUIElementRef WindowRef);
+bool AXLibIsWindowFullscreen(AXUIElementRef WindowRef);
 
 bool AXLibSetWindowPosition(AXUIElementRef WindowRef, int X, int Y);
 bool AXLibSetWindowSize(AXUIElementRef WindowRef, int Width, int Height);

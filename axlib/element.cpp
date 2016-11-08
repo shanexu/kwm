@@ -64,6 +64,20 @@ bool AXLibIsWindowMovable(AXUIElementRef WindowRef)
     return Result;
 }
 
+bool AXLibIsWindowFullscreen(AXUIElementRef WindowRef)
+{
+    bool Result = false;
+
+    CFBooleanRef Value = (CFBooleanRef) AXLibGetWindowProperty(WindowRef, kAXFullscreenAttribute);
+    if(Value)
+    {
+        Result = CFBooleanGetValue(Value);
+        CFRelease(Value);
+    }
+
+    return Result;
+}
+
 bool AXLibIsWindowResizable(AXUIElementRef WindowRef)
 {
     bool Result;
