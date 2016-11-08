@@ -63,36 +63,10 @@ class OverlayWindow
 		window.isReleasedWhenClosed = false
 
 		overlayView = OverlayView(frame: window.contentView!.bounds, borderColor: borderColor, borderWidth: borderWidth, cornerRadius: cornerRadius)
-		overlayView.translatesAutoresizingMaskIntoConstraints = false
-
+		overlayView.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
 		window.contentView!.addSubview(overlayView)
 
-		window.contentView!.addConstraint(
-			NSLayoutConstraint(
-				item: overlayView,
-				attribute: .width,
-				relatedBy: .equal,
-				toItem: window.contentView!,
-				attribute: .width,
-				multiplier: 1,
-				constant: 0
-			)
-		)
-
-		window.contentView!.addConstraint(
-			NSLayoutConstraint(
-				item: overlayView,
-				attribute: .height,
-				relatedBy: .equal,
-				toItem: window.contentView!,
-				attribute: .height,
-				multiplier: 1,
-				constant: 0
-			)
-		)
-
 		updateFrame()
-
 		window.makeKeyAndOrderFront(nil)
 
 	}
