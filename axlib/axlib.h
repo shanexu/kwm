@@ -52,4 +52,8 @@ uint32_t AXLibGetWindowBelowCursor();
 void AXLibRunningApplications();
 void AXLibInit(ax_state *State);
 
+
+std::map<pid_t, ax_application> *BeginAXLibApplications();
+void EndAXLibApplications();
+
 #endif

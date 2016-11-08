@@ -305,7 +305,10 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
            ClearBorder(&FocusedBorder);
 
         AXLibDestroyApplication(Application);
+
+        BeginAXLibApplications();
         AXState.Applications.erase(Application->PID);
+        EndAXLibApplications();
     }
 }
 
@@ -1800,6 +1803,10 @@ void CenterWindow(ax_display *Display, ax_window *Window)
 
 ax_window *GetWindowByID(uint32_t WindowID)
 {
+    ax_window *Result = NULL;
+
+    BeginAXLibApplications();
+
     std::map<pid_t, ax_application>::iterator It;
     for(It = AXState.Applications.begin();
         It != AXState.Applications.end();
@@ -1808,10 +1815,14 @@ ax_window *GetWindowByID(uint32_t WindowID)
         ax_application *Application = &It->second;
         ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
         if(Window)
-            return Window;
+        {
+            Result = Window;
+            break;
+        }
     }
 
-    return NULL;
+    EndAXLibApplications();
+    return Result;
 }
 
 void MoveFloatingWindow(int X, int Y)

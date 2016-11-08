@@ -15,7 +15,7 @@ struct carbon_event_handler
     EventHandlerRef CurHandler;
 };
 
-bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon, std::map<pid_t, ax_application> *AXApplications);
+bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon);
 void CarbonWhitelistProcess(std::string Name);
 
 #endif

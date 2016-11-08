@@ -1,4 +1,5 @@
 #include "axlib.h"
+#include <pthread.h>
 #include <vector>
 
 #define internal static
@@ -12,7 +13,10 @@ extern "C" CGError CGSGetOnScreenWindowList(const CGSConnectionID CID, CGSConnec
 
 internal ax_state *AXState;
 internal carbon_event_handler *Carbon;
+
 internal std::map<pid_t, ax_application> *AXApplications;
+internal pthread_mutex_t AXApplicationsMutex;
+
 internal std::map<CGDirectDisplayID, ax_display> *AXDisplays;
 internal CGPoint Cursor;
 
@@ -62,7 +66,8 @@ AXLibIsApplicationCached(pid_t PID)
 /* NOTE(koekeishiya): Returns a pointer to the ax_application struct corresponding to the given process id. */
 ax_application *AXLibGetApplicationByPID(pid_t PID)
 {
-    return AXLibIsApplicationCached(PID) ? &(*AXApplications)[PID] : NULL;
+    ax_application *Result = AXLibIsApplicationCached(PID) ? &(*AXApplications)[PID] : NULL;
+    return Result;
 }
 
 /* NOTE(koekeishiya): Returns a pointer to the ax_application struct that is the current active application. */
@@ -129,6 +134,8 @@ std::vector<ax_window *> AXLibGetAllKnownWindows()
 {
     std::vector<ax_window *> Windows;
     std::map<pid_t, ax_application>::iterator It;
+
+    BeginAXLibApplications();
     for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
     {
         ax_application *Application = &It->second;
@@ -136,6 +143,7 @@ std::vector<ax_window *> AXLibGetAllKnownWindows()
         for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
             Windows.push_back(WIt->second);
     }
+    EndAXLibApplications();
 
     return Windows;
 }
@@ -169,6 +177,7 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
         Error = CGSGetOnScreenWindowList(CGSDefaultConnection, 0, WindowCount, WindowList, &WindowCount);
         if(Error == kCGErrorSuccess)
         {
+            BeginAXLibApplications();
             std::map<pid_t, ax_application>::iterator It;
             for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
             {
@@ -191,6 +200,7 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
                     }
                 }
             }
+            EndAXLibApplications();
         }
     }
 
@@ -270,17 +280,36 @@ void AXLibRunningApplications()
     for(It = List.begin(); It != List.end(); ++It)
     {
         pid_t PID = It->first;
-        if(!AXLibIsApplicationCached(PID))
+        BeginAXLibApplications();
+        bool Cached = AXLibIsApplicationCached(PID);
+        EndAXLibApplications();
+
+        if(!Cached)
         {
             std::string Name = It->second;
+            BeginAXLibApplications();
             (*AXApplications)[PID] = AXLibConstructApplication(PID, Name);
             AXLibInitializeApplication(PID);
+            EndAXLibApplications();
         }
         else
         {
+            BeginAXLibApplications();
             AXLibAddApplicationWindows(&(*AXApplications)[PID]);
+            EndAXLibApplications();
         }
     }
+}
+
+std::map<pid_t, ax_application> *BeginAXLibApplications()
+{
+    pthread_mutex_lock(&AXApplicationsMutex);
+    return AXApplications;
+}
+
+void EndAXLibApplications()
+{
+    pthread_mutex_unlock(&AXApplicationsMutex);
 }
 
 /* NOTE(koekeishiya): This function is responsible for initializing internal variables used by AXLib, and must be
@@ -290,11 +319,16 @@ void AXLibInit(ax_state *State)
 {
     AXState = State;
     AXApplications = &AXState->Applications;
+
+    // TODO(koekeishiya): Check result code
+    pthread_mutex_init(&AXApplicationsMutex, NULL);
+
     AXDisplays = &AXState->Displays;
     Carbon = &AXState->Carbon;
+
     AXUIElementSetMessagingTimeout(AXLibSystemWideElement(), 1.0);
-    AXLibInitializeCarbonEventHandler(Carbon, AXApplications);
-    SharedWorkspaceInitialize(AXApplications);
+    AXLibInitializeCarbonEventHandler(Carbon);
+    SharedWorkspaceInitialize();
     AXLibInitializeDisplays(AXDisplays);
     AXLibRunningApplications();
 }

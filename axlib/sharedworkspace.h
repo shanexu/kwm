@@ -8,7 +8,7 @@
 
 #include "application.h"
 
-void SharedWorkspaceInitialize(std::map<pid_t, ax_application> *Apps);
+void SharedWorkspaceInitialize();
 std::map<pid_t, std::string> SharedWorkspaceRunningApplications();
 
 void SharedWorkspaceActivateApplication(pid_t PID);

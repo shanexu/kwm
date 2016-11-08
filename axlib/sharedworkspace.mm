@@ -10,12 +10,10 @@
 - (id)init;
 @end
 
-internal std::map<pid_t, ax_application> *Applications;
 internal WorkspaceWatcher *Watcher;
 
-void SharedWorkspaceInitialize(std::map<pid_t, ax_application> *Apps)
+void SharedWorkspaceInitialize()
 {
-    Applications = Apps;
     Watcher = [[WorkspaceWatcher alloc] init];
 }
 
@@ -154,6 +152,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didActivateApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
         ax_application *Application = &(*Applications)[PID];
@@ -179,11 +178,13 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
             AXLibConstructEvent(AXEvent_ApplicationActivated, ApplicationPID, false);
         }
     }
+    EndAXLibApplications();
 }
 
 - (void)didHideApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
         ax_application *Application = &(*Applications)[PID];
@@ -192,11 +193,13 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
         *ApplicationPID = Application->PID;
         AXLibConstructEvent(AXEvent_ApplicationHidden, ApplicationPID, false);
     }
+    EndAXLibApplications();
 }
 
 - (void)didUnhideApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
         ax_application *Application = &(*Applications)[PID];
@@ -205,6 +208,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
         *ApplicationPID = Application->PID;
         AXLibConstructEvent(AXEvent_ApplicationVisible, ApplicationPID, false);
     }
+    EndAXLibApplications();
 }
 
 /* NOTE(koekeishiya): This notification is skipped by many applications and so we use the Carbon event system instead. */

@@ -1,10 +1,10 @@
 #include "carbon.h"
 #include "event.h"
 #include "application.h"
+#include "axlib.h"
 #include <unordered_set>
 
 #define internal static
-internal std::map<pid_t, ax_application> *Applications;
 internal std::unordered_set<std::string> ProcessWhitelist;
 
 /* NOTE(koekeishiya): Disables modeOnlyBackground check for a given process. */
@@ -74,13 +74,17 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
     printf("%d: modeDisplayManagerAware\n", ProcessInfo.processMode & modeDisplayManagerAware);
     */
 
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
     (*Applications)[PID] = AXLibConstructApplication(PID, Name);
     ax_application *Application = &(*Applications)[PID];
+    EndAXLibApplications();
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(),
     ^{
+        BeginAXLibApplications();
         if(AXLibInitializeApplication(Application->PID))
             AXLibInitializedApplication(Application);
+        EndAXLibApplications();
     });
 }
 
@@ -89,6 +93,7 @@ CarbonApplicationTerminated(ProcessSerialNumber PSN)
 {
     /* NOTE(koekeishiya): We probably want to have way to lookup process PIDs from the PSN */
     std::map<pid_t, ax_application>::iterator It;
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
     for(It = Applications->begin(); It != Applications->end(); ++It)
     {
         ax_application *Application = &It->second;
@@ -101,6 +106,7 @@ CarbonApplicationTerminated(ProcessSerialNumber PSN)
             break;
         }
     }
+    EndAXLibApplications();
 }
 
 internal OSStatus
@@ -129,10 +135,8 @@ CarbonApplicationEventHandler(EventHandlerCallRef HandlerCallRef, EventRef Event
     return noErr;
 }
 
-bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon, std::map<pid_t, ax_application> *AXApplications)
+bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon)
 {
-    Applications = AXApplications;
-
     Carbon->EventTarget = GetApplicationEventTarget();
     Carbon->EventHandler = NewEventHandlerUPP(CarbonApplicationEventHandler);
     Carbon->EventType[0].eventClass = kEventClassApplication;
