@@ -137,20 +137,24 @@ EVENT_CALLBACK(Callback_AXEvent_DisplayMoved)
 /* NOTE(koekeishiya): Event context is NULL. */
 EVENT_CALLBACK(Callback_AXEvent_DisplayChanged)
 {
-    FocusedDisplay = AXLibMainDisplay();
+    ax_display *CurrentDisplay = AXLibMainDisplay();
+    if(CurrentDisplay->ID != FocusedDisplay->ID)
+    {
+        FocusedDisplay = CurrentDisplay;
 
-    ax_space *PrevSpace = FocusedDisplay->Space;
-    FocusedDisplay->Space = AXLibGetActiveSpace(FocusedDisplay);
-    if(FocusedDisplay->Space != PrevSpace)
-        FocusedDisplay->PrevSpace = PrevSpace;
+        ax_space *PrevSpace = FocusedDisplay->Space;
+        FocusedDisplay->Space = AXLibGetActiveSpace(FocusedDisplay);
+        if(FocusedDisplay->Space != PrevSpace)
+            FocusedDisplay->PrevSpace = PrevSpace;
 
-    DEBUG("AXEvent_DisplayChanged: " << FocusedDisplay->ArrangementID);
+        DEBUG("AXEvent_DisplayChanged: " << FocusedDisplay->ArrangementID);
 
-    AXLibRunningApplications();
-    CreateWindowNodeTree(FocusedDisplay);
-    RebalanceNodeTree(FocusedDisplay);
+        AXLibRunningApplications();
+        CreateWindowNodeTree(FocusedDisplay);
+        RebalanceNodeTree(FocusedDisplay);
 
-    ClearBorderIfFullscreenSpace(FocusedDisplay);
+        ClearBorderIfFullscreenSpace(FocusedDisplay);
+    }
 }
 
 /* NOTE(koekeishiya): Event context is a pointer to the display whos space was changed. */
