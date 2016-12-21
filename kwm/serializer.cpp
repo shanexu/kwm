@@ -158,15 +158,15 @@ void SaveBSPTreeToFile(ax_display *Display, space_info *SpaceInfo, std::string N
     OutFD.close();
 }
 
-void LoadBSPTreeFromFile(ax_display *Display, space_info *SpaceInfo, std::string Name)
+bool LoadBSPTreeFromFile(ax_display *Display, space_info *SpaceInfo, std::string Name)
 {
     if(SpaceInfo->Settings.Mode != SpaceModeBSP)
-        return;
+        return false;
 
     std::string TempPath = KWMPath.Layouts;
     std::ifstream InFD(TempPath + "/" + Name);
     if(InFD.fail())
-        return;
+        return false;
 
     std::string Line;
     std::vector<std::string> SerializedTree;
@@ -175,4 +175,5 @@ void LoadBSPTreeFromFile(ax_display *Display, space_info *SpaceInfo, std::string
 
     DestroyNodeTree(SpaceInfo->RootNode);
     SpaceInfo->RootNode = DeserializeNodeTree(SerializedTree, Display);
+    return true;
 }
