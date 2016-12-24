@@ -236,9 +236,7 @@ struct kwm_path
 {
     std::string FilePath;
     std::string EnvHome;
-
     std::string Config;
-    std::string Init;
 
     std::string Home;
     std::string Include;

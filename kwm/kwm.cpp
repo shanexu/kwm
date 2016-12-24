@@ -136,17 +136,6 @@ GetKwmFilePath()
     return Result;
 }
 
-internal inline void
-KwmExecuteInitScript()
-{
-    if(KWMPath.Init.empty())
-        KWMPath.Init = KWMPath.Home + "/init";
-
-    struct stat Buffer;
-    if(stat(KWMPath.Init.c_str(), &Buffer) == 0)
-        KwmExecuteSystemCommand(KWMPath.Init);
-}
-
 internal void
 SignalHandler(int Signum)
 {
@@ -317,7 +306,6 @@ int main(int argc, char **argv)
 
     KwmInit();
     KwmParseConfig(KWMPath.Config);
-    KwmExecuteInitScript();
 
     CreateWindowNodeTree(MainDisplay);
 

@@ -80,8 +80,7 @@ Manually manage *Kwm* using launchctl
 **NOTE**: [Documentation](https://koekeishiya.github.io/kwm/kwmc.html) of available commands
 
 The default configuration file is `$HOME/.kwm/kwmrc` and is a script that contains *kwmc* commands
-to be executed when *Kwm* starts.  In addition to the above, the file `$HOME/.kwm/init` is a shell
-script that will be ran after *Kwm* has finished setting up the internal configuration.
+to be executed when *Kwm* starts.
 
 A different path can be used by running `kwm -c /path/to/kwmrc` or `kwm --config /path/to/kwmrc`,
 in which case it would probably be a good idea to set the [directories *Kwm* uses](https://github.com/koekeishiya/kwm/issues/191) for various settings.
