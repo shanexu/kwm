@@ -1,6 +1,9 @@
 #include "event.h"
 #include "display.h"
+
+#ifdef DEBUG_BUILD
 #include <stdio.h>
+#endif
 
 #define internal static
 internal ax_event_loop EventLoop = {};
