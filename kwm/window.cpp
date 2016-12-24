@@ -49,6 +49,11 @@ FloatNonResizable(ax_window *Window)
            (!AXLibHasFlags(Window, AXWindow_Resizable)))
         {
             AXLibAddFlags(Window, AXWindow_Floating);
+            if(HasFlags(&KWMSettings, Settings_CenterOnFloat))
+            {
+                ax_display *Display = AXLibWindowDisplay(Window);
+                CenterWindow(Display, Window);
+            }
         }
     }
 }
@@ -1795,7 +1800,8 @@ void CenterWindow(ax_display *Display, ax_window *Window)
     space_settings *SpaceSettings = GetSpaceSettingsForDisplay(Display->ArrangementID);
     CGRect Dimension = {};
 
-    if((SpaceSettings) &&
+    if((AXLibHasFlags(Window, AXWindow_Resizable)) &&
+       (SpaceSettings) &&
        (SpaceSettings->FloatDim.width != 0) &&
        (SpaceSettings->FloatDim.height != 0))
     {

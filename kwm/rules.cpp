@@ -230,7 +230,14 @@ bool ApplyWindowRules(ax_window *Window)
         if(MatchWindowRule(Rule, Window))
         {
             if(Rule->Properties.Float == 1)
+            {
                 AXLibAddFlags(Window, AXWindow_Floating);
+                if(HasFlags(&KWMSettings, Settings_CenterOnFloat))
+                {
+                    ax_display *Display = AXLibWindowDisplay(Window);
+                    CenterWindow(Display, Window);
+                }
+            }
 
             if(!Rule->Properties.Role.empty())
                 Window->Type.CustomRole = CFStringCreateWithCString(NULL,
