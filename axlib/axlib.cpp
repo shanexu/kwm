@@ -11,14 +11,13 @@ extern "C" CGSConnectionID _CGSDefaultConnection(void);
 extern "C" CGError CGSGetOnScreenWindowCount(const CGSConnectionID CID, CGSConnectionID TID, int *Count);
 extern "C" CGError CGSGetOnScreenWindowList(const CGSConnectionID CID, CGSConnectionID TID, int Count, int *List, int *OutCount);
 
-internal ax_state *AXState;
+internal ax_state AXState;
 internal carbon_event_handler *Carbon;
 
 internal std::map<pid_t, ax_application> *AXApplications;
 internal pthread_mutex_t AXApplicationsMutex;
 
 internal std::map<CGDirectDisplayID, ax_display> *AXDisplays;
-internal CGPoint Cursor;
 
 internal inline AXUIElementRef
 AXLibSystemWideElement()
@@ -44,12 +43,12 @@ GetCursorPos()
 }
 
 internal bool
-IsElementBelowCursor(CGRect *WindowRect)
+IsPointInsideRect(CGPoint *Point, CGRect *Rect)
 {
-    if(Cursor.x >= WindowRect->origin.x &&
-       Cursor.x <= WindowRect->origin.x + WindowRect->size.width &&
-       Cursor.y >= WindowRect->origin.y &&
-       Cursor.y <= WindowRect->origin.y + WindowRect->size.height)
+    if(Point->x >= Rect->origin.x &&
+       Point->x <= Rect->origin.x + Rect->size.width &&
+       Point->y >= Rect->origin.y &&
+       Point->y <= Rect->origin.y + Rect->size.height)
         return true;
 
     return false;
@@ -214,7 +213,7 @@ uint32_t AXLibGetWindowBelowCursor()
     uint32_t Result = 0;
     CGWindowListOption WindowListOption = kCGWindowListOptionOnScreenOnly |
                                           kCGWindowListExcludeDesktopElements;
-    Cursor = GetCursorPos();
+    CGPoint Cursor = GetCursorPos();
 
     CFArrayRef WindowList = CGWindowListCopyWindowInfo(WindowListOption, kCGNullWindowID);
     if(WindowList)
@@ -258,7 +257,7 @@ uint32_t AXLibGetWindowBelowCursor()
                 return 0;
             }
 
-            if(IsElementBelowCursor(&WindowRect))
+            if(IsPointInsideRect(&Cursor, &WindowRect))
             {
                 Result = WindowID;
                 break;
@@ -315,20 +314,19 @@ void EndAXLibApplications()
 /* NOTE(koekeishiya): This function is responsible for initializing internal variables used by AXLib, and must be
                       called before using any of the provided functions!  In addition to this, it will also
                       populate the display and running applications map in the ax_state struct.  */
-void AXLibInit(ax_state *State)
+void AXLibInit()
 {
-    AXState = State;
-    AXApplications = &AXState->Applications;
+    Carbon = &AXState.Carbon;
+    AXDisplays = &AXState.Displays;
 
+    AXApplications = &AXState.Applications;
     // TODO(koekeishiya): Check result code
     pthread_mutex_init(&AXApplicationsMutex, NULL);
-
-    AXDisplays = &AXState->Displays;
-    Carbon = &AXState->Carbon;
 
     AXUIElementSetMessagingTimeout(AXLibSystemWideElement(), 1.0);
     AXLibInitializeCarbonEventHandler(Carbon);
     SharedWorkspaceInitialize();
+
     AXLibInitializeDisplays(AXDisplays);
     AXLibRunningApplications();
 }
