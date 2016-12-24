@@ -12,7 +12,6 @@
 #define local_persist static
 
 extern std::map<std::string, space_info> WindowTree;
-extern ax_state AXState;
 extern ax_application *FocusedApplication;
 extern kwm_settings KWMSettings;
 extern kwm_border MarkedBorder;
@@ -392,7 +391,9 @@ void FocusWindowBelowCursor()
         return;
 
     std::map<pid_t, ax_application>::iterator It;
-    for(It = AXState.Applications.begin(); It != AXState.Applications.end(); ++It)
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+
+    for(It = Applications->begin(); It != Applications->end(); ++It)
     {
         ax_application *Application = &It->second;
         ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
@@ -411,7 +412,8 @@ void FocusWindowBelowCursor()
                     AXLibSetFocusedWindow(Window);
                 }
             }
-            return;
+            break;
         }
     }
+    EndAXLibApplications();
 }

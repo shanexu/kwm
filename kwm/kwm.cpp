@@ -13,7 +13,6 @@
 const char *KwmVersion = "Kwm Version 4.0.2";
 std::map<std::string, space_info> WindowTree;
 
-ax_state AXState = {};
 ax_display *FocusedDisplay = NULL;
 ax_application *FocusedApplication = NULL;
 ax_window *MarkedWindow = NULL;
@@ -295,7 +294,7 @@ int main(int argc, char **argv)
     if(!AXLibDisplayHasSeparateSpaces())
         Fatal("Error: 'Displays have separate spaces' must be enabled!");
 
-    AXLibInit(&AXState);
+    AXLibInit();
     AXLibStartEventLoop();
     if(!KwmStartDaemon())
         Fatal("Error: Could not start daemon!");

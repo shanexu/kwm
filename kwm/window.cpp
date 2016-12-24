@@ -18,7 +18,6 @@
 #define local_persist static
 
 extern std::map<std::string, space_info> WindowTree;
-extern ax_state AXState;
 extern ax_display *FocusedDisplay;
 extern ax_application *FocusedApplication;
 extern ax_window *MarkedWindow;
@@ -310,8 +309,8 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
 
         AXLibDestroyApplication(Application);
 
-        BeginAXLibApplications();
-        AXState.Applications.erase(Application->PID);
+        std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+        Applications->erase(Application->PID);
         EndAXLibApplications();
     }
 }
@@ -1821,11 +1820,11 @@ ax_window *GetWindowByID(uint32_t WindowID)
 {
     ax_window *Result = NULL;
 
-    BeginAXLibApplications();
-
     std::map<pid_t, ax_application>::iterator It;
-    for(It = AXState.Applications.begin();
-        It != AXState.Applications.end();
+    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+
+    for(It = Applications->begin();
+        It != Applications->end();
         ++It)
     {
         ax_application *Application = &It->second;
