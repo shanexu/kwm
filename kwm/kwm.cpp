@@ -283,7 +283,9 @@ int main(int argc, char **argv)
     if(!AXLibDisplayHasSeparateSpaces())
         Fatal("Error: 'Displays have separate spaces' must be enabled!");
 
-    AXLibInit();
+    if(!AXLibInit())
+        Fatal("Error: Could not initialize AXLib!");
+
     AXLibStartEventLoop();
     if(!KwmStartDaemon())
         Fatal("Error: Could not start daemon!");
