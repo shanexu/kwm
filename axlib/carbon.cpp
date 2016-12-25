@@ -3,6 +3,8 @@
 #include "application.h"
 #include "axlib.h"
 #include <unordered_set>
+#include <unistd.h>
+#include <map>
 
 #define internal static
 internal std::unordered_set<std::string> ProcessWhitelist;

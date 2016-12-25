@@ -2,9 +2,7 @@
 #define AXLIB_CARBON_H
 
 #include <Carbon/Carbon.h>
-#include <unistd.h>
 #include <string>
-#include <map>
 
 struct carbon_event_handler
 {
