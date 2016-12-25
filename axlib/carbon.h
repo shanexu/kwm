@@ -6,7 +6,6 @@
 #include <string>
 #include <map>
 
-struct ax_application;
 struct carbon_event_handler
 {
     EventTargetRef EventTarget;
