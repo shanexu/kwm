@@ -144,6 +144,5 @@ bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon)
     Carbon->EventType[1].eventClass = kEventClassApplication;
     Carbon->EventType[1].eventKind = kEventAppTerminated;
 
-    /* TODO(koekeishiya): If we cannot install the Carbon handler, abort. */
     return InstallEventHandler(Carbon->EventTarget, Carbon->EventHandler, 2, Carbon->EventType, NULL, &Carbon->CurHandler) == noErr;
 }

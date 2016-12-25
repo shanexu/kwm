@@ -50,7 +50,7 @@ std::vector<ax_window *> AXLibGetAllKnownWindows();
 std::vector<ax_window *> AXLibGetAllVisibleWindows();
 uint32_t AXLibGetWindowBelowCursor();
 void AXLibRunningApplications();
-void AXLibInit();
+bool AXLibInit();
 
 
 std::map<pid_t, ax_application> *BeginAXLibApplications();

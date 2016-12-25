@@ -314,19 +314,26 @@ void EndAXLibApplications()
 /* NOTE(koekeishiya): This function is responsible for initializing internal variables used by AXLib, and must be
                       called before using any of the provided functions!  In addition to this, it will also
                       populate the display and running applications map in the ax_state struct.  */
-void AXLibInit()
+bool AXLibInit()
 {
+    AXUIElementSetMessagingTimeout(AXLibSystemWideElement(), 1.0);
+
     Carbon = &AXState.Carbon;
     AXDisplays = &AXState.Displays;
-
     AXApplications = &AXState.Applications;
-    // TODO(koekeishiya): Check result code
-    pthread_mutex_init(&AXApplicationsMutex, NULL);
 
-    AXUIElementSetMessagingTimeout(AXLibSystemWideElement(), 1.0);
-    AXLibInitializeCarbonEventHandler(Carbon);
+    if(pthread_mutex_init(&AXApplicationsMutex, NULL) != 0)
+    {
+        return false;
+    }
+
+    if(!AXLibInitializeCarbonEventHandler(Carbon))
+    {
+        return false;
+    }
+
     SharedWorkspaceInitialize();
-
     AXLibInitializeDisplays(AXDisplays);
     AXLibRunningApplications();
+    return true;
 }
