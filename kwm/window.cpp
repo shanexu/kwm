@@ -1319,21 +1319,21 @@ void SwapFocusedWindowWithNearest(int Shift)
         return;
 
     ax_display *Display = AXLibWindowDisplay(Window);
-    space_info *Space = &WindowTree[Display->Space->Identifier];
-    if(Space->Settings.Mode == SpaceModeMonocle)
+    space_info *SpaceInfo = &WindowTree[Display->Space->Identifier];
+    if(SpaceInfo->Settings.Mode == SpaceModeMonocle)
     {
-        link_node *Link = GetLinkNodeFromTree(Space->RootNode, Window->ID);
+        link_node *Link = GetLinkNodeFromTree(SpaceInfo->RootNode, Window->ID);
         if(Link)
         {
             link_node *ShiftNode = Shift == 1 ? Link->Next : Link->Prev;
             if(KWMSettings.Cycle == CycleModeScreen && !ShiftNode)
             {
-                Space->RootNode->Type = NodeTypeLink;
+                SpaceInfo->RootNode->Type = NodeTypeLink;
                 if(Shift == 1)
-                    GetFirstLeafNode(Space->RootNode, (void**)&ShiftNode);
+                    GetFirstLeafNode(SpaceInfo->RootNode, (void**)&ShiftNode);
                 else
-                    GetLastLeafNode(Space->RootNode, (void**)&ShiftNode);
-                Space->RootNode->Type = NodeTypeTree;
+                    GetLastLeafNode(SpaceInfo->RootNode, (void**)&ShiftNode);
+                SpaceInfo->RootNode->Type = NodeTypeTree;
             }
 
             if(ShiftNode)
@@ -1343,17 +1343,29 @@ void SwapFocusedWindowWithNearest(int Shift)
             }
         }
     }
-    else if(Space->Settings.Mode == SpaceModeBSP)
+    else if(SpaceInfo->Settings.Mode == SpaceModeBSP)
     {
-        tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(Space->RootNode, Window->ID);
+        tree_node *Node = GetTreeNodeFromWindowIDOrLinkNode(SpaceInfo->RootNode, Window->ID);
         if(Node)
         {
             tree_node *ClosestNode = NULL;;
 
             if(Shift == 1)
+            {
                 ClosestNode = GetNearestTreeNodeToTheRight(Node);
+                if(KWMSettings.Cycle == CycleModeScreen && !ClosestNode)
+                {
+                    GetFirstLeafNode(SpaceInfo->RootNode, (void**)&ClosestNode);
+                }
+            }
             else if(Shift == -1)
+            {
                 ClosestNode = GetNearestTreeNodeToTheLeft(Node);
+                if(KWMSettings.Cycle == CycleModeScreen && !ClosestNode)
+                {
+                    GetLastLeafNode(SpaceInfo->RootNode, (void**)&ClosestNode);
+                }
+            }
 
             if(ClosestNode)
             {
