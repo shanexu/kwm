@@ -269,6 +269,7 @@ enum kwm_toggleable
     Settings_FloatNonResizable = (1 << 4),
     Settings_LockToContainer = (1 << 5),
     Settings_MouseDrag = (1 << 6),
+    Settings_FloatNextWindow = (1 << 7),
 };
 
 inline void

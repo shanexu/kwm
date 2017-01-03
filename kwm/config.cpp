@@ -981,6 +981,8 @@ KwmParseWindowOption(tokenizer *Tokenizer)
             token Selector = GetToken(Tokenizer);
             if(TokenEquals(Selector, "focused"))
                 ToggleFocusedWindowFloating();
+            else if(TokenEquals(Selector, "next"))
+                AddFlags(&KWMSettings, Settings_FloatNextWindow);
             else
                 ReportInvalidCommand("Unknown selector '" + std::string(Selector.Text, Selector.TextLength) + "'");
         }

@@ -40,8 +40,32 @@ DrawFocusedBorder(ax_display *Display, ax_window *Window)
     }
 }
 
+internal bool
+FloatNextWindow(ax_display *Display, ax_window *Window)
+{
+    bool Result = HasFlags(&KWMSettings, Settings_FloatNextWindow);
+    if(Result)
+    {
+        ClearFlags(&KWMSettings, Settings_FloatNextWindow);
+
+        AXLibAddFlags(Window, AXWindow_Floating);
+        if(HasFlags(&KWMSettings, Settings_CenterOnFloat))
+        {
+            CenterWindow(Display, Window);
+        }
+
+        /*
+        if((HasFlags(&KWMSettings, Settings_StandbyOnFloat)) &&
+           (KWMSettings.Focus != FocusModeDisabled))
+            KWMSettings.Focus = FocusModeStandby;
+        */
+    }
+
+    return Result;
+}
+
 internal void
-FloatNonResizable(ax_window *Window)
+FloatNonResizable(ax_display *Display, ax_window *Window)
 {
     if(Window)
     {
@@ -51,7 +75,6 @@ FloatNonResizable(ax_window *Window)
             AXLibAddFlags(Window, AXWindow_Floating);
             if(HasFlags(&KWMSettings, Settings_CenterOnFloat))
             {
-                ax_display *Display = AXLibWindowDisplay(Window);
                 CenterWindow(Display, Window);
             }
         }
@@ -244,7 +267,7 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
             if(ApplyWindowRules(Window))
                 continue;
 
-            FloatNonResizable(Window);
+            FloatNonResizable(Display, Window);
             TileWindow(Display, Window);
         }
     }
@@ -365,8 +388,11 @@ EVENT_CALLBACK(Callback_AXEvent_WindowCreated)
         ax_display *Display = AXLibCursorDisplay();
         if(Display)
         {
-            FloatNonResizable(Window);
-            TileWindow(Display, Window);
+            FloatNonResizable(Display, Window);
+            if(!FloatNextWindow(Display, Window))
+            {
+                TileWindow(Display, Window);
+            }
         }
     }
 }
