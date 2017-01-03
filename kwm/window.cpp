@@ -190,6 +190,10 @@ EVENT_CALLBACK(Callback_AXEvent_SpaceChanged)
     ax_display *Display = (ax_display *) Event->Context;
     DEBUG("AXEvent_SpaceChanged");
 
+    /* TODO(koekeishiya): Do we want to reset this flag if a space transition occurs ?
+    ClearFlags(&KWMSettings, Settings_FloatNextWindow);
+    */
+
     ClearBorder(&FocusedBorder);
     ClearMarkedWindow();
 
