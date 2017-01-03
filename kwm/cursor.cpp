@@ -390,10 +390,10 @@ void FocusWindowBelowCursor()
     if(WindowID == 0)
         return;
 
-    std::map<pid_t, ax_application>::iterator It;
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
-
-    for(It = Applications->begin(); It != Applications->end(); ++It)
+    ax_application_map *Applications = BeginAXLibApplications();
+    for(ax_application_map_iter It = Applications->begin();
+        It != Applications->end();
+        ++It)
     {
         ax_application *Application = &It->second;
         ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);

@@ -76,7 +76,7 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
     printf("%d: modeDisplayManagerAware\n", ProcessInfo.processMode & modeDisplayManagerAware);
     */
 
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     (*Applications)[PID] = AXLibConstructApplication(PID, Name);
     ax_application *Application = &(*Applications)[PID];
     EndAXLibApplications();
@@ -94,9 +94,10 @@ internal void
 CarbonApplicationTerminated(ProcessSerialNumber PSN)
 {
     /* NOTE(koekeishiya): We probably want to have way to lookup process PIDs from the PSN */
-    std::map<pid_t, ax_application>::iterator It;
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
-    for(It = Applications->begin(); It != Applications->end(); ++It)
+    ax_application_map *Applications = BeginAXLibApplications();
+    for(ax_application_map_iter It = Applications->begin();
+        It != Applications->end();
+        ++It)
     {
         ax_application *Application = &It->second;
         if(Application->PSN.lowLongOfPSN == PSN.lowLongOfPSN &&

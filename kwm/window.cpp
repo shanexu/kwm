@@ -314,7 +314,7 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
 
         AXLibDestroyApplication(Application);
 
-        std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+        ax_application_map *Applications = BeginAXLibApplications();
         Applications->erase(Application->PID);
         EndAXLibApplications();
     }
@@ -1826,10 +1826,8 @@ ax_window *GetWindowByID(uint32_t WindowID)
 {
     ax_window *Result = NULL;
 
-    std::map<pid_t, ax_application>::iterator It;
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
-
-    for(It = Applications->begin();
+    ax_application_map *Applications = BeginAXLibApplications();
+    for(ax_application_map_iter It = Applications->begin();
         It != Applications->end();
         ++It)
     {

@@ -14,7 +14,7 @@ extern "C" CGError CGSGetOnScreenWindowList(const CGSConnectionID CID, CGSConnec
 internal ax_state AXState;
 internal carbon_event_handler *Carbon;
 
-internal std::map<pid_t, ax_application> *AXApplications;
+internal ax_application_map *AXApplications;
 internal pthread_mutex_t AXApplicationsMutex;
 
 internal std::map<CGDirectDisplayID, ax_display> *AXDisplays;
@@ -58,7 +58,7 @@ IsPointInsideRect(CGPoint *Point, CGRect *Rect)
 internal bool
 AXLibIsApplicationCached(pid_t PID)
 {
-    std::map<pid_t, ax_application>::iterator It = AXApplications->find(PID);
+    ax_application_map_iter It = AXApplications->find(PID);
     return It != AXApplications->end();
 }
 
@@ -132,10 +132,11 @@ void AXLibSetFocusedWindow(ax_window *Window)
 std::vector<ax_window *> AXLibGetAllKnownWindows()
 {
     std::vector<ax_window *> Windows;
-    std::map<pid_t, ax_application>::iterator It;
 
     BeginAXLibApplications();
-    for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
+    for(ax_application_map_iter It = AXApplications->begin();
+        It != AXApplications->end();
+        ++It)
     {
         ax_application *Application = &It->second;
         std::map<uint32_t, ax_window *>::iterator WIt;
@@ -177,14 +178,17 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
         if(Error == kCGErrorSuccess)
         {
             BeginAXLibApplications();
-            std::map<pid_t, ax_application>::iterator It;
-            for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
+            for(ax_application_map_iter It = AXApplications->begin();
+                It != AXApplications->end();
+                ++It)
             {
                 ax_application *Application = &It->second;
                 if(!AXLibIsApplicationHidden(Application))
                 {
                     std::map<uint32_t, ax_window *>::iterator WIt;
-                    for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
+                    for(WIt = Application->Windows.begin();
+                        WIt != Application->Windows.end();
+                        ++WIt)
                     {
                         ax_window *Window = WIt->second;
                         /* NOTE(koekeishiya): If a window is minimized, the ArrayContains check should fail
@@ -300,7 +304,7 @@ void AXLibRunningApplications()
     }
 }
 
-std::map<pid_t, ax_application> *BeginAXLibApplications()
+ax_application_map *BeginAXLibApplications()
 {
     pthread_mutex_lock(&AXApplicationsMutex);
     return AXApplications;

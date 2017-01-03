@@ -152,7 +152,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didActivateApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
         ax_application *Application = &(*Applications)[PID];
@@ -184,7 +184,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didHideApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
         ax_application *Application = &(*Applications)[PID];
@@ -199,7 +199,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didUnhideApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
         ax_application *Application = &(*Applications)[PID];
