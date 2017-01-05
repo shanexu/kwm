@@ -1,7 +1,7 @@
 ### Keybindings
 
 The following keybindings are provided in the `khdrc` file. This is a config file for [Khd](https://github.com/koekeishiya/khd),
-a program meant for creating various types of keybindins. Feel free to use any other tool that allows mapping a key-combination to some command.
+a program meant for creating various types of keybindings. Feel free to use any other tool that allows mapping a key-combination to some command.
 
 I strongly recommend taking the time to experiment and set up your own binds, instead of using the ones provided here.
 
