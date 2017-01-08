@@ -12,7 +12,7 @@
 #define internal static
 extern std::map<std::string, space_info> WindowTree;
 
-/* NOTE(koekeishiya): Should not be able to return null as the binary-tree is always balanced. */
+/* NOTE(koekeishiya): Should not be able to return null as the binary-tree is always proper. */
 tree_node * FindFirstMinDepthLeafNode(tree_node *Root)
 {
     std::queue<tree_node *> Queue;
