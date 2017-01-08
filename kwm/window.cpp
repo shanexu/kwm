@@ -733,7 +733,7 @@ AddWindowToBSPTree(ax_display *Display, space_info *SpaceInfo, uint32_t WindowID
             CurrentNode = GetTreeNodeFromWindowIDOrLinkNode(RootNode, Window->ID);
 
         if(!CurrentNode)
-            GetFirstLeafNode(RootNode, (void**)&CurrentNode);
+            CurrentNode = FindFirstMinDepthLeafNode(RootNode);
 
         if(CurrentNode)
         {
