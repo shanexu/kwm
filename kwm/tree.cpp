@@ -12,6 +12,12 @@
 #define internal static
 extern std::map<std::string, space_info> WindowTree;
 
+internal tree_node *
+FindFirstMinDepthLeafNode(tree_node *Root)
+{
+    // TODO(koekeishiya): NYI
+}
+
 internal bool
 CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)
 {
