@@ -1118,8 +1118,7 @@ void AddWindowToInactiveNodeTree(ax_display *Display, uint32_t WindowID)
     else if(SpaceInfo->Settings.Mode == SpaceModeBSP)
     {
         DEBUG("AddWindowToInactiveNodeTree() BSP Space");
-        tree_node *CurrentNode = NULL;
-        GetFirstLeafNode(SpaceInfo->RootNode, (void**)&CurrentNode);
+        tree_node *CurrentNode = FindFirstMinDepthLeafNode(SpaceInfo->RootNode);
         split_type SplitMode = KWMSettings.SplitMode == SPLIT_OPTIMAL ? GetOptimalSplitMode(CurrentNode) : KWMSettings.SplitMode;
 
         CreateLeafNodePair(Display, CurrentNode, CurrentNode->WindowID, WindowID, SplitMode);
