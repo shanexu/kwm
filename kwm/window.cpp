@@ -1873,10 +1873,9 @@ ax_window *GetWindowByID(uint32_t WindowID)
         ++It)
     {
         ax_application *Application = &It->second;
-        ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
-        if(Window)
+        Result = AXLibFindApplicationWindow(Application, WindowID);
+        if(Result)
         {
-            Result = Window;
             break;
         }
     }
