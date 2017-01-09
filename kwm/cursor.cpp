@@ -381,39 +381,35 @@ void FocusWindowBelowCursor()
     if(Application)
     {
         FocusedWindow = Application->Focus;
-         if((FocusedWindow) && (IsCursorInsideRect(FocusedWindow->Position.x, FocusedWindow->Position.y,
-                                                   FocusedWindow->Size.width, FocusedWindow->Size.height)))
+         if((FocusedWindow) &&
+            (IsCursorInsideRect(FocusedWindow->Position.x, FocusedWindow->Position.y,
+                                FocusedWindow->Size.width, FocusedWindow->Size.height)))
+         {
              return;
+         }
     }
 
     uint32_t WindowID = AXLibGetWindowBelowCursor();
     if(WindowID == 0)
-        return;
-
-    ax_application_map *Applications = BeginAXLibApplications();
-    for(ax_application_map_iter It = Applications->begin();
-        It != Applications->end();
-        ++It)
     {
-        ax_application *Application = &It->second;
-        ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
-        if(Window)
+        return;
+    }
+
+    ax_window *Window = GetWindowByID(WindowID);
+    if(Window)
+    {
+        if((AXLibIsWindowStandard(Window)) ||
+           (AXLibIsWindowCustom(Window)))
         {
-            if((AXLibIsWindowStandard(Window)) ||
-               (AXLibIsWindowCustom(Window)))
+            if(Application == Window->Application)
             {
-                if(Application == Window->Application)
-                {
-                    if(FocusedWindow != Window)
-                        AXLibSetFocusedWindow(Window);
-                }
-                else
-                {
+                if(FocusedWindow != Window)
                     AXLibSetFocusedWindow(Window);
-                }
             }
-            break;
+            else
+            {
+                AXLibSetFocusedWindow(Window);
+            }
         }
     }
-    EndAXLibApplications();
 }
