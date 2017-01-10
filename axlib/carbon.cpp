@@ -76,9 +76,10 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
     printf("%d: modeDisplayManagerAware\n", ProcessInfo.processMode & modeDisplayManagerAware);
     */
 
+    ax_application *Application = AXLibConstructApplication(PID, Name);
+
     ax_application_map *Applications = BeginAXLibApplications();
-    (*Applications)[PID] = AXLibConstructApplication(PID, Name);
-    ax_application *Application = &(*Applications)[PID];
+    (*Applications)[PID] = Application;
     EndAXLibApplications();
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(),
@@ -99,7 +100,7 @@ CarbonApplicationTerminated(ProcessSerialNumber PSN)
         It != Applications->end();
         ++It)
     {
-        ax_application *Application = &It->second;
+        ax_application *Application = It->second;
         if(Application->PSN.lowLongOfPSN == PSN.lowLongOfPSN &&
            Application->PSN.highLongOfPSN == PSN.highLongOfPSN)
         {

@@ -65,7 +65,7 @@ AXLibIsApplicationCached(pid_t PID)
 /* NOTE(koekeishiya): Returns a pointer to the ax_application struct corresponding to the given process id. */
 ax_application *AXLibGetApplicationByPID(pid_t PID)
 {
-    ax_application *Result = AXLibIsApplicationCached(PID) ? &(*AXApplications)[PID] : NULL;
+    ax_application *Result = AXLibIsApplicationCached(PID) ? (*AXApplications)[PID] : NULL;
     return Result;
 }
 
@@ -138,7 +138,7 @@ std::vector<ax_window *> AXLibGetAllKnownWindows()
         It != AXApplications->end();
         ++It)
     {
-        ax_application *Application = &It->second;
+        ax_application *Application = It->second;
         std::map<uint32_t, ax_window *>::iterator WIt;
         for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
             Windows.push_back(WIt->second);
@@ -182,7 +182,7 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
                 It != AXApplications->end();
                 ++It)
             {
-                ax_application *Application = &It->second;
+                ax_application *Application = It->second;
                 if(!AXLibIsApplicationHidden(Application))
                 {
                     std::map<uint32_t, ax_window *>::iterator WIt;
@@ -298,7 +298,7 @@ void AXLibRunningApplications()
         else
         {
             BeginAXLibApplications();
-            AXLibAddApplicationWindows(&(*AXApplications)[PID]);
+            AXLibAddApplicationWindows((*AXApplications)[PID]);
             EndAXLibApplications();
         }
     }

@@ -34,8 +34,8 @@
  *        transition occurs on the active monitor.
  * */
 
-typedef std::map<pid_t, ax_application> ax_application_map;
-typedef std::map<pid_t, ax_application>::iterator ax_application_map_iter;
+typedef std::map<pid_t, ax_application *> ax_application_map;
+typedef std::map<pid_t, ax_application *>::iterator ax_application_map_iter;
 
 struct ax_state
 {

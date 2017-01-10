@@ -55,7 +55,7 @@ AXLibClearFlags(ax_application *Application, uint32_t Flag)
     Application->Flags &= ~Flag;
 }
 
-ax_application AXLibConstructApplication(pid_t PID, std::string Name);
+ax_application *AXLibConstructApplication(pid_t PID, std::string Name);
 void AXLibDestroyApplication(ax_application *Application);
 
 bool AXLibInitializeApplication(pid_t PID);

@@ -155,7 +155,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
     ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
-        ax_application *Application = &(*Applications)[PID];
+        ax_application *Application = (*Applications)[PID];
 
         if(AXLibHasFlags(Application, AXApplication_PrepIgnoreFocus))
         {
@@ -187,7 +187,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
     ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
-        ax_application *Application = &(*Applications)[PID];
+        ax_application *Application = (*Applications)[PID];
 
         pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
         *ApplicationPID = Application->PID;
@@ -202,7 +202,7 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
     ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
-        ax_application *Application = &(*Applications)[PID];
+        ax_application *Application = (*Applications)[PID];
 
         pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
         *ApplicationPID = Application->PID;

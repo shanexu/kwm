@@ -323,14 +323,14 @@ AXLibRemoveApplicationObserver(ax_application *Application)
     }
 }
 
-ax_application AXLibConstructApplication(pid_t PID, std::string Name)
+ax_application *AXLibConstructApplication(pid_t PID, std::string Name)
 {
-    ax_application Application = {};
+    ax_application *Application = new ax_application();
 
-    Application.Ref = AXUIElementCreateApplication(PID);
-    GetProcessForPID(PID, &Application.PSN);
-    Application.Name = Name;
-    Application.PID = PID;
+    Application->Ref = AXUIElementCreateApplication(PID);
+    GetProcessForPID(PID, &Application->PSN);
+    Application->Name = Name;
+    Application->PID = PID;
 
     return Application;
 }
@@ -497,4 +497,5 @@ void AXLibDestroyApplication(ax_application *Application)
     AXLibRemoveApplicationObserver(Application);
     CFRelease(Application->Ref);
     Application->Ref = NULL;
+    delete Application;
 }

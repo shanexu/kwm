@@ -339,11 +339,11 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationTerminated)
        if(FocusedApplication == Application)
            ClearBorder(&FocusedBorder);
 
-        AXLibDestroyApplication(Application);
-
         ax_application_map *Applications = BeginAXLibApplications();
         Applications->erase(Application->PID);
         EndAXLibApplications();
+
+        AXLibDestroyApplication(Application);
     }
 }
 
@@ -1872,7 +1872,7 @@ ax_window *GetWindowByID(uint32_t WindowID)
         It != Applications->end();
         ++It)
     {
-        ax_application *Application = &It->second;
+        ax_application *Application = It->second;
         Result = AXLibFindApplicationWindow(Application, WindowID);
         if(Result)
         {
