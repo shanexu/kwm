@@ -1681,33 +1681,62 @@ void ShiftSubTreeWindowFocus(int Shift)
     if(SpaceInfo->Settings.Mode == SpaceModeBSP)
     {
         link_node *Link = GetLinkNodeFromWindowID(SpaceInfo->RootNode, Window->ID);
-        tree_node *Root = GetTreeNodeFromLink(SpaceInfo->RootNode, Link);
         if(Link)
         {
-            link_node *FocusNode = NULL;
             if(Shift == 1)
             {
-                FocusNode = Link->Next;
-                SetWindowFocusByNode(FocusNode);
-            }
-            else
-            {
-                FocusNode = Link->Prev;
+                link_node *FocusNode = Link->Next;
                 if(FocusNode)
+                {
                     SetWindowFocusByNode(FocusNode);
-                else
+                    MoveCursorToCenterOfFocusedWindow();
+                }
+                else if(KWMSettings.Cycle == CycleModeScreen)
+                {
+                    tree_node *Root = GetTreeNodeFromLink(SpaceInfo->RootNode, Link);
                     SetWindowFocusByNode(Root);
+                    MoveCursorToCenterOfFocusedWindow();
+                }
             }
-
-            MoveCursorToCenterOfFocusedWindow();
+            else if(Shift == -1)
+            {
+                link_node *FocusNode = Link->Prev;
+                if(FocusNode)
+                {
+                    SetWindowFocusByNode(FocusNode);
+                }
+                else
+                {
+                    tree_node *Root = GetTreeNodeFromLink(SpaceInfo->RootNode, Link);
+                    SetWindowFocusByNode(Root);
+                }
+                MoveCursorToCenterOfFocusedWindow();
+            }
         }
-        else if(Shift == 1)
+        else
         {
             tree_node *Root = GetTreeNodeFromWindowID(SpaceInfo->RootNode, Window->ID);
             if(Root)
             {
-                SetWindowFocusByNode(Root->List);
-                MoveCursorToCenterOfFocusedWindow();
+                if(Shift == 1)
+                {
+                    SetWindowFocusByNode(Root->List);
+                    MoveCursorToCenterOfFocusedWindow();
+                }
+                else if(KWMSettings.Cycle == CycleModeScreen)
+                {
+                    link_node *FocusNode;
+                    node_type PrevType = Root->Type;
+                    if(Root->Type != NodeTypeLink)
+                        Root->Type = NodeTypeLink;
+
+                    GetLastLeafNode(Root, (void**)&FocusNode);
+                    if(Root->Type != PrevType)
+                        Root->Type = PrevType;
+
+                    SetWindowFocusByNode(FocusNode);
+                    MoveCursorToCenterOfFocusedWindow();
+                }
             }
         }
     }
