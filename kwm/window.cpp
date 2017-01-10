@@ -65,7 +65,7 @@ FloatNextWindow(ax_display *Display, ax_window *Window)
 }
 
 internal void
-FloatNonResizable(ax_display *Display, ax_window *Window)
+FloatNonResizable(ax_window *Window)
 {
     if(Window)
     {
@@ -73,10 +73,6 @@ FloatNonResizable(ax_display *Display, ax_window *Window)
            (!AXLibHasFlags(Window, AXWindow_Resizable)))
         {
             AXLibAddFlags(Window, AXWindow_Floating);
-            if(HasFlags(&KWMSettings, Settings_CenterOnFloat))
-            {
-                CenterWindow(Display, Window);
-            }
         }
     }
 }
@@ -271,7 +267,7 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
             if(ApplyWindowRules(Window))
                 continue;
 
-            FloatNonResizable(Display, Window);
+            FloatNonResizable(Window);
             TileWindow(Display, Window);
         }
     }
@@ -392,7 +388,7 @@ EVENT_CALLBACK(Callback_AXEvent_WindowCreated)
         ax_display *Display = AXLibCursorDisplay();
         if(Display)
         {
-            FloatNonResizable(Display, Window);
+            FloatNonResizable(Window);
             if(!FloatNextWindow(Display, Window))
             {
                 TileWindow(Display, Window);
