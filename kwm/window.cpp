@@ -524,11 +524,12 @@ EVENT_CALLBACK(Callback_AXEvent_WindowMoved)
         else
             DEBUG("AXEvent_WindowMoved: " << Window->Application->Name << " - [Unknown]");
 
-        if(!Event->Intrinsic && HasFlags(&KWMSettings, Settings_LockToContainer))
-            LockWindowToContainerSize(Window);
-
         if(!Event->Intrinsic)
+        {
             RemoveWindowFromOtherDisplays(Window);
+            if(HasFlags(&KWMSettings, Settings_LockToContainer))
+                LockWindowToContainerSize(Window);
+        }
 
         ax_display *Display = AXLibWindowDisplay(Window);
         if((FocusedApplication == Window->Application) &&
