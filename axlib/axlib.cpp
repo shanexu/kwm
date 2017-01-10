@@ -139,9 +139,12 @@ std::vector<ax_window *> AXLibGetAllKnownWindows()
         ++It)
     {
         ax_application *Application = It->second;
-        std::map<uint32_t, ax_window *>::iterator WIt;
-        for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
+        for(ax_window_map_iter WIt = Application->Windows.begin();
+            WIt != Application->Windows.end();
+            ++WIt)
+        {
             Windows.push_back(WIt->second);
+        }
     }
     EndAXLibApplications();
 
@@ -185,8 +188,7 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
                 ax_application *Application = It->second;
                 if(!AXLibIsApplicationHidden(Application))
                 {
-                    std::map<uint32_t, ax_window *>::iterator WIt;
-                    for(WIt = Application->Windows.begin();
+                    for(ax_window_map_iter WIt = Application->Windows.begin();
                         WIt != Application->Windows.end();
                         ++WIt)
                     {
@@ -277,29 +279,29 @@ uint32_t AXLibGetWindowBelowCursor()
 /* NOTE(koekeishiya): Update state of known applications and their windows, stored inside the ax_state passed to AXLibInit(..). */
 void AXLibRunningApplications()
 {
-    std::map<pid_t, std::string> List = SharedWorkspaceRunningApplications();
-
-    std::map<pid_t, std::string>::iterator It;
-    for(It = List.begin(); It != List.end(); ++It)
+    shared_ws_map List = SharedWorkspaceRunningApplications();
+    for(shared_ws_map_iter It = List.begin();
+        It != List.end();
+        ++It)
     {
-        pid_t PID = It->first;
         BeginAXLibApplications();
-        bool Cached = AXLibIsApplicationCached(PID);
+        ax_application *Application = AXLibGetApplicationByPID(It->first);
         EndAXLibApplications();
 
-        if(!Cached)
+        if(Application)
         {
-            std::string Name = It->second;
-            BeginAXLibApplications();
-            (*AXApplications)[PID] = AXLibConstructApplication(PID, Name);
-            AXLibInitializeApplication(PID);
-            EndAXLibApplications();
+            AXLibAddApplicationWindows(Application);
         }
         else
         {
+            Application = AXLibConstructApplication(It->first, It->second);
+
             BeginAXLibApplications();
-            AXLibAddApplicationWindows((*AXApplications)[PID]);
+            (*AXApplications)[Application->PID] = Application;
             EndAXLibApplications();
+
+            if(AXLibInitializeApplication(Application->PID))
+                AXLibInitializedApplication(Application);
         }
     }
 }

@@ -8,8 +8,11 @@
 
 #include "application.h"
 
+typedef std::map<pid_t, std::string> shared_ws_map;
+typedef std::map<pid_t, std::string>::iterator shared_ws_map_iter;
+
 void SharedWorkspaceInitialize();
-std::map<pid_t, std::string> SharedWorkspaceRunningApplications();
+shared_ws_map SharedWorkspaceRunningApplications();
 
 void SharedWorkspaceActivateApplication(pid_t PID);
 bool SharedWorkspaceIsApplicationActive(pid_t PID);

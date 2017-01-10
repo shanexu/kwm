@@ -426,11 +426,12 @@ void AXLibAddApplicationWindows(ax_application *Application)
 
 void AXLibRemoveApplicationWindows(ax_application *Application)
 {
-    std::map<uint32_t, ax_window *> Windows = Application->Windows;
+    ax_window_map Windows = Application->Windows;
     Application->Windows.clear();
 
-    std::map<uint32_t, ax_window *>::iterator It;
-    for(It = Windows.begin(); It != Windows.end(); ++It)
+    for(ax_window_map_iter It = Windows.begin();
+        It != Windows.end();
+        ++It)
     {
         ax_window *Window = It->second;
         AXLibRemoveObserverNotification(&Window->Application->Observer, Window->Ref, kAXUIElementDestroyedNotification);
@@ -442,8 +443,7 @@ void AXLibRemoveApplicationWindows(ax_application *Application)
 
 ax_window *AXLibFindApplicationWindow(ax_application *Application, uint32_t WID)
 {
-    std::map<uint32_t, ax_window *>::iterator It;
-    It = Application->Windows.find(WID);
+    ax_window_map_iter It = Application->Windows.find(WID);
     if(It != Application->Windows.end())
         return It->second;
     else

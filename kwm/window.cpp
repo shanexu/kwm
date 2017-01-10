@@ -259,7 +259,7 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationLaunched)
         DEBUG("AXEvent_ApplicationLaunched: " << Application->Name);
 
         ax_display *Display = AXLibCursorDisplay();
-        for(std::map<uint32_t, ax_window *>::iterator It = Application->Windows.begin();
+        for(ax_window_map_iter It = Application->Windows.begin();
             It != Application->Windows.end();
             ++It)
         {
@@ -284,8 +284,9 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationHidden)
     {
         DEBUG("AXEvent_ApplicationHidden: " << Application->Name);
 
-        std::map<uint32_t, ax_window *>::iterator It;
-        for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+        for(ax_window_map_iter It = Application->Windows.begin();
+            It != Application->Windows.end();
+            ++It)
         {
             ax_window *Window = It->second;
             if(AXLibSpaceHasWindow(Window, FocusedDisplay->Space->ID))
@@ -305,8 +306,9 @@ EVENT_CALLBACK(Callback_AXEvent_ApplicationVisible)
     {
         DEBUG("AXEvent_ApplicationVisible: " << Application->Name);
 
-        std::map<uint32_t, ax_window *>::iterator It;
-        for(It = Application->Windows.begin(); It != Application->Windows.end(); ++It)
+        for(ax_window_map_iter It = Application->Windows.begin();
+            It != Application->Windows.end();
+            ++It)
         {
             ax_window *Window = It->second;
             if(AXLibSpaceHasWindow(Window, FocusedDisplay->Space->ID))

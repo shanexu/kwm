@@ -17,10 +17,9 @@ void SharedWorkspaceInitialize()
     Watcher = [[WorkspaceWatcher alloc] init];
 }
 
-std::map<pid_t, std::string> SharedWorkspaceRunningApplications()
+shared_ws_map SharedWorkspaceRunningApplications()
 {
-    std::map<pid_t, std::string> List;
-
+    shared_ws_map List;
     for(NSRunningApplication *Application in [[NSWorkspace sharedWorkspace] runningApplications])
     {
         if([Application activationPolicy] == NSApplicationActivationPolicyRegular)
