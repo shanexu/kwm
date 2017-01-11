@@ -31,7 +31,7 @@ The bar seen in the above screenshot can be found [here](https://github.com/koek
 
 A codesigned binary release is available through Homebrew
 
-    brew install koekeishiya/kwm/kwm
+    brew install koekeishiya/homebrew-formulae/kwm
 
 Add the example [`kwmrc`](https://github.com/koekeishiya/kwm/blob/master/examples/kwmrc) file to `~/.kwm/kwmrc` to get started.
 
