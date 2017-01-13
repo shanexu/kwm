@@ -3,6 +3,8 @@
 #include "application.h"
 #include "axlib.h"
 #include <unordered_set>
+#include <unistd.h>
+#include <map>
 
 #define internal static
 internal std::unordered_set<std::string> ProcessWhitelist;
@@ -74,17 +76,16 @@ CarbonApplicationLaunched(ProcessSerialNumber PSN)
     printf("%d: modeDisplayManagerAware\n", ProcessInfo.processMode & modeDisplayManagerAware);
     */
 
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
-    (*Applications)[PID] = AXLibConstructApplication(PID, Name);
-    ax_application *Application = &(*Applications)[PID];
+    ax_application *Application = AXLibConstructApplication(PID, Name);
+
+    ax_application_map *Applications = BeginAXLibApplications();
+    (*Applications)[PID] = Application;
     EndAXLibApplications();
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(),
     ^{
-        BeginAXLibApplications();
         if(AXLibInitializeApplication(Application->PID))
             AXLibInitializedApplication(Application);
-        EndAXLibApplications();
     });
 }
 
@@ -92,11 +93,12 @@ internal void
 CarbonApplicationTerminated(ProcessSerialNumber PSN)
 {
     /* NOTE(koekeishiya): We probably want to have way to lookup process PIDs from the PSN */
-    std::map<pid_t, ax_application>::iterator It;
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
-    for(It = Applications->begin(); It != Applications->end(); ++It)
+    ax_application_map *Applications = BeginAXLibApplications();
+    for(ax_application_map_iter It = Applications->begin();
+        It != Applications->end();
+        ++It)
     {
-        ax_application *Application = &It->second;
+        ax_application *Application = It->second;
         if(Application->PSN.lowLongOfPSN == PSN.lowLongOfPSN &&
            Application->PSN.highLongOfPSN == PSN.highLongOfPSN)
         {
@@ -144,6 +146,5 @@ bool AXLibInitializeCarbonEventHandler(carbon_event_handler *Carbon)
     Carbon->EventType[1].eventClass = kEventClassApplication;
     Carbon->EventType[1].eventKind = kEventAppTerminated;
 
-    /* TODO(koekeishiya): If we cannot install the Carbon handler, abort. */
     return InstallEventHandler(Carbon->EventTarget, Carbon->EventHandler, 2, Carbon->EventType, NULL, &Carbon->CurHandler) == noErr;
 }

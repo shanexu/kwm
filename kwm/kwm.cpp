@@ -10,10 +10,9 @@
 #include <getopt.h>
 
 #define internal static
-const char *KwmVersion = "Kwm Version 4.0.2";
+const char *KwmVersion = "Kwm Version 4.0.3";
 std::map<std::string, space_info> WindowTree;
 
-ax_state AXState = {};
 ax_display *FocusedDisplay = NULL;
 ax_application *FocusedApplication = NULL;
 ax_window *MarkedWindow = NULL;
@@ -135,17 +134,6 @@ GetKwmFilePath()
     }
 
     return Result;
-}
-
-internal inline void
-KwmExecuteInitScript()
-{
-    if(KWMPath.Init.empty())
-        KWMPath.Init = KWMPath.Home + "/init";
-
-    struct stat Buffer;
-    if(stat(KWMPath.Init.c_str(), &Buffer) == 0)
-        KwmExecuteSystemCommand(KWMPath.Init);
 }
 
 internal void
@@ -295,7 +283,9 @@ int main(int argc, char **argv)
     if(!AXLibDisplayHasSeparateSpaces())
         Fatal("Error: 'Displays have separate spaces' must be enabled!");
 
-    AXLibInit(&AXState);
+    if(!AXLibInit())
+        Fatal("Error: Could not initialize AXLib!");
+
     AXLibStartEventLoop();
     if(!KwmStartDaemon())
         Fatal("Error: Could not start daemon!");
@@ -318,7 +308,6 @@ int main(int argc, char **argv)
 
     KwmInit();
     KwmParseConfig(KWMPath.Config);
-    KwmExecuteInitScript();
 
     CreateWindowNodeTree(MainDisplay);
 

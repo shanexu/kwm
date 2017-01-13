@@ -2,11 +2,8 @@
 #define AXLIB_CARBON_H
 
 #include <Carbon/Carbon.h>
-#include <unistd.h>
 #include <string>
-#include <map>
 
-struct ax_application;
 struct carbon_event_handler
 {
     EventTargetRef EventTarget;

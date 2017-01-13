@@ -12,7 +12,6 @@
 #define local_persist static
 
 extern std::map<std::string, space_info> WindowTree;
-extern ax_state AXState;
 extern ax_application *FocusedApplication;
 extern kwm_settings KWMSettings;
 extern kwm_border MarkedBorder;
@@ -382,36 +381,35 @@ void FocusWindowBelowCursor()
     if(Application)
     {
         FocusedWindow = Application->Focus;
-         if((FocusedWindow) && (IsCursorInsideRect(FocusedWindow->Position.x, FocusedWindow->Position.y,
-                                                   FocusedWindow->Size.width, FocusedWindow->Size.height)))
+         if((FocusedWindow) &&
+            (IsCursorInsideRect(FocusedWindow->Position.x, FocusedWindow->Position.y,
+                                FocusedWindow->Size.width, FocusedWindow->Size.height)))
+         {
              return;
+         }
     }
 
     uint32_t WindowID = AXLibGetWindowBelowCursor();
     if(WindowID == 0)
-        return;
-
-    std::map<pid_t, ax_application>::iterator It;
-    for(It = AXState.Applications.begin(); It != AXState.Applications.end(); ++It)
     {
-        ax_application *Application = &It->second;
-        ax_window *Window = AXLibFindApplicationWindow(Application, WindowID);
-        if(Window)
+        return;
+    }
+
+    ax_window *Window = GetWindowByID(WindowID);
+    if(Window)
+    {
+        if((AXLibIsWindowStandard(Window)) ||
+           (AXLibIsWindowCustom(Window)))
         {
-            if((AXLibIsWindowStandard(Window)) ||
-               (AXLibIsWindowCustom(Window)))
+            if(Application == Window->Application)
             {
-                if(Application == Window->Application)
-                {
-                    if(FocusedWindow != Window)
-                        AXLibSetFocusedWindow(Window);
-                }
-                else
-                {
+                if(FocusedWindow != Window)
                     AXLibSetFocusedWindow(Window);
-                }
             }
-            return;
+            else
+            {
+                AXLibSetFocusedWindow(Window);
+            }
         }
     }
 }

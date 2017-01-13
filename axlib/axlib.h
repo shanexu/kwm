@@ -34,10 +34,13 @@
  *        transition occurs on the active monitor.
  * */
 
+typedef std::map<pid_t, ax_application *> ax_application_map;
+typedef std::map<pid_t, ax_application *>::iterator ax_application_map_iter;
+
 struct ax_state
 {
     carbon_event_handler Carbon;
-    std::map<pid_t, ax_application> Applications;
+    ax_application_map Applications;
     std::map<CGDirectDisplayID, ax_display> Displays;
 };
 
@@ -50,10 +53,10 @@ std::vector<ax_window *> AXLibGetAllKnownWindows();
 std::vector<ax_window *> AXLibGetAllVisibleWindows();
 uint32_t AXLibGetWindowBelowCursor();
 void AXLibRunningApplications();
-void AXLibInit(ax_state *State);
+bool AXLibInit();
 
 
-std::map<pid_t, ax_application> *BeginAXLibApplications();
+ax_application_map *BeginAXLibApplications();
 void EndAXLibApplications();
 
 #endif

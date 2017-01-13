@@ -11,14 +11,13 @@ extern "C" CGSConnectionID _CGSDefaultConnection(void);
 extern "C" CGError CGSGetOnScreenWindowCount(const CGSConnectionID CID, CGSConnectionID TID, int *Count);
 extern "C" CGError CGSGetOnScreenWindowList(const CGSConnectionID CID, CGSConnectionID TID, int Count, int *List, int *OutCount);
 
-internal ax_state *AXState;
+internal ax_state AXState;
 internal carbon_event_handler *Carbon;
 
-internal std::map<pid_t, ax_application> *AXApplications;
+internal ax_application_map *AXApplications;
 internal pthread_mutex_t AXApplicationsMutex;
 
 internal std::map<CGDirectDisplayID, ax_display> *AXDisplays;
-internal CGPoint Cursor;
 
 internal inline AXUIElementRef
 AXLibSystemWideElement()
@@ -44,12 +43,12 @@ GetCursorPos()
 }
 
 internal bool
-IsElementBelowCursor(CGRect *WindowRect)
+IsPointInsideRect(CGPoint *Point, CGRect *Rect)
 {
-    if(Cursor.x >= WindowRect->origin.x &&
-       Cursor.x <= WindowRect->origin.x + WindowRect->size.width &&
-       Cursor.y >= WindowRect->origin.y &&
-       Cursor.y <= WindowRect->origin.y + WindowRect->size.height)
+    if(Point->x >= Rect->origin.x &&
+       Point->x <= Rect->origin.x + Rect->size.width &&
+       Point->y >= Rect->origin.y &&
+       Point->y <= Rect->origin.y + Rect->size.height)
         return true;
 
     return false;
@@ -59,14 +58,14 @@ IsElementBelowCursor(CGRect *WindowRect)
 internal bool
 AXLibIsApplicationCached(pid_t PID)
 {
-    std::map<pid_t, ax_application>::iterator It = AXApplications->find(PID);
+    ax_application_map_iter It = AXApplications->find(PID);
     return It != AXApplications->end();
 }
 
 /* NOTE(koekeishiya): Returns a pointer to the ax_application struct corresponding to the given process id. */
 ax_application *AXLibGetApplicationByPID(pid_t PID)
 {
-    ax_application *Result = AXLibIsApplicationCached(PID) ? &(*AXApplications)[PID] : NULL;
+    ax_application *Result = AXLibIsApplicationCached(PID) ? (*AXApplications)[PID] : NULL;
     return Result;
 }
 
@@ -133,15 +132,19 @@ void AXLibSetFocusedWindow(ax_window *Window)
 std::vector<ax_window *> AXLibGetAllKnownWindows()
 {
     std::vector<ax_window *> Windows;
-    std::map<pid_t, ax_application>::iterator It;
 
     BeginAXLibApplications();
-    for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
+    for(ax_application_map_iter It = AXApplications->begin();
+        It != AXApplications->end();
+        ++It)
     {
-        ax_application *Application = &It->second;
-        std::map<uint32_t, ax_window *>::iterator WIt;
-        for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
+        ax_application *Application = It->second;
+        for(ax_window_map_iter WIt = Application->Windows.begin();
+            WIt != Application->Windows.end();
+            ++WIt)
+        {
             Windows.push_back(WIt->second);
+        }
     }
     EndAXLibApplications();
 
@@ -178,14 +181,16 @@ std::vector<ax_window *> AXLibGetAllVisibleWindows()
         if(Error == kCGErrorSuccess)
         {
             BeginAXLibApplications();
-            std::map<pid_t, ax_application>::iterator It;
-            for(It = AXApplications->begin(); It != AXApplications->end(); ++It)
+            for(ax_application_map_iter It = AXApplications->begin();
+                It != AXApplications->end();
+                ++It)
             {
-                ax_application *Application = &It->second;
+                ax_application *Application = It->second;
                 if(!AXLibIsApplicationHidden(Application))
                 {
-                    std::map<uint32_t, ax_window *>::iterator WIt;
-                    for(WIt = Application->Windows.begin(); WIt != Application->Windows.end(); ++WIt)
+                    for(ax_window_map_iter WIt = Application->Windows.begin();
+                        WIt != Application->Windows.end();
+                        ++WIt)
                     {
                         ax_window *Window = WIt->second;
                         /* NOTE(koekeishiya): If a window is minimized, the ArrayContains check should fail
@@ -214,7 +219,7 @@ uint32_t AXLibGetWindowBelowCursor()
     uint32_t Result = 0;
     CGWindowListOption WindowListOption = kCGWindowListOptionOnScreenOnly |
                                           kCGWindowListExcludeDesktopElements;
-    Cursor = GetCursorPos();
+    CGPoint Cursor = GetCursorPos();
 
     CFArrayRef WindowList = CGWindowListCopyWindowInfo(WindowListOption, kCGNullWindowID);
     if(WindowList)
@@ -258,7 +263,7 @@ uint32_t AXLibGetWindowBelowCursor()
                 return 0;
             }
 
-            if(IsElementBelowCursor(&WindowRect))
+            if(IsPointInsideRect(&Cursor, &WindowRect))
             {
                 Result = WindowID;
                 break;
@@ -274,34 +279,34 @@ uint32_t AXLibGetWindowBelowCursor()
 /* NOTE(koekeishiya): Update state of known applications and their windows, stored inside the ax_state passed to AXLibInit(..). */
 void AXLibRunningApplications()
 {
-    std::map<pid_t, std::string> List = SharedWorkspaceRunningApplications();
-
-    std::map<pid_t, std::string>::iterator It;
-    for(It = List.begin(); It != List.end(); ++It)
+    shared_ws_map List = SharedWorkspaceRunningApplications();
+    for(shared_ws_map_iter It = List.begin();
+        It != List.end();
+        ++It)
     {
-        pid_t PID = It->first;
         BeginAXLibApplications();
-        bool Cached = AXLibIsApplicationCached(PID);
+        ax_application *Application = AXLibGetApplicationByPID(It->first);
         EndAXLibApplications();
 
-        if(!Cached)
+        if(Application)
         {
-            std::string Name = It->second;
-            BeginAXLibApplications();
-            (*AXApplications)[PID] = AXLibConstructApplication(PID, Name);
-            AXLibInitializeApplication(PID);
-            EndAXLibApplications();
+            AXLibAddApplicationWindows(Application);
         }
         else
         {
+            Application = AXLibConstructApplication(It->first, It->second);
+
             BeginAXLibApplications();
-            AXLibAddApplicationWindows(&(*AXApplications)[PID]);
+            (*AXApplications)[Application->PID] = Application;
             EndAXLibApplications();
+
+            if(AXLibInitializeApplication(Application->PID))
+                AXLibInitializedApplication(Application);
         }
     }
 }
 
-std::map<pid_t, ax_application> *BeginAXLibApplications()
+ax_application_map *BeginAXLibApplications()
 {
     pthread_mutex_lock(&AXApplicationsMutex);
     return AXApplications;
@@ -315,20 +320,26 @@ void EndAXLibApplications()
 /* NOTE(koekeishiya): This function is responsible for initializing internal variables used by AXLib, and must be
                       called before using any of the provided functions!  In addition to this, it will also
                       populate the display and running applications map in the ax_state struct.  */
-void AXLibInit(ax_state *State)
+bool AXLibInit()
 {
-    AXState = State;
-    AXApplications = &AXState->Applications;
-
-    // TODO(koekeishiya): Check result code
-    pthread_mutex_init(&AXApplicationsMutex, NULL);
-
-    AXDisplays = &AXState->Displays;
-    Carbon = &AXState->Carbon;
-
     AXUIElementSetMessagingTimeout(AXLibSystemWideElement(), 1.0);
-    AXLibInitializeCarbonEventHandler(Carbon);
+
+    Carbon = &AXState.Carbon;
+    AXDisplays = &AXState.Displays;
+    AXApplications = &AXState.Applications;
+
+    if(pthread_mutex_init(&AXApplicationsMutex, NULL) != 0)
+    {
+        return false;
+    }
+
+    if(!AXLibInitializeCarbonEventHandler(Carbon))
+    {
+        return false;
+    }
+
     SharedWorkspaceInitialize();
     AXLibInitializeDisplays(AXDisplays);
     AXLibRunningApplications();
+    return true;
 }

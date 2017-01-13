@@ -17,10 +17,9 @@ void SharedWorkspaceInitialize()
     Watcher = [[WorkspaceWatcher alloc] init];
 }
 
-std::map<pid_t, std::string> SharedWorkspaceRunningApplications()
+shared_ws_map SharedWorkspaceRunningApplications()
 {
-    std::map<pid_t, std::string> List;
-
+    shared_ws_map List;
     for(NSRunningApplication *Application in [[NSWorkspace sharedWorkspace] runningApplications])
     {
         if([Application activationPolicy] == NSApplicationActivationPolicyRegular)
@@ -152,10 +151,10 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didActivateApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
-        ax_application *Application = &(*Applications)[PID];
+        ax_application *Application = (*Applications)[PID];
 
         if(AXLibHasFlags(Application, AXApplication_PrepIgnoreFocus))
         {
@@ -184,10 +183,10 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didHideApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
-        ax_application *Application = &(*Applications)[PID];
+        ax_application *Application = (*Applications)[PID];
 
         pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
         *ApplicationPID = Application->PID;
@@ -199,10 +198,10 @@ bool SharedWorkspaceIsApplicationHidden(pid_t PID)
 - (void)didUnhideApplication:(NSNotification *)notification
 {
     pid_t PID = [[notification.userInfo objectForKey:NSWorkspaceApplicationKey] processIdentifier];
-    std::map<pid_t, ax_application> *Applications = BeginAXLibApplications();
+    ax_application_map *Applications = BeginAXLibApplications();
     if(Applications->find(PID) != Applications->end())
     {
-        ax_application *Application = &(*Applications)[PID];
+        ax_application *Application = (*Applications)[PID];
 
         pid_t *ApplicationPID = (pid_t *) malloc(sizeof(pid_t));
         *ApplicationPID = Application->PID;

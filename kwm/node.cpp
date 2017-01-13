@@ -392,39 +392,24 @@ tree_node *FindLowestCommonAncestor(tree_node *A, tree_node *B)
     if(!A || !B)
         return NULL;
 
-    std::stack<tree_node*> PathToRootFromA;
-    std::stack<tree_node*> PathToRootFromB;
-
-    tree_node *PathA = A;
-    while(PathA->Parent)
+    std::map<tree_node *, bool> Ancestors;
+    while(A != NULL)
     {
-        PathToRootFromA.push(PathA->Parent);
-        PathA = PathA->Parent;
+        Ancestors[A] = true;
+        A = A->Parent;
     }
 
-    tree_node *PathB = B;
-    while(PathB->Parent)
+    while(B != NULL)
     {
-        PathToRootFromB.push(PathB->Parent);
-        PathB = PathB->Parent;
+        if(Ancestors.find(B) != Ancestors.end())
+        {
+           return B;
+        }
+
+        B = B->Parent;
     }
 
-    tree_node *LCA = NULL;
-    while(!PathToRootFromA.empty() && !PathToRootFromB.empty())
-    {
-        tree_node *RootA = PathToRootFromA.top();
-        PathToRootFromA.pop();
-
-        tree_node *RootB = PathToRootFromB.top();
-        PathToRootFromB.pop();
-
-        if(RootA == RootB)
-            LCA = RootA;
-        else
-            break;
-    }
-
-    return LCA;
+    return NULL;
 }
 
 void ModifyContainerSplitRatio(double Offset, int Degrees)

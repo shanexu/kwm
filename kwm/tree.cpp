@@ -12,6 +12,30 @@
 #define internal static
 extern std::map<std::string, space_info> WindowTree;
 
+/* NOTE(koekeishiya): Should not be able to return null as the binary-tree is always proper. */
+tree_node * FindFirstMinDepthLeafNode(tree_node *Root)
+{
+    std::queue<tree_node *> Queue;
+    Queue.push(Root);
+
+    while(!Queue.empty())
+    {
+        tree_node *Node = Queue.front();
+        Queue.pop();
+
+        if(IsLeafNode(Node))
+            return Node;
+
+        if(Node->LeftChild)
+            Queue.push(Node->LeftChild);
+
+        if(Node->RightChild)
+            Queue.push(Node->RightChild);
+    }
+
+    return NULL;
+}
+
 internal bool
 CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *WindowsPtr)
 {
@@ -24,17 +48,11 @@ CreateBSPTree(tree_node *RootNode, ax_display *Display, std::vector<uint32_t> *W
         Root->WindowID = Windows[0];
         for(std::size_t Index = 1; Index < Windows.size(); ++Index)
         {
-            while(!IsLeafNode(Root))
-            {
-                if(!IsLeafNode(Root->LeftChild) && IsLeafNode(Root->RightChild))
-                    Root = Root->RightChild;
-                else
-                    Root = Root->LeftChild;
-            }
+            Root = FindFirstMinDepthLeafNode(RootNode);
+            Assert(Root != NULL);
 
             DEBUG("CreateBSPTree() Create pair of leafs");
             CreateLeafNodePair(Display, Root, Root->WindowID, Windows[Index], GetOptimalSplitMode(Root));
-            Root = RootNode;
         }
 
         Result = true;

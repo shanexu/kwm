@@ -11,6 +11,9 @@
 #include "window.h"
 #include "observer.h"
 
+typedef std::map<uint32_t, ax_window *> ax_window_map;
+typedef std::map<uint32_t, ax_window *>::iterator ax_window_map_iter;
+
 enum ax_application_flags
 {
     AXApplication_Activate = (1 << 0),
@@ -32,7 +35,7 @@ struct ax_application
     unsigned int Retries;
 
     ax_window *Focus;
-    std::map<uint32_t, ax_window *> Windows;
+    ax_window_map Windows;
     std::vector<ax_window *> NullWindows;
 };
 
@@ -55,7 +58,7 @@ AXLibClearFlags(ax_application *Application, uint32_t Flag)
     Application->Flags &= ~Flag;
 }
 
-ax_application AXLibConstructApplication(pid_t PID, std::string Name);
+ax_application *AXLibConstructApplication(pid_t PID, std::string Name);
 void AXLibDestroyApplication(ax_application *Application);
 
 bool AXLibInitializeApplication(pid_t PID);

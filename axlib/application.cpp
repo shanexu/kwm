@@ -323,21 +323,24 @@ AXLibRemoveApplicationObserver(ax_application *Application)
     }
 }
 
-ax_application AXLibConstructApplication(pid_t PID, std::string Name)
+ax_application *AXLibConstructApplication(pid_t PID, std::string Name)
 {
-    ax_application Application = {};
+    ax_application *Application = new ax_application();
 
-    Application.Ref = AXUIElementCreateApplication(PID);
-    GetProcessForPID(PID, &Application.PSN);
-    Application.Name = Name;
-    Application.PID = PID;
+    Application->Ref = AXUIElementCreateApplication(PID);
+    GetProcessForPID(PID, &Application->PSN);
+    Application->Name = Name;
+    Application->PID = PID;
 
     return Application;
 }
 
 bool AXLibInitializeApplication(pid_t PID)
 {
+    BeginAXLibApplications();
     ax_application *Application = AXLibGetApplicationByPID(PID);
+    EndAXLibApplications();
+
     if(Application)
     {
         bool Result = AXLibAddApplicationObserver(Application);
@@ -356,10 +359,8 @@ bool AXLibInitializeApplication(pid_t PID)
 #endif
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(),
                 ^{
-                    BeginAXLibApplications();
                     if(AXLibInitializeApplication(PID))
                         AXLibInitializedApplication(Application);
-                    EndAXLibApplications();
                 });
             }
             else
@@ -426,11 +427,12 @@ void AXLibAddApplicationWindows(ax_application *Application)
 
 void AXLibRemoveApplicationWindows(ax_application *Application)
 {
-    std::map<uint32_t, ax_window *> Windows = Application->Windows;
+    ax_window_map Windows = Application->Windows;
     Application->Windows.clear();
 
-    std::map<uint32_t, ax_window *>::iterator It;
-    for(It = Windows.begin(); It != Windows.end(); ++It)
+    for(ax_window_map_iter It = Windows.begin();
+        It != Windows.end();
+        ++It)
     {
         ax_window *Window = It->second;
         AXLibRemoveObserverNotification(&Window->Application->Observer, Window->Ref, kAXUIElementDestroyedNotification);
@@ -442,8 +444,7 @@ void AXLibRemoveApplicationWindows(ax_application *Application)
 
 ax_window *AXLibFindApplicationWindow(ax_application *Application, uint32_t WID)
 {
-    std::map<uint32_t, ax_window *>::iterator It;
-    It = Application->Windows.find(WID);
+    ax_window_map_iter It = Application->Windows.find(WID);
     if(It != Application->Windows.end())
         return It->second;
     else
@@ -497,4 +498,5 @@ void AXLibDestroyApplication(ax_application *Application)
     AXLibRemoveApplicationObserver(Application);
     CFRelease(Application->Ref);
     Application->Ref = NULL;
+    delete Application;
 }
